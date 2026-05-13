@@ -2,20 +2,19 @@ package com.smart.appsa.model.enums;
 
 import jakarta.persistence.EnumeratedValue;
 
-public enum CorTampa {
-    PRETO(0),
-    VERMELHO(1),
-    AZUL(2);
+public enum PosicaoLamina {
+    ESQUERDA(1),
+    DIREITA(3),
+    FRENTE(2);
 
     @EnumeratedValue
     int value;
 
-    private CorTampa(int value) {
+    private PosicaoLamina(int value) {
         this.value = value;
     }
 
     public int getValue() {
         return value;
     }
-
 }

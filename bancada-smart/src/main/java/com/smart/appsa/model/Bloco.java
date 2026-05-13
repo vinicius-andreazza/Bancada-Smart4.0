@@ -1,5 +1,10 @@
 package com.smart.appsa.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.smart.appsa.model.enums.CorBloco;
+
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,9 +29,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "T_Bloco", check = {
+@Table(name = "bloco", check = {
     @CheckConstraint(
-        name = "vl_cor",
+        name = "vl_cor_bloco",
         constraint = "vl_cor IN (1, 2, 3)"
     )
 })
@@ -37,12 +43,16 @@ public class Bloco {
 
     
     @Column(name = "vl_cor", nullable = false)
-    private Integer vl_cor;
+    private CorBloco vl_cor;
 
-    //@ManyToOne
-    //private Estoque posEstoque;
+    @ManyToOne
+    private Estoque posEstoque;
 
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido pedido;
+
+    @OneToMany(mappedBy = "bloco")
+    @JsonBackReference
+    private List<Lamina> laminas;
 }

@@ -3,6 +3,7 @@ package com.smart.appsa.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
@@ -10,11 +11,11 @@ import com.smart.appsa.model.enums.TipoPedido;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -31,9 +32,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "T_Pedido", check = {
+@Table(name = "pedido", check = {
     @CheckConstraint(
-        name = "vl_status",
+        name = "vl_status_pedido",
         constraint = "vl_status IN (1, 2, 3)"
     ),
     @CheckConstraint(
@@ -41,7 +42,7 @@ import lombok.Setter;
         constraint = "tp_pedido IN (1, 2, 3)"
     ),
     @CheckConstraint(
-        name = "vl_tampa",
+        name = "vl_tampa_pedido",
         constraint = "vl_tampa IN (1, 2, 3)"
     )
 })
@@ -59,24 +60,21 @@ public class Pedido {
     private LocalDateTime dataCriacao;
 
     @Column(name = "vl_status", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
     private StatusPedido status;
 
     @Column(name = "tp_pedido", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
     private TipoPedido tipoPedido;
 
     @Column(name = "vl_tampa", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
     private CorTampa corTampa;
 
     @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;
 
-    //@ManyToOne
-    //@JoinColumn(name = "id_expedicao", nullable = true)
-    //@JsonManagedReference
-    //private Expedicao expedicao;
+    @ManyToOne
+    @JoinColumn(name = "id_expedicao", nullable = true)
+    @JsonManagedReference
+    private Expedicao expedicao;
 
     @OneToMany(mappedBy = "pedido")
     private List<Bloco> blocos;

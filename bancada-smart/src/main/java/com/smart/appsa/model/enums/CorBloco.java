@@ -2,7 +2,7 @@ package com.smart.appsa.model.enums;
 
 import jakarta.persistence.EnumeratedValue;
 
-public enum CorTampa {
+public enum CorBloco {
     PRETO(0),
     VERMELHO(1),
     AZUL(2);
@@ -10,12 +10,11 @@ public enum CorTampa {
     @EnumeratedValue
     int value;
 
-    private CorTampa(int value) {
+    private CorBloco(int value) {
         this.value = value;
     }
 
     public int getValue() {
         return value;
     }
-
 }
