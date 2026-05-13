@@ -1,6 +1,7 @@
 package com.smart.appsa.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -9,10 +10,12 @@ import com.smart.appsa.model.enums.TipoPedido;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumeratedValue;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,27 +52,32 @@ public class Pedido {
     @Column(name = "id_pedido")
     private Long id;
 
-    @Column(name = "cod_pedido")
+    @Column(name = "cod_pedido", nullable = false)
     private String codPedido;
 
-    @Column(name = "dt_criacao")
+    @Column(name = "dt_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
-    @Column(name = "vl_status")
-    @EnumeratedValue
+    @Column(name = "vl_status", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private StatusPedido status;
 
-    @Column(name = "tp_pedido")
-    @EnumeratedValue
+    @Column(name = "tp_pedido", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private TipoPedido tipoPedido;
 
-    @Column(name = "vl_tampa")
-    @EnumeratedValue
+    @Column(name = "vl_tampa", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private CorTampa corTampa;
 
-    @Column(name = "dt_entrada")
+    @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;
 
     //@ManyToOne
+    //@JoinColumn(name = "id_expedicao", nullable = true)
+    //@JsonManagedReference
     //private Expedicao expedicao;
+
+    @OneToMany(mappedBy = "pedido")
+    private List<Bloco> blocos;
 }

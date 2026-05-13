@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,12 +36,13 @@ public class Bloco {
     private Long id;
 
     
-    @Column(name = "vl_cor")
+    @Column(name = "vl_cor", nullable = false)
     private Integer vl_cor;
 
-    //@ManyToOne()
+    //@ManyToOne
     //private Estoque posEstoque;
 
-    //@ManyToOne()
-    //private Estoque posEstoque;
+    @ManyToOne
+    @JoinColumn(name = "id_pedido", nullable = false)
+    private Pedido pedido;
 }
