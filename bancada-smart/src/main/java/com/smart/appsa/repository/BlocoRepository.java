@@ -1,0 +1,14 @@
+package com.smart.appsa.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Pedido;
+
+@Repository
+public interface BlocoRepository extends JpaRepository<Bloco, Long> {
+    List<Bloco> findByPedido(Pedido pedido);
+}
