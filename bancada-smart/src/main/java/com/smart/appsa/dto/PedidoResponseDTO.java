@@ -17,7 +17,7 @@ public record PedidoResponseDTO(
         TipoPedido tipoPedido,
         CorTampa corTampa,
         LocalDateTime dataEntrada,
-        ExpedicaoDTO expedicao,
+        Integer expedicao,
         List<BlocoDTO> blocos
 ) {
 

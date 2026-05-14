@@ -68,7 +68,7 @@ public class ExpedicaoService {
 
         Pedido pedido = expedicao.getPedido();
         pedido.setStatus(StatusPedido.CONCLUIDO);
-        pedido.setExpedicao(null);
+        pedido.setPosExpedicao(null);
         pedidoRepository.save(pedido);
 
         expedicao.setPedido(null);

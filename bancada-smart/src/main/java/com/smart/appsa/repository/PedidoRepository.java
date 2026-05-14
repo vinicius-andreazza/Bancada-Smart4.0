@@ -22,7 +22,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
  
     List<Pedido> findByCorTampa(CorTampa corTampa);
  
-    List<Pedido> findByExpedicao(Expedicao expedicao);
+    List<Pedido> findByPosExpedicao(Expedicao expedicao);
  
     List<Pedido> findByDataCriacaoBetween(LocalDateTime inicio, LocalDateTime fim);
+
+    List<Pedido> findByStatusNotOrderByPosExpedicaoAsc(StatusPedido statusPedido);
 }

@@ -44,9 +44,9 @@ public class PedidoService {
 
         pedido.setDataCriacao(LocalDateTime.now());
 
-        atribuirPosPedidoNaExpedicao(pedido);
-
         pedidoRepository.save(pedido);
+
+        atribuirPosPedidoNaExpedicao(pedido);
 
         // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
         
@@ -122,11 +122,12 @@ public class PedidoService {
             throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
-
+        pedidoExistente.setDataEntrada(LocalDateTime.now());
+        /* 
         expedicaoService.atribuirPedido(pedidoExistente.getId());
-
+        */
         pedidoRepository.save(pedidoExistente);
-
+        
         return PedidoMapper.toResponse(pedidoExistente);
     }
 
@@ -225,8 +226,8 @@ public class PedidoService {
     }
 
     private void atribuirPosPedidoNaExpedicao(Pedido pedido){
-        Expedicao expedicao = expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
+        Expedicao expedicao = expedicaoService.atribuirPedido(pedido.getId());
 
-        pedido.setExpedicao(expedicao);
+        pedido.setPosExpedicao(expedicao.getPosicao());
     }
 }
