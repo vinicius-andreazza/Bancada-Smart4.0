@@ -8,7 +8,12 @@ import org.springframework.stereotype.Repository;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Pedido;
 
-@Repository
+import java.util.List;
+import com.smart.appsa.model.Estoque;
+
+
+
 public interface BlocoRepository extends JpaRepository<Bloco, Long> {
     List<Bloco> findByPedido(Pedido pedido);
+    List<Bloco> findByPosEstoque(Estoque posEstoque);
 }
