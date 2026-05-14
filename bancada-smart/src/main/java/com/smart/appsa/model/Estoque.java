@@ -44,5 +44,5 @@ public class Estoque {
     private Integer posicao;
 
     @Column(name = "vl_cor", nullable = false)
-    private CorBloco cor;
+    private Integer cor;
 }

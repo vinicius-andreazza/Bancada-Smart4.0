@@ -3,7 +3,7 @@ package com.smart.appsa.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.smart.appsa.model.Expedicao;
@@ -12,6 +12,7 @@ import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
 
+@Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     Optional<Pedido> findByCodPedido(String codPedido);
  
