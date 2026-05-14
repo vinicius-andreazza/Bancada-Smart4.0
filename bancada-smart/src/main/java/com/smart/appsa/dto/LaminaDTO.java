@@ -1,5 +1,6 @@
 package com.smart.appsa.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.smart.appsa.model.enums.CorLamina;
 import com.smart.appsa.model.enums.PadraoLamina;
 import com.smart.appsa.model.enums.PosicaoLamina;
@@ -11,8 +12,7 @@ public record LaminaDTO(
     Long id,
     CorLamina corLamina,
     PadraoLamina padraoLamina,
-    PosicaoLamina posicaoLamina,
-    BlocoDTO bloco
+    PosicaoLamina posicaoLamina
 ) {
     
 }

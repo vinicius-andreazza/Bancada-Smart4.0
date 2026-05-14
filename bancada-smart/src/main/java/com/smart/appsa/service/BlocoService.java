@@ -30,16 +30,18 @@ public class BlocoService {
 
     public BlocoDTO create(BlocoDTO dto) {
         validarDTO(dto);
-
+        System.out.println("DTO:"+dto.laminas());
         Bloco bloco = BlocoMapper.toEntity(dto);
-
+        
         Pedido pedido = resolverPedido(dto.pedido().getId());
 
         bloco.setPedido(pedido);
 
         blocoRepository.save(bloco);
         
-        criarLaminas(bloco.getLaminas());
+        atualizarBlocoDasLaminas(bloco);
+
+        criarLaminas(bloco.getLaminas(), bloco);
 
         return BlocoMapper.toDto(bloco);
     }
@@ -109,8 +111,12 @@ public class BlocoService {
     }
 
 
-    private List<Lamina> criarLaminas(List<Lamina> laminas){
-        List<LaminaDTO> blocoDTOs = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l)).toList();
+    private List<Lamina> criarLaminas(List<Lamina> laminas, Bloco bloco){
+        System.out.println("BLOCO:"+laminas);
+        if(laminas == null){
+            return null;
+        }
+        List<LaminaDTO> blocoDTOs = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l, bloco)).toList();
         return blocoDTOs.stream().map(b -> LaminaMapper.toEntity(b)).toList();
     }
 
@@ -131,6 +137,12 @@ public class BlocoService {
         }
         if (dto.pedido() == null || dto.pedido().getId() == null) {
             throw new IllegalArgumentException("O pedido do bloco é obrigatório.");
+        }
+    }
+
+    private void atualizarBlocoDasLaminas(Bloco bloco){
+        if(bloco.getLaminas() != null){
+            bloco.getLaminas().forEach(l -> l.setBloco(bloco));
         }
     }
 }

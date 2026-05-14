@@ -2,6 +2,7 @@ package com.smart.appsa.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.CorBloco;

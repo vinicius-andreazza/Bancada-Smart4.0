@@ -31,12 +31,11 @@ public class LaminaService {
         return laminaRepository.findByBloco(bloco);
     }
 
-    public LaminaDTO criarLamina(LaminaDTO laminaDTO) {
+    public LaminaDTO criarLamina(LaminaDTO laminaDTO, Bloco bloco) {
+        System.out.println(laminaDTO);
         Lamina lamina = LaminaMapper.toEntity(laminaDTO);
 
         validarLamina(lamina);
-
-        Bloco bloco = buscarBloco(lamina.getBloco().getId());
 
         boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
                 .anyMatch(l -> l.getPosicaoLamina() == lamina.getPosicaoLamina());
@@ -95,9 +94,6 @@ public class LaminaService {
         }
         if (lamina.getPosicaoLamina() == null) {
             throw new IllegalArgumentException("A posição da lâmina é obrigatória.");
-        }
-        if (lamina.getBloco() == null || lamina.getBloco().getId() == null) {
-            throw new IllegalArgumentException("O bloco associado é obrigatório.");
         }
     }
 }

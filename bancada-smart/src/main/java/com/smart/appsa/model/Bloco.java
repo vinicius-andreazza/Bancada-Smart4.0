@@ -21,6 +21,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Data
 @Builder
@@ -50,6 +51,7 @@ public class Bloco {
 
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)
+    @ToString.Exclude
     private Pedido pedido;
 
     @OneToMany(mappedBy = "bloco")

@@ -3,9 +3,10 @@ package com.smart.appsa.model.enums;
 import jakarta.persistence.EnumeratedValue;
 
 public enum CorBloco {
-    PRETO(0),
-    VERMELHO(1),
-    AZUL(2);
+    NENHUM(0),
+    PRETO(1),
+    VERMELHO(2),
+    AZUL(3);
 
     @EnumeratedValue
     int value;

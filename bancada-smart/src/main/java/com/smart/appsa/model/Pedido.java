@@ -73,7 +73,6 @@ public class Pedido {
 
     @ManyToOne
     @JoinColumn(name = "id_expedicao", nullable = true)
-    @JsonManagedReference
     private Expedicao expedicao;
 
     @OneToMany(mappedBy = "pedido")

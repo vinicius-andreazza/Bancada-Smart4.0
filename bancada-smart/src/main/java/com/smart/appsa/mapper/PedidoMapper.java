@@ -9,6 +9,7 @@ public class PedidoMapper {
     private PedidoMapper() {}
  
     public static Pedido toEntity(PedidoRequestDTO dto) {
+        System.out.println("Mapper: "+dto.blocos());
         return Pedido.builder()
                 .codPedido(dto.codPedido())
                 .status(dto.status())

@@ -29,7 +29,7 @@ public class PedidoService {
     private final BlocoService blocoService;
     // private final ExpedicaoRepository expedicaoRepository;
 
-    @Transactional
+
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
         validarCorTampa(dto.corTampa());
 
@@ -37,10 +37,13 @@ public class PedidoService {
 
         validarQuantidadeBlocosPorTipo(pedido);
 
+        pedido.setDataCriacao(LocalDateTime.now());
+
         pedidoRepository.save(pedido);
 
-        pedido.setDataCriacao(LocalDateTime.now());
         // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
+        
+        atualizarPedidoDosBlocos(pedido);
 
         List<Bloco> blocosCriados = criarBlocos(pedido.getBlocos());
         pedido.setBlocos(blocosCriados);
@@ -194,5 +197,9 @@ public class PedidoService {
         if (corTampa == null) {
             throw new IllegalArgumentException("A cor da tampa é obrigatória e deve ser um valor válido.");
         }
+    }
+
+    private void atualizarPedidoDosBlocos(Pedido pedido){
+        pedido.getBlocos().forEach(b -> b.setPedido(pedido));
     }
 }
