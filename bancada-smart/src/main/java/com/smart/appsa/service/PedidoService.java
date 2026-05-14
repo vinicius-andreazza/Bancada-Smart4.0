@@ -3,9 +3,11 @@ package com.smart.appsa.service;
 import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
 import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
 import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -25,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PedidoService {
 
+    private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
     // private final ExpedicaoRepository expedicaoRepository;
@@ -107,6 +110,19 @@ public class PedidoService {
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
+    }
+
+    public PedidoResponseDTO atualizarParaConcluido(Long id){
+        Pedido pedidoExistente = findById(id);
+        if(pedidoExistente.getStatus()==StatusPedido.CONCLUIDO){
+            throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
+        }
+        pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
+
+        Expedicao expedicao = expedicaoService.atribuirPedido(id);
+
+        pedidoExistente.setExpedicao(expedicao);
+        return PedidoMapper.toResponse(pedidoExistente);
     }
 
     @Transactional

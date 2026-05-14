@@ -16,4 +16,8 @@ public class GlobalHandlerException {
     public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex){
         return ResponseEntity.internalServerError().body(ex.getMessage());
     }
+    @ExceptionHandler(PedidoIsAlreadyConcluidoException.class)
+    public ResponseEntity<?> handlePedidoIsAlreadyConcluidoException(PedidoIsAlreadyConcluidoException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

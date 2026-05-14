@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.service.PedidoService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,8 +37,8 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<PedidoResponseDTO> create(@PathVariable Long id){
-        return ResponseEntity.ok(new PedidoResponseDTO(id, null, null, null, null, null, null, null, null));
+    public ResponseEntity<PedidoResponseDTO> atualizarParaConcluido(@PathVariable Long id){
+        return ResponseEntity.ok(pedidoService.atualizarParaConcluido(id));
     }
     
 }

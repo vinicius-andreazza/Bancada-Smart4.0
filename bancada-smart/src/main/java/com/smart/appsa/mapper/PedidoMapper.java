@@ -9,8 +9,8 @@ public class PedidoMapper {
     private PedidoMapper() {}
  
     public static Pedido toEntity(PedidoRequestDTO dto) {
-        System.out.println("Mapper: "+dto.blocos());
         return Pedido.builder()
+                .id(dto.id())
                 .codPedido(dto.codPedido())
                 .status(dto.status())
                 .tipoPedido(dto.tipoPedido())
@@ -30,7 +30,7 @@ public class PedidoMapper {
                 .tipoPedido(pedido.getTipoPedido())
                 .corTampa(pedido.getCorTampa())
                 .dataEntrada(pedido.getDataEntrada())
-                .expedicao(pedido.getExpedicao())
+                .expedicao(ExpedicaoMapper.toDto(pedido.getExpedicao()))
                 .blocos(pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
                 .build();
     }
