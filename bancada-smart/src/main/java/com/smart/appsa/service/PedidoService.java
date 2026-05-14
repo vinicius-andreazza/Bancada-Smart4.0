@@ -3,6 +3,7 @@ package com.smart.appsa.service;
 import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Pedido;
@@ -32,18 +33,19 @@ public class PedidoService {
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
         validarCorTampa(dto.corTampa());
 
-        
-
         Pedido pedido = PedidoMapper.toEntity(dto);
 
         validarQuantidadeBlocosPorTipo(pedido);
 
-        criarBlocos(pedido.getBlocos());
+        pedidoRepository.save(pedido);
 
         pedido.setDataCriacao(LocalDateTime.now());
         // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
 
-        return PedidoMapper.toResponse(pedidoRepository.save(pedido));
+        List<Bloco> blocosCriados = criarBlocos(pedido.getBlocos());
+        pedido.setBlocos(blocosCriados);
+
+        return PedidoMapper.toResponse(pedido);
     }
 
     public List<PedidoResponseDTO> listarTodos() {
@@ -158,9 +160,8 @@ public class PedidoService {
     }
 
     private List<Bloco> criarBlocos(List<Bloco> blocos){
-
-
-        return null;
+        List<BlocoDTO> blocoDTOs = blocos.stream().map(b -> BlocoMapper.toDto(b)).map(b -> blocoService.create(b)).toList();
+        return blocoDTOs.stream().map(b -> BlocoMapper.toEntity(b)).toList();
     }
 
     private Pedido findById(Long id) {

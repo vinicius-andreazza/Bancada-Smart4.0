@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.repository.BlocoRepository;
@@ -29,7 +31,9 @@ public class LaminaService {
         return laminaRepository.findByBloco(bloco);
     }
 
-    public Lamina criarLamina(Lamina lamina) {
+    public LaminaDTO criarLamina(LaminaDTO laminaDTO) {
+        Lamina lamina = LaminaMapper.toEntity(laminaDTO);
+
         validarLamina(lamina);
 
         Bloco bloco = buscarBloco(lamina.getBloco().getId());
@@ -42,7 +46,7 @@ public class LaminaService {
         }
 
         lamina.setBloco(bloco);
-        return laminaRepository.save(lamina);
+        return LaminaMapper.toDto(laminaRepository.save(lamina));
     }
 
     public Lamina atualizarLamina(Long id, Lamina lamina) {

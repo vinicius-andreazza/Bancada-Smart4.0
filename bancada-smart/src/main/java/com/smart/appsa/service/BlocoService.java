@@ -5,7 +5,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.dto.BlocoDTO;
+import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.mapper.BlocoMapper;
+import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Lamina;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.repository.BlocoRepository;
 import com.smart.appsa.repository.PedidoRepository;
@@ -20,15 +24,24 @@ public class BlocoService {
 
     private final BlocoRepository blocoRepository;
     private final PedidoRepository pedidoRepository;
+    private final LaminaService laminaService;
 
 
 
     public BlocoDTO create(BlocoDTO dto) {
         validarDTO(dto);
 
+        Bloco bloco = BlocoMapper.toEntity(dto);
+
         Pedido pedido = resolverPedido(dto.pedido().getId());
 
-        return toDTO(blocoRepository.save(bloco));
+        bloco.setPedido(pedido);
+
+        blocoRepository.save(bloco);
+        
+        criarLaminas(bloco.getLaminas());
+
+        return BlocoMapper.toDto(bloco);
     }
 
 
@@ -36,12 +49,12 @@ public class BlocoService {
     public List<BlocoDTO> findAll() {
         return blocoRepository.findAll()
                 .stream()
-                .map(this::toDTO)
+                .map(BlocoMapper::toDto)
                 .toList();
     }
 
     public BlocoDTO findById(Long id) {
-        return toDTO(findEntityById(id));
+        return BlocoMapper.toDto(findEntityById(id));
     }
 
     public List<BlocoDTO> findByPedido(Long idPedido) {
@@ -49,7 +62,7 @@ public class BlocoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + idPedido));
         return blocoRepository.findByPedido(pedido)
                 .stream()
-                .map(this::toDTO)
+                .map(BlocoMapper::toDto)
                 .toList();
     }
 
@@ -66,7 +79,7 @@ public class BlocoService {
         blocoExistente.setPedido(pedido);
         // posEstoque: TO DO — atribuir conforme cor do bloco
 
-        return toDTO(blocoRepository.save(blocoExistente));
+        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
     }
 
 
@@ -85,7 +98,7 @@ public class BlocoService {
 
         // posEstoque: TO DO — atribuir conforme cor do bloco
 
-        return toDTO(blocoRepository.save(blocoExistente));
+        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
     }
 
 
@@ -95,6 +108,11 @@ public class BlocoService {
         blocoRepository.delete(findEntityById(id));
     }
 
+
+    private List<Lamina> criarLaminas(List<Lamina> laminas){
+        List<LaminaDTO> blocoDTOs = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l)).toList();
+        return blocoDTOs.stream().map(b -> LaminaMapper.toEntity(b)).toList();
+    }
 
 
     private Bloco findEntityById(Long id) {
@@ -114,15 +132,5 @@ public class BlocoService {
         if (dto.pedido() == null || dto.pedido().getId() == null) {
             throw new IllegalArgumentException("O pedido do bloco é obrigatório.");
         }
-    }
-
-    private BlocoDTO toDTO(Bloco bloco) {
-        return new BlocoDTO(
-                bloco.getId(),
-                bloco.getVl_cor(),
-                bloco.getPosEstoque(),
-                bloco.getPedido(),
-                bloco.getLaminas()
-        );
     }
 }
