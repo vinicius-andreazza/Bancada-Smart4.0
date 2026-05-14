@@ -36,7 +36,7 @@ public class BlocoService {
 
     public BlocoDTO create(BlocoDTO dto) {
         validarDTO(dto);
-        System.out.println("DTO:"+dto.laminas());
+
         Bloco bloco = BlocoMapper.toEntity(dto);
         
         Pedido pedido = resolverPedido(dto.pedido().getId());
@@ -119,7 +119,6 @@ public class BlocoService {
 
 
     private List<Lamina> criarLaminas(List<Lamina> laminas, Bloco bloco){
-        System.out.println("BLOCO:"+laminas);
         if(laminas == null){
             return null;
         }
