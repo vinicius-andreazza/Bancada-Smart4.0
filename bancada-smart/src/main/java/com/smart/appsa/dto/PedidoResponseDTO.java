@@ -1,7 +1,9 @@
 package com.smart.appsa.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -17,7 +19,8 @@ public record PedidoResponseDTO(
         TipoPedido tipoPedido,
         CorTampa corTampa,
         LocalDateTime dataEntrada,
-        Expedicao expedicao
-    ) {
+        Expedicao expedicao,
+        List<Bloco> blocos
+) {
 
 }

@@ -37,7 +37,7 @@ public class PedidoController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponseDTO> create(@PathVariable Long id){
-        return ResponseEntity.ok(new PedidoResponseDTO(id, null, null, null, null, null, null, null));
+        return ResponseEntity.ok(new PedidoResponseDTO(id, null, null, null, null, null, null, null, null));
     }
     
 }

@@ -15,6 +15,7 @@ public class PedidoMapper {
                 .tipoPedido(dto.tipoPedido())
                 .corTampa(dto.corTampa())
                 .dataEntrada(dto.dataEntrada())
+                .blocos(dto.blocos())
                 // expedicao é resolvida no service via idExpedicao
                 .build();
     }
@@ -29,6 +30,7 @@ public class PedidoMapper {
                 .corTampa(pedido.getCorTampa())
                 .dataEntrada(pedido.getDataEntrada())
                 .expedicao(pedido.getExpedicao())
+                .blocos(pedido.getBlocos())
                 .build();
     }
  
