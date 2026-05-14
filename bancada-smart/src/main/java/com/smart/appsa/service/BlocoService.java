@@ -1,6 +1,7 @@
 package com.smart.appsa.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
@@ -9,9 +10,11 @@ import com.smart.appsa.dto.LaminaDTO;
 import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.repository.BlocoRepository;
+import com.smart.appsa.repository.EstoqueRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -23,8 +26,11 @@ import lombok.RequiredArgsConstructor;
 public class BlocoService {
 
     private final BlocoRepository blocoRepository;
+    private final EstoqueRepository estoqueRepository;
     private final PedidoRepository pedidoRepository;
     private final LaminaService laminaService;
+
+    private final EstoqueService estoqueService;
 
 
 
@@ -36,6 +42,8 @@ public class BlocoService {
         Pedido pedido = resolverPedido(dto.pedido().getId());
 
         bloco.setPedido(pedido);
+
+        verificarPosicao(bloco);
 
         blocoRepository.save(bloco);
         
@@ -67,7 +75,6 @@ public class BlocoService {
                 .map(BlocoMapper::toDto)
                 .toList();
     }
-
 
 
     @Transactional
@@ -144,5 +151,12 @@ public class BlocoService {
         if(bloco.getLaminas() != null){
             bloco.getLaminas().forEach(l -> l.setBloco(bloco));
         }
+    }
+
+    private void verificarPosicao(Bloco bloco){
+        Estoque pos = estoqueService.findFirstByCor(bloco.getVl_cor().getValue());
+        bloco.setPosEstoque(pos.getPosicao());
+        pos.setCor(0);
+        estoqueService.put(pos.getId(), pos);
     }
 }

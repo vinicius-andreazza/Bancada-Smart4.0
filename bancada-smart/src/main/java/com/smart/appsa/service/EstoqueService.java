@@ -61,6 +61,11 @@ public class EstoqueService {
         validarCor(cor);
         return estoqueRepository.countByCor(cor);
     }
+
+    public Estoque findFirstByCor(Integer cor){
+        return estoqueRepository.findFirstByCor(cor).orElseThrow(() -> new EntityNotFoundException(
+            "Nenhuma posição de estoque encontrada com cor: " + cor));
+    }
  
     // -------------------------------------------------------------------------
     // UPDATE (PUT)
@@ -72,12 +77,7 @@ public class EstoqueService {
  
         validarCor(estoqueAtualizado.getCor());
  
-        if (!estoqueExistente.getPosicao().equals(estoqueAtualizado.getPosicao())) {
-            validarPosicaoUnica(estoqueAtualizado.getPosicao(), id);
-        }
- 
         estoqueExistente.setCor(estoqueAtualizado.getCor());
-        estoqueExistente.setPosicao(estoqueAtualizado.getPosicao());
  
         return estoqueRepository.save(estoqueExistente);
     }
@@ -93,13 +93,6 @@ public class EstoqueService {
         if (estoqueParcial.getCor() != null) {
             validarCor(estoqueParcial.getCor());
             estoqueExistente.setCor(estoqueParcial.getCor());
-        }
- 
-        if (estoqueParcial.getPosicao() != null) {
-            if (!estoqueExistente.getPosicao().equals(estoqueParcial.getPosicao())) {
-                validarPosicaoUnica(estoqueParcial.getPosicao(), id);
-            }
-            estoqueExistente.setPosicao(estoqueParcial.getPosicao());
         }
  
         return estoqueRepository.save(estoqueExistente);

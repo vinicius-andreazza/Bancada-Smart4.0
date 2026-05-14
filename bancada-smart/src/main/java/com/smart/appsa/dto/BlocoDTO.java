@@ -13,7 +13,8 @@ import lombok.Builder;
 public record BlocoDTO(
     Long id,
     CorBloco vl_cor,
-    Estoque posEstoque,
+    Integer posEstoque,
+    @JsonIgnore
     Pedido pedido,
     List<LaminaDTO> laminas
 ) {

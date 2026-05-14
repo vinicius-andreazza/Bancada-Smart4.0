@@ -46,8 +46,7 @@ public class Bloco {
     @Column(name = "vl_cor", nullable = false)
     private CorBloco vl_cor;
 
-    @ManyToOne
-    private Estoque posEstoque;
+    private Integer posEstoque;
 
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)

@@ -14,4 +14,5 @@ public interface EstoqueRepository extends JpaRepository<Estoque, Long> {
     boolean existsByPosicao(Integer posicao);
     int countByCor(Integer cor);
     Optional<Estoque> findByPosicao(Integer posicao);
+    Optional<Estoque> findFirstByCor(Integer cor);
 }
