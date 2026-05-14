@@ -12,6 +12,7 @@ import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
+import com.smart.appsa.repository.ExpedicaoRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +31,7 @@ public class PedidoService {
     private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
+    private final ExpedicaoRepository expedicaoRepository;
     // private final ExpedicaoRepository expedicaoRepository;
 
 
@@ -41,6 +43,8 @@ public class PedidoService {
         validarQuantidadeBlocosPorTipo(pedido);
 
         pedido.setDataCriacao(LocalDateTime.now());
+
+        atribuirPosPedidoNaExpedicao(pedido);
 
         pedidoRepository.save(pedido);
 
@@ -119,9 +123,10 @@ public class PedidoService {
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
 
-        Expedicao expedicao = expedicaoService.atribuirPedido(id);
+        expedicaoService.atribuirPedido(pedidoExistente.getId());
 
-        pedidoExistente.setExpedicao(expedicao);
+        pedidoRepository.save(pedidoExistente);
+
         return PedidoMapper.toResponse(pedidoExistente);
     }
 
@@ -217,5 +222,11 @@ public class PedidoService {
 
     private void atualizarPedidoDosBlocos(Pedido pedido){
         pedido.getBlocos().forEach(b -> b.setPedido(pedido));
+    }
+
+    private void atribuirPosPedidoNaExpedicao(Pedido pedido){
+        Expedicao expedicao = expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
+
+        pedido.setExpedicao(expedicao);
     }
 }

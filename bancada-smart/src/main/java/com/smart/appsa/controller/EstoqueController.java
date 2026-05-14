@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.smart.appsa.model.enums.CorBloco;
 import com.smart.appsa.service.EstoqueService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,6 @@ public class EstoqueController {
 
     @GetMapping("/disponivel")
     public ResponseEntity<?> findDisponivel(){
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(estoqueService.findByCor(CorBloco.NENHUM.getValue()));
     }
 }

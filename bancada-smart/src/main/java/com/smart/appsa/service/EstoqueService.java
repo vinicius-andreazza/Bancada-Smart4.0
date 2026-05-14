@@ -2,15 +2,11 @@ package com.smart.appsa.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.smart.appsa.clpcomm.PlcConnectionService;
-import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.dto.EstoqueDTO;
+import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.model.Estoque;
-import com.smart.appsa.model.enums.CorBloco;
-import com.smart.appsa.model.enums.TipoPedido;
 import com.smart.appsa.repository.EstoqueRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -24,8 +20,7 @@ public class EstoqueService {
     
     private final EstoqueRepository estoqueRepository;
  
-    // Valores válidos de cor conforme check constraint: vl_cor IN (0, 1, 2)
-    private static final List<Integer> CORES_VALIDAS = List.of(0, 1, 2);
+    private static final List<Integer> CORES_VALIDAS = List.of(0, 1, 2, 3);
  
     // -------------------------------------------------------------------------
     // CREATE
@@ -57,9 +52,9 @@ public class EstoqueService {
                         "Nenhuma posição de estoque encontrada com posicao: " + posicao));
     }
  
-    public Integer findByCor(Integer cor) {
+    public List<EstoqueDTO> findByCor(Integer cor) {
         validarCor(cor);
-        return estoqueRepository.countByCor(cor);
+        return estoqueRepository.findByCor(cor).stream().map(EstoqueMapper::toDto).toList();
     }
 
     public Estoque findFirstByCor(Integer cor){

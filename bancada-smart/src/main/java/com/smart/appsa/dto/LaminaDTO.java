@@ -1,6 +1,5 @@
 package com.smart.appsa.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.smart.appsa.model.enums.CorLamina;
 import com.smart.appsa.model.enums.PadraoLamina;
 import com.smart.appsa.model.enums.PosicaoLamina;

@@ -1,7 +1,6 @@
 package com.smart.appsa.service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,6 @@ import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.repository.BlocoRepository;
-import com.smart.appsa.repository.EstoqueRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 public class BlocoService {
 
     private final BlocoRepository blocoRepository;
-    private final EstoqueRepository estoqueRepository;
     private final PedidoRepository pedidoRepository;
     private final LaminaService laminaService;
 
@@ -143,6 +140,9 @@ public class BlocoService {
         }
         if (dto.pedido() == null || dto.pedido().getId() == null) {
             throw new IllegalArgumentException("O pedido do bloco é obrigatório.");
+        }
+        if(dto.laminas().size()>3 && dto.laminas().size()<-1){
+            throw new IllegalArgumentException("Número inválido de laminas");
         }
     }
 

@@ -1,6 +1,5 @@
 package com.smart.appsa.model;
 
-import com.smart.appsa.model.enums.CorBloco;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.dto.ExpedicaoDTO;
-import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -58,7 +57,7 @@ public class ExpedicaoService {
 
         expedicao.setPedido(pedido);
 
-        return expedicaoRepository.save(expedicao);
+        return expedicao;
     }
 
     public Expedicao liberarPosicao(Long expedicaoId) {

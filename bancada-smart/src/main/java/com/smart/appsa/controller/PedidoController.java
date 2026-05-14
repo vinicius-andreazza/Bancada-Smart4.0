@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
-import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.service.PedidoService;
 
 import lombok.RequiredArgsConstructor;
