@@ -1,8 +1,10 @@
 package com.smart.appsa.service;
 
+import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
 import com.smart.appsa.mapper.PedidoMapper;
+import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -23,20 +25,27 @@ import java.util.List;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
+    private final BlocoService blocoService;
     // private final ExpedicaoRepository expedicaoRepository;
 
     @Transactional
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
         validarCorTampa(dto.corTampa());
 
+        
+
         Pedido pedido = PedidoMapper.toEntity(dto);
+
+        validarQuantidadeBlocosPorTipo(pedido);
+
+        criarBlocos(pedido.getBlocos());
+
         pedido.setDataCriacao(LocalDateTime.now());
         // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedido));
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listarTodos() {
         return pedidoRepository.findAll()
                 .stream()
@@ -44,12 +53,10 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPorId(Long id) {
         return PedidoMapper.toResponse(findById(id));
     }
 
-    @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPorCodigo(String codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
@@ -57,7 +64,6 @@ public class PedidoService {
                                 "Pedido não encontrado com código: " + codPedido)));
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status)
                 .stream()
@@ -65,7 +71,6 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorTipo(TipoPedido tipoPedido) {
         return pedidoRepository.findByTipoPedido(tipoPedido)
                 .stream()
@@ -73,7 +78,6 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorCorTampa(CorTampa corTampa) {
         return pedidoRepository.findByCorTampa(corTampa)
                 .stream()
@@ -93,7 +97,6 @@ public class PedidoService {
      * }
      */
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorPeriodoCriacao(LocalDateTime inicio, LocalDateTime fim) {
         return pedidoRepository.findByDataCriacaoBetween(inicio, fim)
                 .stream()
@@ -154,6 +157,12 @@ public class PedidoService {
         pedidoRepository.delete(findById(id));
     }
 
+    private List<Bloco> criarBlocos(List<Bloco> blocos){
+
+
+        return null;
+    }
+
     private Pedido findById(Long id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
@@ -168,7 +177,12 @@ public class PedidoService {
      */
 
     public void validarQuantidadeBlocosPorTipo(Pedido pedido) {
-
+        if(pedido.getBlocos().size()<=0){
+            throw new IllegalArgumentException("Quantidade invalida de blocos");
+        }
+        if(pedido.getTipoPedido().getValue()!=pedido.getBlocos().size()){
+            throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
+        }
     }
 
     public void validarEstoqueParaPedido(Pedido pedido) {

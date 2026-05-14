@@ -28,12 +28,6 @@ public class BlocoService {
 
         Pedido pedido = resolverPedido(dto.pedido().getId());
 
-        Bloco bloco = Bloco.builder()
-                .vl_cor(dto.vl_cor())
-                .pedido(pedido)
-                .laminas(dto.laminas())
-                .build();
-
         return toDTO(blocoRepository.save(bloco));
     }
 
