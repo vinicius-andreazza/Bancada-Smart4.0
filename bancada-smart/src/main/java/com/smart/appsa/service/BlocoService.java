@@ -23,7 +23,6 @@ public class BlocoService {
 
 
 
-    @Transactional
     public BlocoDTO create(BlocoDTO dto) {
         validarDTO(dto);
 

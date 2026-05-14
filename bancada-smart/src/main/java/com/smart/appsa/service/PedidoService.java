@@ -3,7 +3,6 @@ package com.smart.appsa.service;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
 import com.smart.appsa.mapper.PedidoMapper;
-
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -24,18 +23,18 @@ import java.util.List;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
-    //private final ExpedicaoRepository expedicaoRepository;
-
+    // private final ExpedicaoRepository expedicaoRepository;
 
     @Transactional
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
+        validarCorTampa(dto.corTampa());
+
         Pedido pedido = PedidoMapper.toEntity(dto);
         pedido.setDataCriacao(LocalDateTime.now());
-        //pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
+        // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
+
         return PedidoMapper.toResponse(pedidoRepository.save(pedido));
     }
-
-
 
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listarTodos() {
@@ -82,16 +81,17 @@ public class PedidoService {
                 .toList();
     }
     /*
-    @Transactional(readOnly = true)
-    public List<PedidoResponseDTO> buscarPorExpedicao(Long idExpedicao) {
-        Expedicao expedicao = expedicaoRepository.findById(idExpedicao)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Expedição não encontrada com id: " + idExpedicao));
-        return pedidoRepository.findByExpedicao(expedicao)
-                .stream()
-                .map(PedidoMapper::toResponse)
-                .toList();
-    } */
+     * @Transactional(readOnly = true)
+     * public List<PedidoResponseDTO> buscarPorExpedicao(Long idExpedicao) {
+     * Expedicao expedicao = expedicaoRepository.findById(idExpedicao)
+     * .orElseThrow(() -> new EntityNotFoundException(
+     * "Expedição não encontrada com id: " + idExpedicao));
+     * return pedidoRepository.findByExpedicao(expedicao)
+     * .stream()
+     * .map(PedidoMapper::toResponse)
+     * .toList();
+     * }
+     */
 
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorPeriodoCriacao(LocalDateTime inicio, LocalDateTime fim) {
@@ -100,8 +100,6 @@ public class PedidoService {
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
-
-
 
     @Transactional
     public PedidoResponseDTO put(Long id, PedidoRequestDTO dto) {
@@ -112,12 +110,10 @@ public class PedidoService {
         pedidoExistente.setTipoPedido(dto.tipoPedido());
         pedidoExistente.setCorTampa(dto.corTampa());
         pedidoExistente.setDataEntrada(dto.dataEntrada());
-        /*pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao()));*/
+        /* pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao())); */
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
-
-
 
     @Transactional
     public PedidoResponseDTO patch(Long id, PedidoRequestDTO dto) {
@@ -144,31 +140,44 @@ public class PedidoService {
         if (dto.dataEntrada() != null) {
             pedidoExistente.setDataEntrada(dto.dataEntrada());
         }
-        /* 
-        if (dto.idExpedicao() != null) {
-            pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao()));
-        }*/
+        /*
+         * if (dto.idExpedicao() != null) {
+         * pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao()));
+         * }
+         */
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
-
-
 
     @Transactional
     public void deletar(Long id) {
         pedidoRepository.delete(findById(id));
     }
 
-
     private Pedido findById(Long id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
     }
     /*
-    private Expedicao resolverExpedicao(Long idExpedicao) {
-        if (idExpedicao == null) return null;
-        return expedicaoRepository.findById(idExpedicao)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Expedição não encontrada com id: " + idExpedicao));
-    } */
+     * private Expedicao resolverExpedicao(Long idExpedicao) {
+     * if (idExpedicao == null) return null;
+     * return expedicaoRepository.findById(idExpedicao)
+     * .orElseThrow(() -> new EntityNotFoundException(
+     * "Expedição não encontrada com id: " + idExpedicao));
+     * }
+     */
+
+    public void validarQuantidadeBlocosPorTipo(Pedido pedido) {
+
+    }
+
+    public void validarEstoqueParaPedido(Pedido pedido) {
+       // List<Bloco> blocos = blocoRepository.findByPedido(pedido);
+    }
+
+    private void validarCorTampa(CorTampa corTampa) {
+        if (corTampa == null) {
+            throw new IllegalArgumentException("A cor da tampa é obrigatória e deve ser um valor válido.");
+        }
+    }
 }
