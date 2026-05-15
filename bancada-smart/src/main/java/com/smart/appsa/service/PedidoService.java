@@ -9,6 +9,7 @@ import com.smart.appsa.mapper.PedidoMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
+import com.smart.appsa.model.enums.AndarBloco;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,11 +39,10 @@ public class PedidoService {
 
 
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
-        validarCorTampa(dto.corTampa());
-
+        System.out.println(dto);
+        validarPedido(dto);
+        
         Pedido pedido = PedidoMapper.toEntity(dto);
-
-        validarQuantidadeBlocosPorTipo(pedido);
 
         pedido.setDataCriacao(LocalDateTime.now());
 
@@ -206,6 +208,8 @@ public class PedidoService {
         if(pedido.getBlocos().size()<=0){
             throw new IllegalArgumentException("Quantidade invalida de blocos");
         }
+        System.out.println(pedido.getBlocos().size());
+        System.out.println(pedido.getTipoPedido().getValue());
         if(pedido.getTipoPedido().getValue()!=pedido.getBlocos().size()){
             throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
         }
@@ -221,6 +225,27 @@ public class PedidoService {
         }
     }
 
+
+    private void validarAndaresDuplicados(List<Bloco> blocos) {
+        Map<AndarBloco, Long> contagemPorAndar = blocos.stream()
+            .collect(Collectors.groupingBy(
+                Bloco::getAndar,
+                Collectors.counting()
+            ));
+
+        List<AndarBloco> andaresDuplicados = contagemPorAndar.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue() > 1)
+            .map(Map.Entry::getKey)
+            .toList();
+
+        if (!andaresDuplicados.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Existem blocos com andares duplicados: " + andaresDuplicados
+            );
+        }
+    }
+
     private void atualizarPedidoDosBlocos(Pedido pedido){
         pedido.getBlocos().forEach(b -> b.setPedido(pedido));
     }
@@ -229,5 +254,11 @@ public class PedidoService {
         Expedicao expedicao = expedicaoService.atribuirPedido(pedido.getId());
 
         pedido.setPosExpedicao(expedicao.getPosicao());
+    }
+
+    private void validarPedido(PedidoRequestDTO dto){
+        validarCorTampa(dto.corTampa());
+        validarQuantidadeBlocosPorTipo(PedidoMapper.toEntity(dto));
+        validarAndaresDuplicados(PedidoMapper.toEntity(dto).getBlocos());
     }
 }

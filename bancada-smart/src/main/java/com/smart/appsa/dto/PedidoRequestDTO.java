@@ -11,6 +11,7 @@ import lombok.Builder;
 @Builder
 public record PedidoRequestDTO(
         Long id,
+        String clpIp,
         String codPedido,
         StatusPedido status,
         TipoPedido tipoPedido,
