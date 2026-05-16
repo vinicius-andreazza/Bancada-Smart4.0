@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Data
 @Builder
@@ -58,6 +59,7 @@ public class Lamina {
 
     @ManyToOne
     @JoinColumn(name = "id_bloco", nullable = false)
+    @ToString.Exclude
     private Bloco bloco;
 
 

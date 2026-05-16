@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -37,7 +37,7 @@ public class Expedicao {
     @Column(name = "posicao", nullable = false)
     private Integer posicao;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "id_pedido", nullable = true)
     private Pedido pedido;
     

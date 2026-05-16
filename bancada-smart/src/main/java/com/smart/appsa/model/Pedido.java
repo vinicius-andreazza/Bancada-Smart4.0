@@ -3,7 +3,6 @@ package com.smart.appsa.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
@@ -14,8 +13,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -71,10 +68,8 @@ public class Pedido {
     @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;
 
-    @ManyToOne
-    @JoinColumn(name = "id_expedicao", nullable = true)
-    @JsonManagedReference
-    private Expedicao expedicao;
+    @Column(name = "pos_expedicao", nullable = true)
+    private Integer posExpedicao;
 
     @OneToMany(mappedBy = "pedido")
     private List<Bloco> blocos;

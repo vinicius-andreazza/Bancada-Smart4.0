@@ -1,12 +1,19 @@
 package com.smart.appsa.service;
 
+import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
+import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
+import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
+import com.smart.appsa.model.enums.AndarBloco;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
+import com.smart.appsa.repository.ExpedicaoRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -17,26 +24,42 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PedidoService {
 
+    private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
+    private final BlocoService blocoService;
+    private final ExpedicaoRepository expedicaoRepository;
     // private final ExpedicaoRepository expedicaoRepository;
 
-    @Transactional
+
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
-        validarCorTampa(dto.corTampa());
-
+        System.out.println(dto);
+        validarPedido(dto);
+        
         Pedido pedido = PedidoMapper.toEntity(dto);
-        pedido.setDataCriacao(LocalDateTime.now());
-        // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
 
-        return PedidoMapper.toResponse(pedidoRepository.save(pedido));
+        pedido.setDataCriacao(LocalDateTime.now());
+
+        pedidoRepository.save(pedido);
+
+        atribuirPosPedidoNaExpedicao(pedido);
+
+        // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
+        
+        atualizarPedidoDosBlocos(pedido);
+
+        List<Bloco> blocosCriados = criarBlocos(pedido.getBlocos());
+        pedido.setBlocos(blocosCriados);
+
+        return PedidoMapper.toResponse(pedido);
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listarTodos() {
         return pedidoRepository.findAll()
                 .stream()
@@ -44,12 +67,10 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPorId(Long id) {
         return PedidoMapper.toResponse(findById(id));
     }
 
-    @Transactional(readOnly = true)
     public PedidoResponseDTO buscarPorCodigo(String codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
@@ -57,7 +78,6 @@ public class PedidoService {
                                 "Pedido não encontrado com código: " + codPedido)));
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status)
                 .stream()
@@ -65,7 +85,6 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorTipo(TipoPedido tipoPedido) {
         return pedidoRepository.findByTipoPedido(tipoPedido)
                 .stream()
@@ -73,7 +92,6 @@ public class PedidoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorCorTampa(CorTampa corTampa) {
         return pedidoRepository.findByCorTampa(corTampa)
                 .stream()
@@ -93,12 +111,26 @@ public class PedidoService {
      * }
      */
 
-    @Transactional(readOnly = true)
     public List<PedidoResponseDTO> buscarPorPeriodoCriacao(LocalDateTime inicio, LocalDateTime fim) {
         return pedidoRepository.findByDataCriacaoBetween(inicio, fim)
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
+    }
+
+    public PedidoResponseDTO atualizarParaConcluido(Long id){
+        Pedido pedidoExistente = findById(id);
+        if(pedidoExistente.getStatus()==StatusPedido.CONCLUIDO){
+            throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
+        }
+        pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
+        pedidoExistente.setDataEntrada(LocalDateTime.now());
+        /* 
+        expedicaoService.atribuirPedido(pedidoExistente.getId());
+        */
+        pedidoRepository.save(pedidoExistente);
+        
+        return PedidoMapper.toResponse(pedidoExistente);
     }
 
     @Transactional
@@ -154,6 +186,11 @@ public class PedidoService {
         pedidoRepository.delete(findById(id));
     }
 
+    private List<Bloco> criarBlocos(List<Bloco> blocos){
+        List<BlocoDTO> blocoDTOs = blocos.stream().map(b -> BlocoMapper.toDto(b)).map(b -> blocoService.create(b)).toList();
+        return blocoDTOs.stream().map(b -> BlocoMapper.toEntity(b)).toList();
+    }
+
     private Pedido findById(Long id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
@@ -168,7 +205,14 @@ public class PedidoService {
      */
 
     public void validarQuantidadeBlocosPorTipo(Pedido pedido) {
-
+        if(pedido.getBlocos().size()<=0){
+            throw new IllegalArgumentException("Quantidade invalida de blocos");
+        }
+        System.out.println(pedido.getBlocos().size());
+        System.out.println(pedido.getTipoPedido().getValue());
+        if(pedido.getTipoPedido().getValue()!=pedido.getBlocos().size()){
+            throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
+        }
     }
 
     public void validarEstoqueParaPedido(Pedido pedido) {
@@ -179,5 +223,42 @@ public class PedidoService {
         if (corTampa == null) {
             throw new IllegalArgumentException("A cor da tampa é obrigatória e deve ser um valor válido.");
         }
+    }
+
+
+    private void validarAndaresDuplicados(List<Bloco> blocos) {
+        Map<AndarBloco, Long> contagemPorAndar = blocos.stream()
+            .collect(Collectors.groupingBy(
+                Bloco::getAndar,
+                Collectors.counting()
+            ));
+
+        List<AndarBloco> andaresDuplicados = contagemPorAndar.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue() > 1)
+            .map(Map.Entry::getKey)
+            .toList();
+
+        if (!andaresDuplicados.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Existem blocos com andares duplicados: " + andaresDuplicados
+            );
+        }
+    }
+
+    private void atualizarPedidoDosBlocos(Pedido pedido){
+        pedido.getBlocos().forEach(b -> b.setPedido(pedido));
+    }
+
+    private void atribuirPosPedidoNaExpedicao(Pedido pedido){
+        Expedicao expedicao = expedicaoService.atribuirPedido(pedido.getId());
+
+        pedido.setPosExpedicao(expedicao.getPosicao());
+    }
+
+    private void validarPedido(PedidoRequestDTO dto){
+        validarCorTampa(dto.corTampa());
+        validarQuantidadeBlocosPorTipo(PedidoMapper.toEntity(dto));
+        validarAndaresDuplicados(PedidoMapper.toEntity(dto).getBlocos());
     }
 }

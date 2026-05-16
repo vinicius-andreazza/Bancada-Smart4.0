@@ -2,16 +2,15 @@ package com.smart.appsa.model.enums;
 
 import jakarta.persistence.EnumeratedValue;
 
-public enum CorBloco {
-    NENHUM(0),
-    PRETO(1),
-    VERMELHO(2),
-    AZUL(3);
+public enum AndarBloco {
+    PRIMEIRO(1),
+    SEGUNDO(2),
+    TERCEIRO(3);
 
     @EnumeratedValue
     int value;
 
-    private CorBloco(int value) {
+    private AndarBloco(int value) {
         this.value = value;
     }
 

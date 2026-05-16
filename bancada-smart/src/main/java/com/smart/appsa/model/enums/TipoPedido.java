@@ -1,5 +1,8 @@
 package com.smart.appsa.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import jakarta.persistence.EnumeratedValue;
 
 public enum TipoPedido {
@@ -14,8 +17,19 @@ public enum TipoPedido {
         this.value = value;
     }
 
+    @JsonValue
     public int getValue() {
         return value;
+    }
+
+    @JsonCreator
+    public static TipoPedido fromValue(int value) {
+        for (TipoPedido tipo : values()) {
+            if (tipo.value == value) {
+                return tipo;
+            }
+        }
+        throw new IllegalArgumentException("Valor inválido: " + value);
     }
 
 }

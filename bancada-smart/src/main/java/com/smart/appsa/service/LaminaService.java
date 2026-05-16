@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.repository.BlocoRepository;
@@ -29,10 +31,11 @@ public class LaminaService {
         return laminaRepository.findByBloco(bloco);
     }
 
-    public Lamina criarLamina(Lamina lamina) {
-        validarLamina(lamina);
+    public LaminaDTO criarLamina(LaminaDTO laminaDTO, Bloco bloco) {
+        System.out.println(laminaDTO);
+        Lamina lamina = LaminaMapper.toEntity(laminaDTO);
 
-        Bloco bloco = buscarBloco(lamina.getBloco().getId());
+        validarLamina(lamina);
 
         boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
                 .anyMatch(l -> l.getPosicaoLamina() == lamina.getPosicaoLamina());
@@ -42,7 +45,7 @@ public class LaminaService {
         }
 
         lamina.setBloco(bloco);
-        return laminaRepository.save(lamina);
+        return LaminaMapper.toDto(laminaRepository.save(lamina));
     }
 
     public Lamina atualizarLamina(Long id, Lamina lamina) {
@@ -91,9 +94,6 @@ public class LaminaService {
         }
         if (lamina.getPosicaoLamina() == null) {
             throw new IllegalArgumentException("A posição da lâmina é obrigatória.");
-        }
-        if (lamina.getBloco() == null || lamina.getBloco().getId() == null) {
-            throw new IllegalArgumentException("O bloco associado é obrigatório.");
         }
     }
 }

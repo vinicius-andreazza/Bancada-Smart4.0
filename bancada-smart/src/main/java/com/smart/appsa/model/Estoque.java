@@ -1,6 +1,5 @@
 package com.smart.appsa.model;
 
-import com.smart.appsa.model.enums.CorBloco;
 
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
@@ -31,7 +30,7 @@ import lombok.Setter;
     check = {
         @CheckConstraint(
             name = "vl_cor_estoque",
-            constraint = "vl_cor IN (0,1,2)"
+            constraint = "vl_cor IN (0,1,2,3)"
         )
     }
 )

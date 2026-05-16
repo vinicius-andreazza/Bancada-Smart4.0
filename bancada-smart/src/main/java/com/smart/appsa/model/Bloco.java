@@ -3,6 +3,7 @@ package com.smart.appsa.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.smart.appsa.model.enums.AndarBloco;
 import com.smart.appsa.model.enums.CorBloco;
 
 import jakarta.persistence.CheckConstraint;
@@ -21,6 +22,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Data
 @Builder
@@ -45,11 +47,15 @@ public class Bloco {
     @Column(name = "vl_cor", nullable = false)
     private CorBloco vl_cor;
 
-    @ManyToOne
-    private Estoque posEstoque;
+    @Column(name="pos_estoque", nullable = false)
+    private Integer posEstoque;
+
+    @Column(name="andar", nullable = false)
+    private AndarBloco andar;
 
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)
+    @ToString.Exclude
     private Pedido pedido;
 
     @OneToMany(mappedBy = "bloco")
