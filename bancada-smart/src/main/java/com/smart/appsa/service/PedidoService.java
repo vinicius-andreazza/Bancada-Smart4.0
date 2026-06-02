@@ -35,8 +35,7 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
     private final ExpedicaoRepository expedicaoRepository;
-    // private final ExpedicaoRepository expedicaoRepository;
-
+    private final EstoqueService estoqueService;
 
     public PedidoResponseDTO criar(PedidoRequestDTO dto) {
         System.out.println(dto);
@@ -257,8 +256,10 @@ public class PedidoService {
     }
 
     private void validarPedido(PedidoRequestDTO dto){
+        Pedido pedido = PedidoMapper.toEntity(dto);
         validarCorTampa(dto.corTampa());
-        validarQuantidadeBlocosPorTipo(PedidoMapper.toEntity(dto));
-        validarAndaresDuplicados(PedidoMapper.toEntity(dto).getBlocos());
+        validarQuantidadeBlocosPorTipo(pedido);
+        validarAndaresDuplicados(pedido.getBlocos());
+        pedido.getBlocos().forEach(b -> estoqueService.findFirstByCor(b.getVl_cor().getValue()));
     }
 }

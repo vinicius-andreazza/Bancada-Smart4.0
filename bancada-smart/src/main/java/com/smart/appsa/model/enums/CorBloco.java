@@ -1,5 +1,8 @@
 package com.smart.appsa.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import jakarta.persistence.EnumeratedValue;
 
 public enum CorBloco {
@@ -15,7 +18,18 @@ public enum CorBloco {
         this.value = value;
     }
 
+    @JsonValue
     public int getValue() {
         return value;
+    }
+
+    @JsonCreator
+    public static CorBloco fromValue(int value) {
+        for (CorBloco tipo : values()) {
+            if (tipo.value == value) {
+                return tipo;
+            }
+        }
+        throw new IllegalArgumentException("Cor do bloco inválido: " + value);
     }
 }

@@ -29,7 +29,7 @@ public enum TipoPedido {
                 return tipo;
             }
         }
-        throw new IllegalArgumentException("Valor inválido: " + value);
+        throw new IllegalArgumentException("Tipo de pedido inválido: " + value);
     }
 
 }
