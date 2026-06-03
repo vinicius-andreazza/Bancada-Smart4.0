@@ -1,0 +1,674 @@
+/* ============================================================
+   SMART 4.0 — Dashboard (Plant Management System)
+   Industrial HMI Interface – Estoque, Expedição e Produção
+   Baseado em grid 7 colunas (estoque) + 4 colunas (expedição)
+   ============================================================ */
+
+   @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
+   /* ─── VARIÁVEIS ───────────────────────────────────────────── */
+   :root {
+     --bg-base:            #06090f;
+     --bg-surface:         #0c1018;
+     --bg-card:            #111827;
+     --bg-card-hover:      #162033;
+     --bg-input:           #0d1424;
+   
+     --border-subtle:      #1a2540;
+     --border-mid:         #243558;
+     --border-active:      #2e4575;
+   
+     --text-primary:       #dde6f0;
+     --text-secondary:     #7a8fa8;
+     --text-muted:         #3d5068;
+     --text-accent:        #5bc0f8;
+   
+     /* Cores dos blocos (estoque) */
+     --block-preto-bg:       #0a0a0a;
+     --block-preto-border:   #3d3d3d;
+     --block-preto-glow:     rgba(160,160,160,0.25);
+     --block-preto-text:     #bbbbbb;
+   
+     --block-vermelho-bg:    #2b0a0a;
+     --block-vermelho-border:#e53e3e;
+     --block-vermelho-glow:  rgba(229,62,62,0.40);
+     --block-vermelho-text:  #fc8181;
+   
+     --block-azul-bg:        #080f2e;
+     --block-azul-border:    #3b82f6;
+     --block-azul-glow:      rgba(59,130,246,0.40);
+     --block-azul-text:      #90cdf4;
+   
+     --block-vazio-bg:       #0e1320;
+     --block-vazio-border:   #1a2540;
+     --block-vazio-text:     #2d4060;
+   
+     /* Status */
+     --status-pendente:  #f59e0b;
+     --status-producao:  #3b82f6;
+     --status-concluido: #10b981;
+     --status-erro:      #ef4444;
+   
+     /* Tipografia */
+     --font-heading: 'Rajdhani', 'Segoe UI', sans-serif;
+     --font-mono:    'JetBrains Mono', 'Consolas', monospace;
+     --font-body:    'Exo 2', 'Segoe UI', sans-serif;
+   
+     /* Layout */
+     --navbar-height: 60px;
+     --sidebar-width: 240px;
+   }
+   
+   /* ─── RESET & BASE ────────────────────────────────────────── */
+   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+   html { scroll-behavior: smooth; }
+   
+   body {
+     background-color: var(--bg-base);
+     background-image:
+       linear-gradient(rgba(59,130,246,0.025) 1px, transparent 1px),
+       linear-gradient(90deg, rgba(59,130,246,0.025) 1px, transparent 1px);
+     background-size: 40px 40px;
+     color: var(--text-primary);
+     font-family: var(--font-body);
+     font-size: 14px;
+     line-height: 1.6;
+     min-height: 100vh;
+     -webkit-font-smoothing: antialiased;
+   }
+   
+   a { color: var(--text-accent); text-decoration: none; transition: color 150ms; }
+   a:hover { color: #90cdf4; }
+   button { cursor: pointer; font-family: var(--font-body); }
+   
+   /* Scrollbar */
+   ::-webkit-scrollbar { width: 6px; height: 6px; }
+   ::-webkit-scrollbar-track { background: var(--bg-surface); }
+   ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 99px; }
+   
+   /* ─── LAYOUT ──────────────────────────────────────────────── */
+   .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+   .app-body { display: flex; flex: 1; padding-top: var(--navbar-height); }
+   .main-content {
+     flex: 1;
+     margin-left: var(--sidebar-width);
+     padding: 1.5rem 2rem;
+     min-height: calc(100vh - var(--navbar-height));
+   }
+   
+   /* ─── PAGE HEADER ─────────────────────────────────────────── */
+   .page-header {
+     display: flex;
+     align-items: flex-start;
+     justify-content: space-between;
+     flex-wrap: wrap;
+     gap: 1rem;
+     margin-bottom: 1.5rem;
+   }
+   .page-title {
+     font-family: var(--font-heading);
+     font-size: 1.75rem;
+     font-weight: 700;
+     letter-spacing: 0.06em;
+     line-height: 1;
+   }
+   .page-subtitle {
+     font-size: 0.8rem;
+     color: var(--text-secondary);
+     font-family: var(--font-mono);
+     letter-spacing: 0.04em;
+     margin-top: 0.3rem;
+   }
+   .page-actions { display: flex; align-items: center; gap: 0.75rem; }
+   
+   .refresh-timer {
+     display: flex;
+     align-items: center;
+     gap: 0.35rem;
+     font-family: var(--font-mono);
+     font-size: 0.65rem;
+     color: var(--text-muted);
+   }
+   
+   /* ─── STAT CARDS ──────────────────────────────────────────── */
+   .stat-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+     gap: 1rem;
+     margin-bottom: 1.5rem;
+   }
+   .stat-card {
+     background: var(--bg-card);
+     border: 1px solid var(--border-subtle);
+     border-radius: 12px;
+     padding: 1rem 1.25rem;
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     transition: border-color 300ms, box-shadow 300ms;
+   }
+   .stat-card:hover {
+     border-color: var(--border-mid);
+     box-shadow: 0 0 20px rgba(59,130,246,0.06);
+   }
+   .stat-icon {
+     width: 42px; height: 42px;
+     border-radius: 8px;
+     display: flex; align-items: center; justify-content: center;
+     font-size: 1.1rem;
+     flex-shrink: 0;
+   }
+   .stat-icon.blue   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+   .stat-icon.amber  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+   .stat-icon.green  { background: rgba(16,185,129,0.15); color: #34d399; }
+   .stat-icon.gray   { background: rgba(100,116,139,0.15); color: #94a3b8; }
+   
+   .stat-value {
+     font-family: var(--font-heading);
+     font-size: 1.8rem;
+     font-weight: 700;
+     line-height: 1;
+   }
+   .stat-label {
+     font-size: 0.7rem;
+     color: var(--text-secondary);
+     font-family: var(--font-mono);
+     letter-spacing: 0.06em;
+     text-transform: uppercase;
+     margin-top: 0.2rem;
+   }
+   
+   /* ─── SMART CARDS ─────────────────────────────────────────── */
+   .smart-card {
+     background: var(--bg-card);
+     border: 1px solid var(--border-subtle);
+     border-radius: 12px;
+     overflow: hidden;
+   }
+   .card-header {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     padding: 0.9rem 1.25rem;
+     border-bottom: 1px solid var(--border-subtle);
+     gap: 0.75rem;
+   }
+   .card-title {
+     font-family: var(--font-heading);
+     font-size: 1rem;
+     font-weight: 600;
+     letter-spacing: 0.06em;
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+   }
+   .card-title-icon { color: var(--text-accent); font-size: 0.9rem; }
+   .card-body { padding: 1.25rem; }
+   
+   /* ─── BOTÕES ──────────────────────────────────────────────── */
+   .btn-smart {
+     display: inline-flex;
+     align-items: center;
+     gap: 0.4rem;
+     padding: 0.5rem 1rem;
+     border-radius: 8px;
+     border: none;
+     font-family: var(--font-body);
+     font-size: 0.8rem;
+     font-weight: 600;
+     letter-spacing: 0.04em;
+     cursor: pointer;
+     transition: all 150ms;
+     white-space: nowrap;
+   }
+   .btn-smart:disabled { opacity: 0.4; cursor: not-allowed; }
+   .btn-primary {
+     background: #2563eb;
+     color: #fff;
+     box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+   }
+   .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 16px rgba(37,99,235,0.4); }
+   .btn-ghost {
+     background: transparent;
+     color: var(--text-secondary);
+     padding: 0.35rem 0.6rem;
+     font-size: 0.75rem;
+   }
+   .btn-ghost:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+   .btn-icon {
+     width: 32px; height: 32px;
+     padding: 0;
+     display: inline-flex; align-items: center; justify-content: center;
+     border-radius: 4px;
+     border: 1px solid var(--border-subtle);
+     background: transparent;
+     color: var(--text-secondary);
+     font-size: 0.8rem;
+     transition: all 150ms;
+   }
+   .btn-icon:hover {
+     color: var(--text-primary);
+     border-color: var(--border-active);
+     background: var(--bg-card-hover);
+   }
+   
+   /* ─── TABELA DE PEDIDOS ───────────────────────────────────── */
+   .smart-table-wrapper { overflow-x: auto; }
+   .smart-table { width: 100%; border-collapse: collapse; }
+   .smart-table thead th {
+     background: var(--bg-surface);
+     color: var(--text-secondary);
+     font-family: var(--font-mono);
+     font-size: 0.65rem;
+     font-weight: 600;
+     letter-spacing: 0.12em;
+     text-transform: uppercase;
+     padding: 0.65rem 1rem;
+     border-bottom: 1px solid var(--border-subtle);
+     white-space: nowrap;
+   }
+   .smart-table tbody tr {
+     border-bottom: 1px solid var(--border-subtle);
+     transition: background 150ms;
+   }
+   .smart-table tbody tr:hover { background: var(--bg-card-hover); }
+   .smart-table tbody tr:last-child { border-bottom: none; }
+   .smart-table tbody td { padding: 0.75rem 1rem; font-size: 0.875rem; vertical-align: middle; }
+   .smart-table .col-id {
+     font-family: var(--font-mono);
+     font-size: 0.75rem;
+     color: var(--text-secondary);
+     width: 80px;
+   }
+   .smart-table .col-ordem {
+     font-family: var(--font-mono);
+     font-weight: 600;
+     color: var(--text-accent);
+   }
+   
+   /* ─── BADGES DE STATUS ────────────────────────────────────── */
+   .badge-status {
+     display: inline-flex;
+     align-items: center;
+     gap: 5px;
+     padding: 3px 10px;
+     border-radius: 99px;
+     font-size: 0.68rem;
+     font-weight: 600;
+     letter-spacing: 0.08em;
+     text-transform: uppercase;
+     font-family: var(--font-mono);
+     white-space: nowrap;
+   }
+   .badge-status::before {
+     content: '';
+     width: 6px; height: 6px;
+     border-radius: 50%;
+     flex-shrink: 0;
+   }
+   .badge-pendente {
+     background: rgba(245,158,11,0.12);
+     color: var(--status-pendente);
+     border: 1px solid rgba(245,158,11,0.25);
+   }
+   .badge-pendente::before { background: var(--status-pendente); animation: dot-pulse 1.5s ease infinite; }
+   .badge-producao {
+     background: rgba(59,130,246,0.12);
+     color: var(--status-producao);
+     border: 1px solid rgba(59,130,246,0.25);
+   }
+   .badge-producao::before { background: var(--status-producao); animation: dot-pulse 1.2s ease infinite; }
+   .badge-concluido {
+     background: rgba(16,185,129,0.12);
+     color: var(--status-concluido);
+     border: 1px solid rgba(16,185,129,0.25);
+   }
+   .badge-concluido::before { background: var(--status-concluido); }
+   
+   @keyframes dot-pulse {
+     0%, 100% { opacity: 1; }
+     50%       { opacity: 0.25; }
+   }
+   
+   /* ─── GRID DE ESTOQUE (7 colunas, 28 posições) ────────────── */
+   .inventory-grid {
+     display: grid;
+     grid-template-columns: repeat(7, 1fr);
+     gap: 8px;
+   }
+   
+   .grid-cell {
+     aspect-ratio: 1 / 1.1;
+     border-radius: 8px;
+     border: 1px solid;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     gap: 4px;
+     cursor: pointer;
+     transition: transform 150ms, box-shadow 300ms, border-color 300ms;
+     position: relative;
+     overflow: hidden;
+   }
+   .grid-cell:hover {
+     transform: translateY(-2px) scale(1.03);
+     z-index: 2;
+   }
+   
+   /* Label da posição (canto superior esquerdo) */
+   .cell-pos {
+     position: absolute;
+     top: 4px; left: 5px;
+     font-family: var(--font-mono);
+     font-size: 0.55rem;
+     opacity: 0.55;
+     font-weight: 500;
+   }
+   
+   /* ID do item */
+   .cell-id {
+     font-family: var(--font-mono);
+     font-size: 0.65rem;
+     font-weight: 700;
+     letter-spacing: 0.06em;
+     text-align: center;
+     line-height: 1.2;
+     padding: 0 4px;
+   }
+   
+   /* Nome da cor */
+   .cell-color-label {
+     font-family: var(--font-body);
+     font-size: 0.55rem;
+     opacity: 0.7;
+     letter-spacing: 0.06em;
+     text-transform: uppercase;
+   }
+   
+   /* Tooltip ao passar o mouse */
+   .grid-cell .cell-tooltip {
+     display: none;
+     position: absolute;
+     bottom: calc(100% + 8px);
+     left: 50%;
+     transform: translateX(-50%);
+     background: #1e2a3d;
+     border: 1px solid var(--border-mid);
+     border-radius: 4px;
+     padding: 0.4rem 0.6rem;
+     font-size: 0.7rem;
+     white-space: nowrap;
+     z-index: 10;
+     font-family: var(--font-mono);
+     pointer-events: none;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+   }
+   .grid-cell:hover .cell-tooltip { display: block; }
+   
+   /* ─── CORES DOS BLOCOS ────────────────────────────────────── */
+   .grid-cell.vazio {
+     background: var(--block-vazio-bg);
+     border-color: var(--block-vazio-border);
+     color: var(--block-vazio-text);
+   }
+   .grid-cell.vazio:hover {
+     border-color: var(--border-active);
+     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+   }
+   
+   .grid-cell.preto {
+     background: var(--block-preto-bg);
+     border-color: var(--block-preto-border);
+     color: var(--block-preto-text);
+     box-shadow: 0 0 8px var(--block-preto-glow);
+   }
+   .grid-cell.preto:hover {
+     box-shadow: 0 4px 20px var(--block-preto-glow), 0 0 0 1px #555;
+   }
+   
+   .grid-cell.vermelho {
+     background: var(--block-vermelho-bg);
+     border-color: var(--block-vermelho-border);
+     color: var(--block-vermelho-text);
+     box-shadow: 0 0 10px var(--block-vermelho-glow);
+   }
+   .grid-cell.vermelho:hover {
+     box-shadow: 0 4px 24px var(--block-vermelho-glow), 0 0 0 1px #e53e3e;
+   }
+   
+   .grid-cell.azul {
+     background: var(--block-azul-bg);
+     border-color: var(--block-azul-border);
+     color: var(--block-azul-text);
+     box-shadow: 0 0 10px var(--block-azul-glow);
+   }
+   .grid-cell.azul:hover {
+     box-shadow: 0 4px 24px var(--block-azul-glow), 0 0 0 1px #3b82f6;
+   }
+   
+   /* ─── EXPEDIÇÃO (4 colunas, 12 posições) ──────────────────── */
+   .shipping-grid {
+     display: grid;
+     grid-template-columns: repeat(4, 1fr);
+     gap: 10px;
+   }
+   
+   .ship-cell {
+     border-radius: 8px;
+     border: 1px solid var(--border-subtle);
+     background: var(--bg-surface);
+     padding: 0.75rem 0.6rem;
+     display: flex;
+     flex-direction: column;
+     gap: 4px;
+     transition: border-color 300ms, box-shadow 300ms;
+     min-height: 90px;
+   }
+   
+   .ship-cell.aguardando {
+     border-color: #10b981;
+     background: rgba(16,185,129,0.05);
+     box-shadow: 0 0 10px rgba(16,185,129,0.15);
+   }
+   .ship-cell.vazio { opacity: 0.4; }
+   
+   .ship-cell-pos {
+     font-family: var(--font-mono);
+     font-size: 0.6rem;
+     color: var(--text-muted);
+     letter-spacing: 0.06em;
+   }
+   .ship-cell-order {
+     font-family: var(--font-mono);
+     font-size: 0.7rem;
+     font-weight: 700;
+     color: var(--text-primary);
+   }
+   .ship-cell-status {
+     font-family: var(--font-body);
+     font-size: 0.6rem;
+     font-weight: 600;
+     letter-spacing: 0.06em;
+     text-transform: uppercase;
+   }
+   .ship-cell.aguardando .ship-cell-status { color: #34d399; }
+   
+   /* ─── PRODUCTION TRACK (esteira de produção) ──────────────── */
+   .production-track {
+     display: flex;
+     flex-direction: column;
+     gap: 0.6rem;
+     padding: 0.75rem 0;
+   }
+   .track-step {
+     display: flex;
+     align-items: center;
+     gap: 0.75rem;
+     padding: 0.6rem 0.75rem;
+     border-radius: 8px;
+     background: var(--bg-surface);
+     border: 1px solid var(--border-subtle);
+     transition: all 300ms;
+   }
+   .track-step.active {
+     border-color: rgba(59,130,246,0.4);
+     background: rgba(59,130,246,0.06);
+   }
+   .track-step.done {
+     border-color: rgba(16,185,129,0.3);
+     background: rgba(16,185,129,0.05);
+   }
+   .track-step-icon {
+     width: 32px; height: 32px;
+     border-radius: 50%;
+     display: flex; align-items: center; justify-content: center;
+     font-size: 0.8rem;
+     flex-shrink: 0;
+     border: 2px solid;
+   }
+   .track-step .track-step-icon       { border-color: var(--border-mid); color: var(--text-muted); }
+   .track-step.active .track-step-icon{ border-color: #3b82f6; color: #60a5fa; background: rgba(59,130,246,0.1); animation: spin-icon 2s linear infinite; }
+   .track-step.done .track-step-icon  { border-color: #10b981; color: #34d399; background: rgba(16,185,129,0.1); }
+   .track-step-label {
+     font-size: 0.8rem;
+     font-weight: 500;
+     color: var(--text-secondary);
+   }
+   .track-step.active .track-step-label { color: var(--text-primary); }
+   .track-step.done .track-step-label   { color: #34d399; }
+   
+   @keyframes spin-icon { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+   
+   /* ─── EMPTY STATE ─────────────────────────────────────────── */
+   .empty-state {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     gap: 0.75rem;
+     padding: 3rem;
+     text-align: center;
+     color: var(--text-muted);
+   }
+   .empty-icon { font-size: 2.5rem; opacity: 0.3; }
+   .empty-title {
+     font-family: var(--font-heading);
+     font-size: 0.95rem;
+     letter-spacing: 0.06em;
+   }
+   .empty-text { font-size: 0.78rem; max-width: 280px; line-height: 1.6; }
+   
+   /* ─── MODAL ───────────────────────────────────────────────── */
+   .smart-modal-overlay {
+     position: fixed;
+     inset: 0;
+     background: rgba(0,0,0,0.7);
+     backdrop-filter: blur(4px);
+     z-index: 1050;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     padding: 1rem;
+     animation: overlay-in 0.2s ease;
+   }
+   .smart-modal {
+     background: var(--bg-card);
+     border: 1px solid var(--border-mid);
+     border-radius: 16px;
+     width: 100%;
+     max-width: 480px;
+     max-height: 90vh;
+     overflow-y: auto;
+     box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+     animation: modal-in 0.25s cubic-bezier(0.34,1.4,0.64,1);
+   }
+   .modal-header {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     padding: 1.1rem 1.25rem;
+     border-bottom: 1px solid var(--border-subtle);
+   }
+   .modal-title {
+     font-family: var(--font-heading);
+     font-size: 1.1rem;
+     font-weight: 700;
+     letter-spacing: 0.06em;
+   }
+   .modal-body { padding: 1.25rem; }
+   .modal-footer {
+     padding: 0.9rem 1.25rem;
+     border-top: 1px solid var(--border-subtle);
+     display: flex;
+     justify-content: flex-end;
+     gap: 0.5rem;
+   }
+   
+   @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+   @keyframes modal-in {
+     from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+     to   { opacity: 1; transform: scale(1) translateY(0); }
+   }
+   
+   /* ─── DASHBOARD GRID (layout principal) ───────────────────── */
+   .dashboard-grid {
+     display: grid;
+     grid-template-columns: 1fr 380px;
+     gap: 1.5rem;
+     align-items: start;
+   }
+   .dashboard-left  { display: flex; flex-direction: column; gap: 1.5rem; }
+   .dashboard-right { display: flex; flex-direction: column; gap: 1.5rem; }
+   
+   /* ─── RESPONSIVO ──────────────────────────────────────────── */
+   @media (max-width: 1200px) {
+     .dashboard-grid { grid-template-columns: 1fr; }
+   }
+   
+   @media (max-width: 960px) {
+     .main-content { margin-left: 0; padding: 1rem; }
+     .inventory-grid { grid-template-columns: repeat(4, 1fr); }
+   }
+   
+   @media (max-width: 640px) {
+     .inventory-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+     .shipping-grid { grid-template-columns: repeat(3, 1fr); }
+     .stat-grid { grid-template-columns: 1fr 1fr; }
+   }
+   
+   /* ─── TOAST (mantido para feedback visual) ────────────────── */
+   #toast-container {
+     position: fixed;
+     bottom: 1.5rem;
+     right: 1.5rem;
+     z-index: 9999;
+     display: flex;
+     flex-direction: column;
+     gap: 0.6rem;
+     pointer-events: none;
+   }
+   .toast-message {
+     display: flex;
+     align-items: flex-start;
+     gap: 0.75rem;
+     padding: 0.85rem 1rem;
+     border-radius: 12px;
+     border: 1px solid;
+     max-width: 360px;
+     min-width: 280px;
+     pointer-events: all;
+     animation: toast-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+     backdrop-filter: blur(8px);
+     font-size: 0.82rem;
+     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+   }
+   .toast-success { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); color: #a7f3d0; }
+   .toast-error   { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+   .toast-warning { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: #fde68a; }
+   .toast-info    { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.25); color: #93c5fd; }
+   
+   @keyframes toast-in {
+     from { opacity: 0; transform: translateX(20px) scale(0.96); }
+     to   { opacity: 1; transform: translateX(0) scale(1); }
+   }
