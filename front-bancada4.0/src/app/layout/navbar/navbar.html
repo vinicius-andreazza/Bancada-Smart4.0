@@ -55,13 +55,19 @@
 
       <!-- Separator -->
       <span class="font-mono-tech text-sm text-rule mx-0.5 select-none" aria-hidden="true">//</span>
-
     </a>
+
+    <!-- ──────────────────────────────────────────────────────── -->
+    <!-- System status                                            -->
+    <!-- ──────────────────────────────────────────────────────── -->
+    <div class="ml-5 shrink-0">
+      <app-status-badge status="online" />
+    </div>
 
     <!-- ──────────────────────────────────────────────────────── -->
     <!-- Primary navigation                                       -->
     <!-- ──────────────────────────────────────────────────────── -->
-    <nav class="flex items-center h-full" aria-label="Navegação principal">
+    <nav class="flex items-center h-full ml-10" aria-label="Navegação principal">
       <ul class="flex items-center h-full gap-1 list-none m-0 p-0" role="list">
         @for (item of navItems; track item.route) {
           <li class="flex items-center h-full">
@@ -75,12 +81,7 @@
       </ul>
     </nav>
 
-    <!-- ──────────────────────────────────────────────────────── -->
-    <!-- System status                                            -->
-    <!-- ──────────────────────────────────────────────────────── -->
-    <div class="ml-8 shrink-0">
-      <app-status-badge status="online" />
-    </div>
+    
 
   </div>
 </div>
