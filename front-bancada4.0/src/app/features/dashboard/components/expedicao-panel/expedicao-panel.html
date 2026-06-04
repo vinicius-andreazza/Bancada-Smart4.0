@@ -1,0 +1,54 @@
+<div class="smart-card">
+
+    <div class="card-header">
+
+        <div class="card-title">
+            Expedição
+        </div>
+
+        <button
+            class="btn-icon"
+            (click)="refresh.emit()">
+
+            <i class="fa-solid fa-arrows-rotate"></i>
+
+        </button>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="shipping-grid">
+
+            @for (pos of positions(); track pos.posicao) {
+
+                <div
+                    class="ship-cell"
+                    [class.aguardando]="!!pos?.pedido?.codPedido"
+                    [class.vazio]="!pos.pedido?.codPedido">
+
+                    <div class="ship-cell-pos">
+                        POS {{ pos.posicao }}
+                    </div>
+
+                    <div class="ship-cell-order">
+                        {{ pos.pedido?.codPedido ?? '—' }}
+                    </div>
+
+                    <div class="ship-cell-status">
+
+                        {{ pos.pedido?.codPedido
+                            ? 'AGUARDANDO RETIRADA'
+                            : '' }}
+
+                    </div>
+
+                </div>
+
+            }
+
+        </div>
+
+    </div>
+
+</div>

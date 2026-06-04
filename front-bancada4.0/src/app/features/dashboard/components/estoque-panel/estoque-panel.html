@@ -1,0 +1,57 @@
+<div class="smart-card">
+
+    <div class="card-header">
+
+        <div class="card-title">
+            Painel de Estoque
+
+            <span>
+                {{ positions().length }} posições
+            </span>
+        </div>
+
+        <button
+            class="btn-icon"
+            (click)="refresh.emit()">
+
+            <i class="fa-solid fa-arrows-rotate"></i>
+
+        </button>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="inventory-grid">
+
+            @for (pos of positions(); track pos.posicao) {
+
+                <div
+                    class="grid-cell"
+                    [class.cell-preto]="pos.cor === 1"
+                    [class.cell-vermelho]="pos.cor === 2"
+                    [class.cell-azul]="pos.cor === 3"
+                    [class.cell-vazio]="!pos.cor"
+                    (click)="cellClick.emit(pos)">
+
+                    <span class="cell-pos">
+                        {{ pos.posicao }}
+                    </span>
+
+                    <div class="cell-id">
+                        {{ pos.posicao ?? '—' }}
+                    </div>
+
+                    <div class="cell-color-label">
+                        {{ pos.cor ?? 'VAZIO' }}
+                    </div>
+
+                </div>
+
+            }
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,56 @@
+@if (opened()) {
+
+<div
+    class="smart-modal-overlay"
+    (click)="close.emit()">
+
+    <div
+        class="smart-modal"
+        (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+
+                Detalhe da Posição
+
+            </div>
+
+            <button
+                class="btn-icon"
+                (click)="close.emit()">
+
+                X
+
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            @if (position()) {
+
+                <p>
+                    Posição:
+                    {{ position()?.posicao }}
+                </p>
+
+                <p>
+                    Item:
+                    {{ position()?.posicao }}
+                </p>
+
+                <p>
+                    Cor:
+                    {{ position()?.cor }}
+                </p>
+
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+}

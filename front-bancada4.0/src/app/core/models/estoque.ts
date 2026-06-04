@@ -1,1 +1,4 @@
-export interface Estoque {}
+export interface Estoque {
+    posicao: number,
+    cor: number
+}
