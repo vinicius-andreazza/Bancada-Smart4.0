@@ -7,10 +7,12 @@ import { Estoque } from '../../../../core/models/estoque';
 import { Expedicao } from '../../../../core/models/expedicao';
 import { EstoqueService } from '../../../../core/service/estoque';
 import { ExpedicaoService } from '../../../../core/service/expedicao';
+import { Navbar } from '../../../../layout/navbar/navbar'
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel],
+  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
