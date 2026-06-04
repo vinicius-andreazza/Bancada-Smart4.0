@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head >
+    <th:block th:replace="~{fragments/head :: head(title='Dashboard')}"></th:block>
+    <link rel="stylesheet" href="/css/dashboard.csss">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ── Page Header ──────────────────────────────── -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="fa-solid fa-gauge-high me-2" style="color:var(--text-accent); font-size:1.4rem;"></i>
+            Dashboard
+          </h1>
+          <p class="page-subtitle">
+            Monitoramento em Tempo Real · Planta SMART 4.0
+          </p>
+        </div>
+        <div class="page-actions">
+          <div class="refresh-timer">
+            <i class="fa-regular fa-clock"></i>
+            Atualiza em <span id="refreshCountdown">15</span>s
+          </div>
+          <a th:href="@{/pedidos/novo}" class="btn-smart btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            Novo Pedido
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Stat Cards ───────────────────────────────── -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div>
+            <div class="stat-value" id="statTotalEstoque"
+                 th:text="${estatisticas?.totalItensEstoque ?: 0}">0</div>
+            <div class="stat-label">Itens em Estoque</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon amber">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <div class="stat-value" id="statPendentes"
+                 th:text="${estatisticas?.pedidosPendentes ?: 0}">0</div>
+            <div class="stat-label">Pendentes</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <i class="fa-solid fa-gears"></i>
+          </div>
+          <div>
+            <div class="stat-value" id="statProducao"
+                 th:text="${estatisticas?.pedidosEmProducao ?: 0}">0</div>
+            <div class="stat-label">Em Produção</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="stat-value" id="statConcluidos"
+                 th:text="${estatisticas?.pedidosConcluidos ?: 0}">0</div>
+            <div class="stat-label">Concluídos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon gray">
+            <i class="fa-solid fa-warehouse"></i>
+          </div>
+          <div>
+            <div class="stat-value" id="statVazios"
+                 th:text="${estatisticas?.posicoesVazias ?: 0}">0</div>
+            <div class="stat-label">Posições Vazias</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Main Dashboard Grid ──────────────────────── -->
+      <div class="dashboard-grid">
+
+        <!-- LEFT: Inventory + Orders -->
+        <div class="dashboard-left">
+
+          <!-- ── Painel de Estoque ─────────────────── -->
+          <div class="smart-card" id="estoqueCard">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-boxes-stacked card-title-icon"></i>
+                Painel de Estoque
+                <span style="font-size:0.7rem;color:var(--text-muted);font-family:var(--font-mono);font-weight:400;">
+                  28 posições
+                </span>
+              </div>
+              <div style="display:flex;gap:.5rem;align-items:center;">
+                <!-- Legend -->
+                <div style="display:flex;gap:.6rem;align-items:center;font-size:.65rem;font-family:var(--font-mono);color:var(--text-secondary);">
+                  <span style="display:flex;align-items:center;gap:3px;">
+                    <span style="width:10px;height:10px;border-radius:2px;background:#1a1a1a;border:1px solid #555;display:inline-block;"></span>Preto
+                  </span>
+                  <span style="display:flex;align-items:center;gap:3px;">
+                    <span style="width:10px;height:10px;border-radius:2px;background:#7f1d1d;border:1px solid #e53e3e;display:inline-block;"></span>Vermelho
+                  </span>
+                  <span style="display:flex;align-items:center;gap:3px;">
+                    <span style="width:10px;height:10px;border-radius:2px;background:#080f2e;border:1px solid #3b82f6;display:inline-block;"></span>Azul
+                  </span>
+                  <span style="display:flex;align-items:center;gap:3px;">
+                    <span style="width:10px;height:10px;border-radius:2px;background:#0e1320;border:1px solid #1a2540;display:inline-block;"></span>Vazio
+                  </span>
+                </div>
+                <button class="btn-icon" onclick="refreshEstoque()" title="Recarregar estoque">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body" style="position:relative;">
+              <div class="inventory-grid" id="inventoryGrid">
+
+                <!-- Thymeleaf renders initial state server-side.
+                     JS refreshEstoque() will update cells dynamically. -->
+                <div th:each="pos : ${estoquePositions}"
+                     th:id="'cell-' + ${pos.posicao}"
+                     th:classappend="${pos.corBloco != null ? pos.corBloco.toLowerCase() : 'vazio'}"
+                     class="grid-cell"
+                     th:attr="data-posicao=${pos.posicao},
+                              data-id-item=${pos.idItem},
+                              data-cor=${pos.corBloco}"
+                     onclick="openCellDetail(this)">
+
+                  <span class="cell-pos" th:text="${pos.posicao}">1</span>
+
+                  <div class="cell-id" th:text="${pos.idItem ?: '—'}">—</div>
+
+                  <div class="cell-color-label"
+                       th:text="${pos.corBloco != null ? pos.corBloco : 'VAZIO'}">VAZIO</div>
+
+                  <div class="cell-tooltip">
+                    <div>Posição <span th:text="${pos.posicao}">1</span></div>
+                    <div th:if="${pos.idItem != null}">Item: <span th:text="${pos.idItem}"></span></div>
+                    <div th:if="${pos.corBloco != null}">Cor: <span th:text="${pos.corBloco}"></span></div>
+                    <div th:if="${pos.idItem == null}" style="opacity:.6;">Posição vazia</div>
+                  </div>
+                </div>
+
+              </div><!-- /inventory-grid -->
+            </div><!-- /card-body -->
+          </div><!-- /estoqueCard -->
+
+          <!-- ── Pedidos Recentes ───────────────────── -->
+          <div class="smart-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-clock-rotate-left card-title-icon"></i>
+                Pedidos Recentes
+              </div>
+              <a th:href="@{/pedidos}" class="btn-smart btn-ghost">
+                Ver todos <i class="fa-solid fa-arrow-right ms-1"></i>
+              </a>
+            </div>
+            <div class="smart-table-wrapper">
+              <table class="smart-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Ordem</th>
+                    <th>Tipo</th>
+                    <th>Tampa</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="pedidosRecentesBody">
+                  <tr th:each="p : ${pedidosRecentes}" th:if="${pedidosRecentes != null}">
+                    <td class="col-id" th:text="'#' + ${p.idPedido}"></td>
+                    <td class="col-ordem" th:text="${p.ordemProducao}"></td>
+                    <td>
+                      <span th:text="${p.tipoPedido?.name()}"
+                            style="font-family:var(--font-mono);font-size:0.72rem;"></span>
+                    </td>
+                    <td>
+                      <span class="color-swatch-sm"
+                            th:classappend="'sw-' + ${p.corTampa?.toLowerCase()}"
+                            th:text="${p.corTampa}"
+                            style="font-size:0.72rem;padding:2px 8px;border-radius:4px;font-family:var(--font-mono);"></span>
+                    </td>
+                    <td>
+                      <span th:class="'badge-status badge-' + ${p.statusPedido?.name()?.toLowerCase()}"
+                            th:text="${p.statusPedido?.name()}"></span>
+                    </td>
+                    <td>
+                      <a th:href="@{/pedidos/{id}(id=${p.idPedido})}"
+                         class="btn-icon" title="Detalhes">
+                        <i class="fa-solid fa-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+
+                  <!-- Empty state -->
+                  <tr th:if="${pedidosRecentes == null or pedidosRecentes.empty}">
+                    <td colspan="6">
+                      <div class="empty-state" style="padding:2rem;">
+                        <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                        <div class="empty-title">Sem pedidos recentes</div>
+                        <div class="empty-text">Crie um novo pedido para começar.</div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /dashboard-left -->
+
+        <!-- RIGHT: Shipping + Quick Actions -->
+        <div class="dashboard-right">
+
+          <!-- ── Painel de Expedição ────────────────── -->
+          <div class="smart-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-truck-fast card-title-icon"></i>
+                Expedição
+                <span style="font-size:.7rem;color:var(--text-muted);font-family:var(--font-mono);font-weight:400;">
+                  12 posições
+                </span>
+              </div>
+              <button class="btn-icon" onclick="refreshExpedicao()" title="Recarregar">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="shipping-grid" id="shippingGrid">
+
+                <div th:each="pos : ${expedicaoPositions}"
+                     th:id="'ship-' + ${pos.posicao}"
+                     th:classappend="${pos.numeroPedido != null ? 'aguardando' : 'vazio'}"
+                     class="ship-cell"
+                     th:attr="data-posicao=${pos.posicao}">
+
+                  <div class="ship-cell-pos"
+                       th:text="'POS ' + ${pos.posicao}">POS 1</div>
+
+                  <div class="ship-cell-order"
+                       th:text="${pos.numeroPedido ?: '—'}">—</div>
+
+                  <div class="ship-cell-status"
+                       th:text="${pos.numeroPedido != null ? 'AGUARDANDO RETIRADA' : ''}"></div>
+                </div>
+
+              </div>
+            </div>
+          </div><!-- /expedicao card -->
+
+          <!-- ── Produção Ativa ─────────────────────── -->
+          <div class="smart-card" th:if="${pedidoEmProducao != null}">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-gears card-title-icon"
+                   style="animation:spin-icon 2s linear infinite;"></i>
+                Em Produção
+              </div>
+              <span class="badge-status badge-producao">LIVE</span>
+            </div>
+            <div class="card-body">
+              <div style="margin-bottom:0.75rem;">
+                <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--text-secondary);">
+                  ORDEM
+                </div>
+                <div style="font-family:var(--font-heading);font-size:1.1rem;font-weight:700;"
+                     th:text="${pedidoEmProducao?.ordemProducao}">OP-001</div>
+              </div>
+
+              <div class="production-track" id="productionTrack">
+
+                <div class="track-step done">
+                  <div class="track-step-icon"><i class="fa-solid fa-check"></i></div>
+                  <div class="track-step-label">Ordem iniciada</div>
+                </div>
+
+                <div class="track-step" th:classappend="${pedidoEmProducao?.etapaAtual >= 2 ? (pedidoEmProducao?.etapaAtual == 2 ? 'active' : 'done') : ''}">
+                  <div class="track-step-icon">
+                    <i th:class="${pedidoEmProducao?.etapaAtual > 2 ? 'fa-solid fa-check' : 'fa-solid fa-gear'}"></i>
+                  </div>
+                  <div class="track-step-label">Montagem da tampa</div>
+                </div>
+
+                <div class="track-step" th:classappend="${pedidoEmProducao?.etapaAtual >= 3 ? (pedidoEmProducao?.etapaAtual == 3 ? 'active' : 'done') : ''}">
+                  <div class="track-step-icon">
+                    <i th:class="${pedidoEmProducao?.etapaAtual > 3 ? 'fa-solid fa-check' : 'fa-solid fa-layer-group'}"></i>
+                  </div>
+                  <div class="track-step-label">Inserção das lâminas</div>
+                </div>
+
+                <div class="track-step" th:classappend="${pedidoEmProducao?.etapaAtual >= 4 ? (pedidoEmProducao?.etapaAtual == 4 ? 'active' : 'done') : ''}">
+                  <div class="track-step-icon">
+                    <i th:class="${pedidoEmProducao?.etapaAtual > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box'}"></i>
+                  </div>
+                  <div class="track-step-label">Finalização e embalagem</div>
+                </div>
+
+                <div class="track-step" th:classappend="${pedidoEmProducao?.etapaAtual >= 5 ? 'done' : ''}">
+                  <div class="track-step-icon">
+                    <i th:class="${pedidoEmProducao?.etapaAtual >= 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck'}"></i>
+                  </div>
+                  <div class="track-step-label">Enviado para expedição</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty production state -->
+          <div class="smart-card" th:if="${pedidoEmProducao == null}">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-gears card-title-icon"></i>
+                Produção
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="empty-state" style="padding:1.5rem;">
+                <div class="empty-icon"><i class="fa-solid fa-robot"></i></div>
+                <div class="empty-title">Nenhum pedido em produção</div>
+                <div class="empty-text">Selecione um pedido pendente para iniciar a produção.</div>
+                <a th:href="@{/pedidos}" class="btn-smart btn-primary"
+                   style="margin-top:.5rem;font-size:.75rem;">
+                  <i class="fa-solid fa-list"></i> Ver Pedidos
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /dashboard-right -->
+      </div><!-- /dashboard-grid -->
+
+    </main>
+  </div>
+</div>
+
+<!-- ─── Cell Detail Modal ────────────────────────────────── -->
+<div class="smart-modal-overlay" id="cellDetailModal"
+     style="display:none;" onclick="closeCellModal(event)">
+  <div class="smart-modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-box me-2"></i>
+        Detalhe da Posição
+      </div>
+      <button class="btn-icon" onclick="closeCellModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body" id="cellDetailBody">
+      <!-- Populated by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-smart btn-secondary" onclick="closeCellModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Scripts ───────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmF/ZZS7YvKqp1BkXjRM5L3b5rU"
+        crossorigin="anonymous"></script>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  // Pass server-side data to JS for initial render verification
+  window.ESTOQUE_DATA  = /*[[${estoquePositions}]]*/ [];
+  window.EXPEDICAO_DATA = /*[[${expedicaoPositions}]]*/ [];
+  /*]]>*/
+</script>
+</body>
+</html>
