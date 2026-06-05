@@ -1,9 +1,11 @@
+import { AndarBloco } from "./enums/andarbloco";
+import { CorBloco } from "./enums/corbloco";
 import { Lamina } from "./lamina";
 
 export interface Bloco {
     id: number,
-    vl_cor: number,
+    vl_cor: CorBloco,
     posEstoque: number,
-    andar: number,
+    andar: AndarBloco,
     laminas: Lamina
 }

@@ -9,10 +9,12 @@ import { EstoqueService } from '../../../../core/service/estoque';
 import { ExpedicaoService } from '../../../../core/service/expedicao';
 import { Navbar } from '../../../../layout/navbar/navbar'
 import { RouterLink } from "@angular/router";
+import { Footer } from "../../../../layout/footer/footer";
+import { CorBloco } from '../../../../core/models/enums/corbloco';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, RouterLink],
+  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, RouterLink, Footer],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -75,8 +77,9 @@ export class Dashboard {
      this.estoqueService
     .getEstoque()
     .subscribe({
-
+      
       next: (estoque: Estoque[]) => {
+        console.log(estoque);
         this.estoquePositions.set(estoque);
       },
 
@@ -113,4 +116,5 @@ export class Dashboard {
     this.modalOpen.set(false);
 
   }
+
 }

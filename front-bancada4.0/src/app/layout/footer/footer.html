@@ -1,1 +1,36 @@
-<p>footer works!</p>
+<footer
+      class="relative w-full overflow-hidden"
+      [style]="footerStyles()"
+      aria-label="Rodapé do sistema SMART 4.0"
+    >
+      <div class="pointer-events-none absolute inset-0 opacity-[0.025]" [style]="scanlineStyles()"></div>
+
+      <div class="absolute top-0 left-0 right-0 h-px" [style]="borderGlowStyles()"></div>
+
+      <div class="relative mx-auto flex max-w-screen-2xl flex-col items-center gap-1 px-6 py-3 sm:flex-row sm:justify-between sm:gap-0">
+
+        <div class="flex items-center gap-2" aria-label="Identificação do sistema">
+          <span
+            class="relative flex h-1.5 w-1.5 flex-shrink-0"
+            aria-hidden="true"
+          >
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" [style]="pingStyles()"></span>
+            <span class="relative inline-flex h-1.5 w-1.5 rounded-full" [style]="dotStyles()"></span>
+          </span>
+
+          <span class="font-mono text-xs font-semibold tracking-[0.2em] uppercase" [style]="systemNameStyles()">
+            SMART 4.0
+          </span>
+        </div>
+
+        <div class="h-px w-24 sm:hidden" [style]="mobileDividerStyles()" aria-hidden="true"></div>
+
+        <p class="font-mono text-[10px] tracking-widest uppercase" [style]="devInfoStyles()">
+          <span [style]="labelStyles()">DEV</span>
+          <span class="mx-2 opacity-30" aria-hidden="true">/</span>
+          <span>Vinicius Pedro Andreazza</span>
+          <span class="mx-2 opacity-30" aria-hidden="true">·</span>
+          <span [style]="dateStyles()">{{ currentDate() }}</span>
+        </p>
+      </div>
+</footer>
