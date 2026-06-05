@@ -1,36 +1,68 @@
 
 <div class="app-shell">
-    <app-navbar></app-navbar>
-    <main class="main-content">
-
-        <div class="page-header">
-
-            
-            <app-refresh-timer [seconds]=5>
-
-            </app-refresh-timer>
-
-        </div>
-
-        <div class="dual-panel">
-
-            <app-estoque-panel
-                [positions]="estoquePositions()"
-                (refresh)="refreshEstoque()"
-                (cellClick)="openCellDetail($event)">
-            </app-estoque-panel>
-
-            <app-expedicao-panel
-                [positions]="expedicaoPositions()"
-                (refresh)="refreshExpedicao()">
-            </app-expedicao-panel>
-
-        </div>
-        
-    </main>
-    <app-footer></app-footer>
+ 
+  <app-navbar></app-navbar>
+ 
+  <main class="main-content">
+ 
+    <!-- ── Page Header ──────────────────────────────────────────── -->
+    <div class="page-header">
+      <div class="page-actions">
+        <app-refresh-timer [seconds]="refreshCountdown()"></app-refresh-timer>
+      </div>
+    </div>
+ 
+    <!-- ── Toast Notifications ────────────────────────────────────── -->
+    @if (saveSuccess()) {
+      <div class="toast-notification toast-success" role="alert" aria-live="assertive">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <span>Estoque atualizado com sucesso!</span>
+      </div>
+    }
+ 
+    @if (saveError()) {
+      <div class="toast-notification toast-error" role="alert" aria-live="assertive">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <span>Erro ao salvar. Verifique a conexão com o servidor.</span>
+      </div>
+    }
+ 
+    @if (isSaving()) {
+      <div class="toast-notification toast-info" role="status" aria-live="polite">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <span>Salvando alterações...</span>
+      </div>
+    }
+ 
+    <!-- ── Dual Panel ──────────────────────────────────────────────── -->
+    <div class="dual-panel">
+ 
+      <app-estoque-panel
+        [positions]="estoquePositions()"
+        [editMode]="editMode()"
+        [selectedColor]="selectedColor()"
+        [pendingChanges]="pendingChanges()"
+        [cellColorMap]="cellColorMap()"
+        (cellClick)="openCellDetail($event)"
+        (applyColor)="applyColorToCell($event)"
+        (enterEditMode)="enterEditMode()"
+        (selectColor)="selectColor($event)"
+        (save)="onSaveEstoque()"
+        (discard)="onDiscardEstoque()"
+      ></app-estoque-panel>
+ 
+      <app-expedicao-panel
+        [positions]="expedicaoPositions()"
+        (refresh)="refreshExpedicao()">
+      </app-expedicao-panel>
+ 
+    </div>
+ 
+  </main>
+ 
+  <app-footer></app-footer>
+ 
 </div>
-
 
 
 <app-cell-detail-model

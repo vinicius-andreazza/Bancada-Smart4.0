@@ -1,53 +1,154 @@
-<div class="smart-card  w-fit">
+<div class="smart-card estoque-panel-card" [class.edit-mode-active]="editMode()">
 
-    <div class="card-header">
+  <!-- ── Card Header ─────────────────────────────────────────── -->
+  <div class="card-header">
 
-        <div class="card-title">
-            Painel de Estoque
+    <div class="card-title">
+      <i class="fa-solid fa-boxes-stacked card-title-icon" aria-hidden="true"></i>
+      Painel de Estoque
+      <span class="estoque-count-badge">
+        {{ positions().length }} posições
+      </span>
+    </div>
 
-            <span>
-                {{ positions().length }} posições
-            </span>
-        </div>
+    <div class="header-actions">
 
+      @if (!editMode()) {
+
+        <!-- Normal mode: refresh + edit buttons -->
         <button
-            class="btn-icon"
-            (click)="refresh.emit()">
-
-            <i class="fa-solid fa-arrows-rotate"></i>
-
+          class="btn-icon"
+          type="button"
+          title="Recarregar estoque"
+          aria-label="Recarregar estoque"
+          (click)="refresh.emit()">
+          <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
         </button>
 
+        <button
+          class="btn-smart btn-edit-mode"
+          type="button"
+          title="Editar estoque"
+          aria-label="Entrar no modo de edição do estoque"
+          (click)="onEnterEditMode()">
+          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+          Editar
+        </button>
+
+      } @else {
+
+        <!-- Edit mode: changes badge -->
+        @if (hasChanges()) {
+          <span class="changes-badge" aria-live="polite">
+            <i class="fa-solid fa-circle-dot" aria-hidden="true"></i>
+            {{ changeCount() }} {{ changeCount() === 1 ? 'alteração' : 'alterações' }}
+          </span>
+        }
+
+        <!-- Discard button -->
+        <button
+          class="btn-smart btn-discard"
+          type="button"
+          title="Descartar alterações"
+          aria-label="Descartar alterações e sair do modo de edição"
+          (click)="onDiscard()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          Descartar
+        </button>
+
+        <!-- Save button -->
+        <button
+          class="btn-smart btn-save"
+          type="button"
+          title="Salvar alterações"
+          aria-label="Salvar alterações no estoque"
+          [disabled]="!hasChanges()"
+          (click)="onSave()">
+          <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+          Salvar
+        </button>
+
+      }
     </div>
 
-    <div class="card-body">
+  </div>
 
-        <div class="inventory-grid">
+  <!-- ── Edit Mode Toolbar ────────────────────────────────────── -->
+  @if (editMode()) {
+    <div class="edit-toolbar" role="toolbar" aria-label="Ferramentas de edição">
 
-            @for (pos of positions(); track pos.posicao) {
+      <div class="edit-toolbar-inner">
 
-                <div
-                    class="grid-cell"
-                    [class.cell-preto]="pos.cor === 1"
-                    [class.cell-vermelho]="pos.cor === 2"
-                    [class.cell-azul]="pos.cor === 3"
-                    [class.cell-vazio]="!pos.cor"
-                    (click)="cellClick.emit(pos)">
+        <div class="edit-mode-indicator" aria-live="polite">
+          <span class="edit-mode-dot" aria-hidden="true"></span>
+          <span class="edit-mode-text">MODO EDIÇÃO — Clique nos blocos para alterar</span>
+        </div>
 
-                    <span class="cell-pos">
-                        {{ pos.posicao }}
-                    </span>
+        <app-color-picker
+          [selectedCor]="selectedColor()"
+          (colorSelect)="onColorSelect($event)">
+        </app-color-picker>
 
-                    <div class="cell-color-label">
-                        {{ pos.cor ?? 'VAZIO' }}
-                    </div>
+      </div>
 
-                </div>
+    </div>
+  }
 
-            }
+  <!-- ── Grid Body ────────────────────────────────────────────── -->
+  <div class="card-body">
+
+    <div
+      class="inventory-grid"
+      [class.inventory-grid--edit]="editMode()"
+      role="grid"
+      [attr.aria-label]="editMode() ? 'Grade de estoque em modo edição' : 'Grade de estoque'">
+
+      @for (pos of positions(); track pos.posicao) {
+
+        <div
+          [class]="getCellClass(pos)"
+          [class.cell-edit-hover]="editMode()"
+          role="gridcell"
+          [attr.aria-label]="'Posição ' + pos.posicao + ', cor ' + getColorLabel(getCellColor(pos))"
+          [attr.tabindex]="editMode() ? 0 : -1"
+          (click)="onCellClick(pos)"
+          (keydown.enter)="editMode() && onCellClick(pos)"
+          (keydown.space)="editMode() && $event.preventDefault(); editMode() && onCellClick(pos)">
+
+          <!-- Position number -->
+          <span class="cell-pos" aria-hidden="true">{{ pos.posicao }}</span>
+
+          <!-- Changed indicator (only in edit mode and if pending) -->
+          @if (editMode() && pendingChanges().has(pos.posicao)) {
+            <span class="cell-changed-dot" aria-hidden="true" title="Alterado"></span>
+          }
+
+          <!-- Color label -->
+          <div class="cell-color-label" aria-hidden="true">
+            {{ getColorLabel(getCellColor(pos)) }}
+          </div>
+
+          <!-- Edit overlay icon -->
+          @if (editMode()) {
+            <div class="cell-edit-overlay" aria-hidden="true">
+              <i class="fa-solid fa-paintbrush"></i>
+            </div>
+          }
+
+          <!-- Tooltip (normal mode only) -->
+          @if (!editMode()) {
+            <div class="cell-tooltip" role="tooltip">
+              <div>Posição {{ pos.posicao }}</div>
+              <div>Cor: {{ getColorLabel(getCellColor(pos)) }}</div>
+            </div>
+          }
 
         </div>
 
+      }
+
     </div>
+
+  </div>
 
 </div>

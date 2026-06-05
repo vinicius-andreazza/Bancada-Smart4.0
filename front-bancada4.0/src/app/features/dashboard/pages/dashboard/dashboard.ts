@@ -1,45 +1,56 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RefreshTimer } from "../../components/refresh-timer/refresh-timer";
 import { EstoquePanel } from "../../components/estoque-panel/estoque-panel";
 import { ExpedicaoPanel } from "../../components/expedicao-panel/expedicao-panel";
 import { CellDetailModel } from "../../components/cell-detail-model/cell-detail-model";
 import { Estoque } from '../../../../core/models/estoque';
 import { Expedicao } from '../../../../core/models/expedicao';
-import { EstoqueService } from '../../../../core/service/estoque';
+import { EstoqueEditChange, EstoqueService } from '../../../../core/service/estoque';
 import { ExpedicaoService } from '../../../../core/service/expedicao';
 import { Navbar } from '../../../../layout/navbar/navbar'
 import { RouterLink } from "@angular/router";
 import { Footer } from "../../../../layout/footer/footer";
 import { CorBloco } from '../../../../core/models/enums/corbloco';
+import { HttpClient } from '@angular/common/http';
+import { ConfigService } from '../../../../core/service/config';
+import { catchError, forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, RouterLink, Footer],
+  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, Footer],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
 export class Dashboard {
-  private readonly estoqueService =
-    inject(EstoqueService);
+  private readonly estoqueService = inject(EstoqueService);
+  private readonly expedicaoService = inject(ExpedicaoService);
+  private readonly http = inject(HttpClient);
+  private readonly config = inject(ConfigService);
+ 
+  readonly estoquePositions = signal<Estoque[]>([]);
+  readonly expedicaoPositions = signal<Expedicao[]>([]);
+  readonly refreshCountdown = signal(15);
+  readonly modalOpen = signal(false);
+  readonly selectedPosition = signal<Estoque | null>(null);
+  readonly saveSuccess = signal(false);
+  readonly saveError = signal(false);
+  readonly isSaving = signal(false);
 
-  private readonly expedicaoService =
-    inject(ExpedicaoService);
-
-  readonly estoquePositions =
-    signal<Estoque[]>([]);
-
-  readonly expedicaoPositions =
-    signal<Expedicao[]>([]);
-
-  readonly refreshCountdown =
-    signal(15);
-
-  readonly modalOpen =
-    signal(false);
-
-  readonly selectedPosition =
-    signal<Estoque | null>(null);
-
+  readonly editMode = signal(false);
+  readonly selectedColor = signal<CorBloco>(CorBloco.AZUL);
+  readonly pendingChanges = signal<Map<number, EstoqueEditChange>>(new Map());
+ 
+  readonly hasChanges = computed(() => this.pendingChanges().size > 0);
+  readonly changeCount = computed(() => this.pendingChanges().size)
+  
+  readonly cellColorMap = computed(() => {
+    const map = new Map<number, CorBloco>();
+    for (const estoque of this.estoquePositions()) {
+      map.set(estoque.posicao, this.getEffectiveColor(estoque));
+    }
+    return map;
+  });
+  
   ngOnInit(): void {
     this.refreshAll();
 
@@ -104,17 +115,95 @@ export class Dashboard {
   openCellDetail(
     position: Estoque
   ) {
-    console.log(position)
     this.selectedPosition.set(position);
 
     this.modalOpen.set(true);
-    console.log(this.modalOpen())
   }
 
   closeCellModal() {
-
     this.modalOpen.set(false);
+  }
 
+  enterEditMode(): void {
+    this.editMode.set(true);
+    this.pendingChanges.set(new Map());
+  }
+ 
+  exitEditMode(): void {
+    this.editMode.set(false);
+    this.pendingChanges.set(new Map());
+  }
+ 
+  selectColor(cor: CorBloco): void {
+    this.selectedColor.set(cor);
+  }
+ 
+  applyColorToCell(estoque: Estoque): void {
+    if (!this.editMode()) return;
+ 
+    const newCor = this.selectedColor();
+    const changes = new Map(this.pendingChanges());
+ 
+    const existing = changes.get(estoque.posicao);
+    if (existing) {
+      if (existing.originalCor === newCor) {
+        changes.delete(estoque.posicao);
+      } else {
+        changes.set(estoque.posicao, { ...existing, newCor });
+      }
+    } else {
+      changes.set(estoque.posicao, {
+        posicao: estoque.posicao,
+        originalCor: estoque.cor,
+        newCor,
+      });
+    }
+ 
+    this.pendingChanges.set(changes);
+  }
+ 
+  getEffectiveColor(estoque: Estoque): CorBloco {
+    const change = this.pendingChanges().get(estoque.posicao);
+    return change ? change.newCor : estoque.cor;
+  }
+
+
+  onSaveEstoque(): void {
+    const changes = this.pendingChanges()
+    if (changes.size === 0) return;
+ 
+    this.isSaving.set(true);
+    this.saveSuccess.set(false);
+    this.saveError.set(false);
+ 
+    const estoqueList = this.estoquePositions();
+    const requests = this.estoqueService.saveChanges(estoqueList, changes);
+ 
+    forkJoin(requests).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.saveSuccess.set(true);
+        this.exitEditMode();
+ 
+        this.refreshEstoque();
+ 
+        setTimeout(() => this.saveSuccess.set(false), 3000);
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.saveError.set(true);
+        setTimeout(() => this.saveError.set(false), 4000);
+      },
+    });
+  }
+ 
+  onDiscardEstoque(): void {
+    this.refreshEstoque();
+  }
+
+  discardChanges(): void {
+    this.pendingChanges.set(new Map());
+    this.editMode.set(false);
   }
 
 }
