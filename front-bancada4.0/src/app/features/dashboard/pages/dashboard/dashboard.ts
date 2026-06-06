@@ -14,10 +14,11 @@ import { CorBloco } from '../../../../core/models/enums/corbloco';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../../../../core/service/config';
 import { catchError, forkJoin, of } from 'rxjs';
+import { ToastNotifications } from "../../../../shared/components/toast-notifications/toast-notifications";
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, Footer],
+  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, Footer, ToastNotifications],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

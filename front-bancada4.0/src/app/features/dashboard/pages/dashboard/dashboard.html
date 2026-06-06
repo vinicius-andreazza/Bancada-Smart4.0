@@ -14,24 +14,15 @@
  
     <!-- ── Toast Notifications ────────────────────────────────────── -->
     @if (saveSuccess()) {
-      <div class="toast-notification toast-success" role="alert" aria-live="assertive">
-        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-        <span>Estoque atualizado com sucesso!</span>
-      </div>
+      <app-toast-notifications [text]="'Estoque atualizado com sucesso!'" [variant]="'success'"></app-toast-notifications>
     }
  
     @if (saveError()) {
-      <div class="toast-notification toast-error" role="alert" aria-live="assertive">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-        <span>Erro ao salvar. Verifique a conexão com o servidor.</span>
-      </div>
+      <app-toast-notifications [text]="'Erro ao salvar'" [variant]="'error'"></app-toast-notifications>
     }
  
     @if (isSaving()) {
-      <div class="toast-notification toast-info" role="status" aria-live="polite">
-        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-        <span>Salvando alterações...</span>
-      </div>
+      <app-toast-notifications [text]="'Salvando alterações...'" [variant]="'info'"></app-toast-notifications>
     }
  
     <!-- ── Dual Panel ──────────────────────────────────────────────── -->
