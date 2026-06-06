@@ -28,7 +28,7 @@ export class Navbar {
     },
     {
       label: 'Criar Pedido',
-      route: '/criar-pedido',
+      route: '/pedido/novo',
       ariaLabel: 'Ir para Criar Pedido',
     },
     {
