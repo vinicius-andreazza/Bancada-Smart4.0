@@ -8,6 +8,18 @@
       Novo pedido
     </h1>
 
+    <div>
+      @if (saveSuccess()) {
+        <app-toast-notifications [text]="'Pedido criado com sucesso!'" [variant]="'success'"></app-toast-notifications>
+      }
+      @if (saveError()) {
+        <app-toast-notifications [text]="'Houve um erro na criação do pedido'" [variant]="'error'"></app-toast-notifications>
+      }
+      @if (isSaving()) {
+        <app-toast-notifications [text]="'Pedido enviado...'" [variant]="'info'"></app-toast-notifications>
+      }
+    </div>
+
     <form id="pedidoForm" [formGroup]="pedidoForm" (ngSubmit)="enviarPedido()" class="flex flex-col gap-6">
 
       <app-pedido-card [form]="pedidoForm" />

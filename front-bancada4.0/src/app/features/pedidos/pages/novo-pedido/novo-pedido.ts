@@ -6,16 +6,21 @@ import { Footer } from '../../../../layout/footer/footer';
 import { PedidoCard } from '../../components/pedido-card/pedido-card';
 import { PedidoService } from '../../../../core/service/pedido';
 import { Pedido } from '../../../../core/models/pedido';
+import { ToastNotifications } from "../../../../shared/components/toast-notifications/toast-notifications";
 
 @Component({
   selector: 'app-novo-pedido',
-  imports: [ReactiveFormsModule, Navbar, ButtonComponent, Footer, PedidoCard],
+  imports: [ReactiveFormsModule, Navbar, ButtonComponent, Footer, PedidoCard, ToastNotifications],
   templateUrl: './novo-pedido.html',
 })
 export class NovoPedido {
   private formBuilder = inject(FormBuilder);
 
   private readonly pedidoService = inject(PedidoService);
+
+  readonly saveSuccess = signal(false);
+  readonly saveError = signal(false);
+  readonly isSaving = signal(false);
 
   jsonOutput = signal('');
 
@@ -58,13 +63,20 @@ export class NovoPedido {
   }
 
   enviarPedido(): void {
+    this.isSaving.set(true)
+    this.saveSuccess.set(false)
+    this.saveError.set(false)
     this.pedidoService.postPedido(this.pedidoForm.value).subscribe({
   
-      next:(pedido)=>{
-        console.log("pedido criado: "+pedido)
+      next:()=>{
+        this.isSaving.set(false)
+        this.saveSuccess.set(true)
+        setTimeout(() => this.saveSuccess.set(false), 2000);
       },
-      error: (error) =>{
-        console.log("erro:"+error)
+      error: () =>{
+        this.isSaving.set(false)
+        this.saveError.set(true)
+        setTimeout(() => this.saveError.set(false), 3000);
       }
     });
   }
