@@ -2,14 +2,16 @@ import { Component, input } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { PedidoLaminas } from '../pedido-laminas/pedido-laminas';
+import { SectionHeaderComponent } from "../../../../shared/components/section-header/section-header";
+import { SelectFieldComponent } from "../../../../shared/components/select-field/select-field";
+import { InputFieldComponent } from "../../../../shared/components/input-field/input-field";
 
 @Component({
   selector: 'app-pedido-blocos',
-  imports: [ReactiveFormsModule, ButtonComponent, PedidoLaminas],
+  imports: [ReactiveFormsModule, ButtonComponent, PedidoLaminas, SectionHeaderComponent, SelectFieldComponent, InputFieldComponent],
   templateUrl: './pedido-blocos.html',
 })
 export class PedidoBlocos {
-  andar = input.required<number>();
   form = input.required<FormGroup>();
 
   get laminas(): FormArray {

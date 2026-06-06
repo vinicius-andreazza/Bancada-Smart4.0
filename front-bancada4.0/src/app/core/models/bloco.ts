@@ -4,7 +4,7 @@ import { Lamina } from "./lamina";
 
 export interface Bloco {
     id: number,
-    vl_cor: CorBloco,
+    corBloco: CorBloco,
     posEstoque: number,
     andar: AndarBloco,
     laminas: Lamina

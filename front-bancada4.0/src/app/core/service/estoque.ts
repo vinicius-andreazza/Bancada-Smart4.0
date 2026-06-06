@@ -17,13 +17,9 @@ export class EstoqueService {
   private readonly http = inject(HttpClient); 
   private readonly config = inject(ConfigService);
   
-  ;
-
   getEstoque() {
-     return this.http.get<Estoque[]>( `${this.config.apiUrl}/api/estoque` ); 
+    return this.http.get<Estoque[]>( `${this.config.apiUrl}/api/estoque`); 
   }
- 
-  
  
   saveChanges(estoqueList: Estoque[], changes:  Map<number, EstoqueEditChange>) {
     const requests = Array.from(changes.values()).map((change) => {

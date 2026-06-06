@@ -1,10 +1,12 @@
 import { Component, input } from '@angular/core';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { PedidoBlocos } from '../pedido-blocos/pedido-blocos';
+import { SelectFieldComponent } from "../../../../shared/components/select-field/select-field";
+import { InputFieldComponent } from "../../../../shared/components/input-field/input-field";
 
 @Component({
   selector: 'app-pedido-card',
-  imports: [ReactiveFormsModule, PedidoBlocos],
+  imports: [ReactiveFormsModule, PedidoBlocos, SelectFieldComponent, InputFieldComponent],
   templateUrl: './pedido-card.html',
 })
 export class PedidoCard {

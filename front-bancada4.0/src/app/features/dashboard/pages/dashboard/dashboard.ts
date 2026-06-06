@@ -50,11 +50,13 @@ export class Dashboard {
     }
     return map;
   });
+
+  private refreshInterval: any;
   
   ngOnInit(): void {
     this.refreshAll();
 
-    setInterval(() => {
+    this.refreshInterval = setInterval(() => {
 
       const current =
         this.refreshCountdown();
@@ -167,7 +169,6 @@ export class Dashboard {
     return change ? change.newCor : estoque.cor;
   }
 
-
   onSaveEstoque(): void {
     const changes = this.pendingChanges()
     if (changes.size === 0) return;
@@ -205,5 +206,12 @@ export class Dashboard {
     this.pendingChanges.set(new Map());
     this.editMode.set(false);
   }
+
+  ngOnDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+
 
 }

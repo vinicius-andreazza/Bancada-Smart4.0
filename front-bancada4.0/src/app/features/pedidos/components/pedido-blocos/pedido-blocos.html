@@ -1,40 +1,16 @@
 <div class="flex flex-col gap-6" [formGroup]="form()">
 
   <div class="flex flex-col gap-4">
-    <div class="flex items-center gap-2">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bloco</h3>
-      <span class="rounded-md bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300
-                   text-sm font-semibold px-2.5 py-0.5">
-        Andar {{ andar() }}
-      </span>
-    </div>
+    <app-section-header title="Bloco" [badge]="'Andar ' + form().get('andar')?.value" />
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label for="corBloco" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-          Cor do bloco
-        </label>
-        <select id="corBloco" formControlName="corBloco"
-          class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-                 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-                 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-                 transition-all duration-200">
-          <option value="1">Preto</option>
-          <option value="2">Vermelho</option>
-          <option value="3">Azul</option>
-        </select>
-      </div>
+      <app-select-field id="corBloco" label="Cor do bloco" [control]="form().get('corBloco')!">
+        <option value="1">Preto</option>
+        <option value="2">Vermelho</option>
+        <option value="3">Azul</option>
+      </app-select-field>
 
-      <div class="flex flex-col gap-1.5">
-        <label for="posEstoque" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-          Posição estoque
-        </label>
-        <input id="posEstoque" type="text" formControlName="posEstoque"
-          class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-                 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-                 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-                 transition-all duration-200" />
-      </div>
+      <app-input-field id="posEstoque" label="Posição estoque" [control]="form().get('posEstoque')!" />
     </div>
   </div>
 

@@ -2,80 +2,35 @@
             bg-white dark:bg-gray-900 p-6 shadow-sm" [formGroup]="form()">
 
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <div class="flex flex-col gap-1.5">
-      <label for="codPedido" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        Código do pedido
-      </label>
-      <input id="codPedido" type="text" formControlName="codPedido"
-        class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-               transition-all duration-200" />
-    </div>
+    <app-input-field id="codPedido" label="Código do pedido" [control]="form().get('codPedido')!" />
 
-    <div class="flex flex-col gap-1.5">
-      <label for="status" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        Status
-      </label>
-      <select id="status" formControlName="status"
-        class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-               transition-all duration-200">
-        <option value="1">Pendente</option>
-        <option value="2">Em produção</option>
-        <option value="3">Finalizado</option>
-      </select>
-    </div>
+    <app-select-field id="status" label="Status" [control]="form().get('status')!">
+      <option value="1">Pendente</option>
+      <option value="2">Em produção</option>
+      <option value="3">Finalizado</option>
+    </app-select-field>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <div class="flex flex-col gap-1.5">
-      <label for="tipoPedido" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        Tipo do pedido
-      </label>
-      <select id="tipoPedido" formControlName="tipoPedido"
-        (change)="updateType(+$any($event.target).value)"
-        class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-               transition-all duration-200">
-        <option value="1">Simples</option>
-        <option value="2">Duplo</option>
-        <option value="3">Triplo</option>
-      </select>
-    </div>
+    <app-select-field id="tipoPedido" label="Tipo do pedido" [control]="form().get('tipoPedido')!"
+      (change)="updateType(+$any($event.target).value)">
+      <option value="1">Simples</option>
+      <option value="2">Duplo</option>
+      <option value="3">Triplo</option>
+    </app-select-field>
 
-    <div class="flex flex-col gap-1.5">
-      <label for="corTampa" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        Cor da tampa
-      </label>
-      <select id="corTampa" formControlName="corTampa"
-        class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-               transition-all duration-200">
-        <option value="1">Preto</option>
-        <option value="2">Vermelho</option>
-        <option value="3">Azul</option>
-      </select>
-    </div>
+    <app-select-field id="corTampa" label="Cor da tampa" [control]="form().get('corTampa')!">
+      <option value="1">Preto</option>
+      <option value="2">Vermelho</option>
+      <option value="3">Azul</option>
+    </app-select-field>
 
-    <div class="flex flex-col gap-1.5">
-      <label for="clpIp" class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        IP do CLP
-      </label>
-      <input id="clpIp" type="text" formControlName="clpIp"
-        class="w-full rounded-lg border border-gray-200 dark:border-gray-700
-               bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
-               transition-all duration-200" />
-    </div>
+    <app-input-field id="clpIp" label="IP do CLP" [control]="form().get('clpIp')!" />
   </div>
 
   <div class="flex flex-col gap-4" formArrayName="blocos">
     @for (bloco of blocos; track $index) {
-      <app-pedido-blocos [andar]="$index + 1" [form]="$any(bloco)" />
+      <app-pedido-blocos [form]="$any(bloco)" />
     }
   </div>
 

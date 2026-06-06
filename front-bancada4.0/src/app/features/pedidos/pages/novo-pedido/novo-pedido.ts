@@ -4,6 +4,8 @@ import { Navbar } from '../../../../layout/navbar/navbar';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { Footer } from '../../../../layout/footer/footer';
 import { PedidoCard } from '../../components/pedido-card/pedido-card';
+import { PedidoService } from '../../../../core/service/pedido';
+import { Pedido } from '../../../../core/models/pedido';
 
 @Component({
   selector: 'app-novo-pedido',
@@ -13,6 +15,8 @@ import { PedidoCard } from '../../components/pedido-card/pedido-card';
 export class NovoPedido {
   private formBuilder = inject(FormBuilder);
 
+  private readonly pedidoService = inject(PedidoService);
+
   jsonOutput = signal('');
 
   pedidoForm: FormGroup = this.formBuilder.group({
@@ -21,7 +25,7 @@ export class NovoPedido {
     tipoPedido: new FormControl('1'),
     corTampa:   new FormControl('1'),
     clpIp:      new FormControl('10.74.241.11'),
-    blocos:     this.formBuilder.array([this.criarBloco()]),
+    blocos:     this.formBuilder.array([this.criarBloco(1)]),
   });
 
   constructor() {
@@ -29,19 +33,20 @@ export class NovoPedido {
       const tipo = +this.pedidoForm.get('tipoPedido')?.value;
       const blocos = this.pedidoForm.get('blocos') as FormArray;
 
-      while (blocos.length < tipo) blocos.push(this.criarBloco());
+      while (blocos.length < tipo) blocos.push(this.criarBloco(blocos.length + 1));
       while (blocos.length > tipo) blocos.removeAt(blocos.length - 1);
     });
 
     this.pedidoForm.get('tipoPedido')?.valueChanges.subscribe(tipo => {
       const blocos = this.pedidoForm.get('blocos') as FormArray;
-      while (blocos.length < +tipo) blocos.push(this.criarBloco());
+      while (blocos.length < +tipo) blocos.push(this.criarBloco(blocos.length + 1));
       while (blocos.length > +tipo) blocos.removeAt(blocos.length - 1);
     });
   }
 
-  private criarBloco(): FormGroup {
+  private criarBloco(andar: number): FormGroup {
     return this.formBuilder.group({
+      andar: new FormControl(andar),
       corBloco:   new FormControl('1'),
       posEstoque: new FormControl(''),
       laminas:    this.formBuilder.array([]),
@@ -53,6 +58,14 @@ export class NovoPedido {
   }
 
   enviarPedido(): void {
-    console.log(this.pedidoForm.value);
+    this.pedidoService.postPedido(this.pedidoForm.value).subscribe({
+  
+      next:(pedido)=>{
+        console.log("pedido criado: "+pedido)
+      },
+      error: (error) =>{
+        console.log("erro:"+error)
+      }
+    });
   }
 }
