@@ -12,7 +12,7 @@ import lombok.Builder;
 @Builder
 public record BlocoDTO(
     Long id,
-    CorBloco vl_cor,
+    CorBloco corBloco,
     Integer posEstoque,
     AndarBloco andar,
     @JsonIgnore

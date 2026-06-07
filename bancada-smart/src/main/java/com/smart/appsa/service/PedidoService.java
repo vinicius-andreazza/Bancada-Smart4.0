@@ -33,7 +33,6 @@ public class PedidoService {
     private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
-    private final EstoqueService estoqueService;
 
     @Transactional
     public PedidoResponseDTO create(PedidoRequestDTO dto) {
@@ -210,6 +209,5 @@ public class PedidoService {
         validateCorTampa(dto.corTampa());
         validateBlocosQuantityByType(pedido);
         validateDuplicatedFloors(pedido.getBlocos());
-        pedido.getBlocos().forEach(b -> estoqueService.findFirstByCor(b.getVl_cor().getValue()));
     }
 }

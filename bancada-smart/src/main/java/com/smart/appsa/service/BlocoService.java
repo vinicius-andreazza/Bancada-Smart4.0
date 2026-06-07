@@ -28,30 +28,27 @@ public class BlocoService {
     private final LaminaService laminaService;
 
     private final EstoqueService estoqueService;
-
-
-
+    
+    @Transactional
     public BlocoDTO create(BlocoDTO dto) {
-        validarDTO(dto);
+        validateDTO(dto);
 
         Bloco bloco = BlocoMapper.toEntity(dto);
         
-        Pedido pedido = resolverPedido(dto.pedido().getId());
+        Pedido pedido = fixPedido(dto.pedido().getId());
 
         bloco.setPedido(pedido);
 
-        verificarPosicao(bloco);
+        verifyPosition(bloco);
 
         blocoRepository.save(bloco);
         
-        atualizarBlocoDasLaminas(bloco);
+        updateLaminasInBloco(bloco);
 
-        criarLaminas(bloco.getLaminas(), bloco);
+        createLaminas(bloco.getLaminas(), bloco);
 
         return BlocoMapper.toDto(bloco);
     }
-
-
 
     public List<BlocoDTO> findAll() {
         return blocoRepository.findAll()
@@ -66,48 +63,12 @@ public class BlocoService {
 
     public List<BlocoDTO> findByPedido(Long idPedido) {
         Pedido pedido = pedidoRepository.findById(idPedido)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + idPedido));
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
         return blocoRepository.findByPedido(pedido)
                 .stream()
                 .map(BlocoMapper::toDto)
                 .toList();
     }
-
-
-    @Transactional
-    public BlocoDTO put(Long id, BlocoDTO dto) {
-        validarDTO(dto);
-
-        Bloco blocoExistente = findEntityById(id);
-        Pedido pedido = resolverPedido(dto.pedido().getId());
-
-        blocoExistente.setVl_cor(dto.vl_cor());
-        blocoExistente.setPedido(pedido);
-        // posEstoque: TO DO — atribuir conforme cor do bloco
-
-        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
-    }
-
-
-
-    @Transactional
-    public BlocoDTO patch(Long id, BlocoDTO dto) {
-        Bloco blocoExistente = findEntityById(id);
-
-        if (dto.vl_cor() != null) {
-            blocoExistente.setVl_cor(dto.vl_cor());
-        }
-
-        if (dto.pedido() != null && dto.pedido().getId() != null) {
-            blocoExistente.setPedido(resolverPedido(dto.pedido().getId()));
-        }
-
-        // posEstoque: TO DO — atribuir conforme cor do bloco
-
-        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
-    }
-
-
 
     @Transactional
     public void delete(Long id) {
@@ -115,12 +76,14 @@ public class BlocoService {
     }
 
 
-    private List<Lamina> criarLaminas(List<Lamina> laminas, Bloco bloco){
+    private List<Lamina> createLaminas(List<Lamina> laminas, Bloco bloco){
         if(laminas == null){
             return null;
         }
-        List<LaminaDTO> blocoDTOs = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l, bloco)).toList();
-        return blocoDTOs.stream().map(b -> LaminaMapper.toEntity(b)).toList();
+
+        List<LaminaDTO> laminasDTO = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l, bloco)).toList();
+
+        return laminasDTO.stream().map(b -> LaminaMapper.toEntity(b)).toList();
     }
 
 
@@ -129,13 +92,13 @@ public class BlocoService {
                 .orElseThrow(() -> new EntityNotFoundException("Bloco não encontrado com id: " + id));
     }
 
-    private Pedido resolverPedido(Long idPedido) {
+    private Pedido fixPedido(Long idPedido) {
         return pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + idPedido));
     }
 
-    private void validarDTO(BlocoDTO dto) {
-        if (dto.vl_cor() == null) {
+    private void validateDTO(BlocoDTO dto) {
+        if (dto.corBloco() == null) {
             throw new IllegalArgumentException("A cor do bloco é obrigatória.");
         }
         if (dto.pedido() == null || dto.pedido().getId() == null) {
@@ -146,14 +109,14 @@ public class BlocoService {
         }
     }
 
-    private void atualizarBlocoDasLaminas(Bloco bloco){
+    private void updateLaminasInBloco(Bloco bloco){
         if(bloco.getLaminas() != null){
             bloco.getLaminas().forEach(l -> l.setBloco(bloco));
         }
     }
 
-    private void verificarPosicao(Bloco bloco){
-        Estoque pos = estoqueService.findFirstByCor(bloco.getVl_cor().getValue());
+    private void verifyPosition(Bloco bloco){
+        Estoque pos = estoqueService.findFirstByCor(bloco.getCorBloco().getValue());
         bloco.setPosEstoque(pos.getPosicao());
         pos.setCor(0);
         estoqueService.put(pos.getId(), pos);
