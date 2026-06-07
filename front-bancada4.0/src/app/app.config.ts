@@ -7,7 +7,7 @@ import {
   provideHttpClient
 } from '@angular/common/http';
 
-import { ConfigService } from './core/service/config';
+import { ConfigService } from './core/service/config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [

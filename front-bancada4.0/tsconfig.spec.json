@@ -11,5 +11,5 @@
   "include": [
     "src/**/*.d.ts",
     "src/**/*.spec.ts"
-  ]
+, "src/app/features/pedidos/components/pedido-detalhe-modal/pedido-detalhe-modal..component.spec.ts", "src/app/features/pedidos/components/pedido-card/pedido-card.component.spec.ts"  ]
 }
