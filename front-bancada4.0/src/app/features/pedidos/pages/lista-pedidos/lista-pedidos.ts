@@ -9,6 +9,8 @@ import { PedidoTable } from '../../components/pedido-table/pedido-table';
 import { Pedido } from '../../../../core/models/pedido';
 import { StatusPedido } from '../../../../core/models/enums/statuspedido';
 import { StatusCardPedido } from '../../../../shared/components/status-card-pedido/status-card-pedido';
+import { PedidoService } from '../../../../core/service/pedido';
+import { PedidoDetalheModalComponent } from "../../components/pedido-detalhe-modal/pedido-detalhe-modal";
 
 type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
 
@@ -22,27 +24,33 @@ type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
     InputFieldComponent,
     StatusCardPedido,
     PedidoTable,
+    PedidoDetalheModalComponent
   ],
   templateUrl: './lista-pedidos.html',
 })
 export class ListaPedidos {
+
+  private readonly pedidoService = inject(PedidoService);
   private router = inject(Router);
 
-  readonly pedidos       = signal<Pedido[]>([]);
-  readonly filtroAtual   = signal<Filtro>('TODOS');
-  readonly pedidoDetalhe = signal<Pedido | null>(null);
+  protected readonly StatusPedido = StatusPedido;
+
+  readonly pedidos = signal<Pedido[]>([]);
+  readonly filtroAtual = signal<Filtro>('TODOS');
   readonly pedidoExcluir = signal<number | null>(null);
 
   readonly buscaControl = new FormControl('');
 
+  readonly pedidoSelecionado = signal<Pedido | null>(null);
+
   readonly pedidosFiltrados = computed(() => {
     const filtro = this.filtroAtual();
-    const busca  = (this.buscaControl.value ?? '').toLowerCase().trim();
+    const busca = (this.buscaControl.value ?? '').toLowerCase().trim();
 
     return this.pedidos()
       .filter(p => {
-        if (filtro === 'PENDENTE')  return p.status === StatusPedido.PENDENTE;
-        if (filtro === 'PRODUCAO')  return p.status === StatusPedido.PRODUCAO;
+        if (filtro === 'PENDENTE') return p.status === StatusPedido.PENDENTE;
+        if (filtro === 'PRODUCAO') return p.status === StatusPedido.PRODUCAO;
         if (filtro === 'CONCLUIDO') return p.status === StatusPedido.CONCLUIDO;
         return true;
       })
@@ -53,22 +61,47 @@ export class ListaPedidos {
       );
   });
 
-  readonly totalPedidos  = computed(() => this.pedidos().length);
-  readonly qtdPendentes  = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PENDENTE).length);
-  readonly qtdProducao   = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PRODUCAO).length);
+  readonly totalPedidos = computed(() => this.pedidos().length);
+  readonly qtdPendentes = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PENDENTE).length);
+  readonly qtdProducao = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PRODUCAO).length);
   readonly qtdConcluidos = computed(() => this.pedidos().filter(p => p.status === StatusPedido.CONCLUIDO).length);
+
+  ngOnInit(): void {
+    this.getPedidos();
+  }
 
   setFiltro(filtro: Filtro): void {
     this.filtroAtual.set(filtro);
-    console.log(this.filtroAtual())
   }
 
   abrirDetalhe(pedido: Pedido): void {
-    this.pedidoDetalhe.set(pedido);
+    this.pedidoSelecionado.set(pedido);
   }
 
   abrirConfirmacaoExclusao(id: number): void {
     this.pedidoExcluir.set(id);
   }
 
+  getPedidos() {
+    this.pedidoService.getPedido().subscribe({
+      next: (pedido: Pedido[]) => {
+        this.pedidos.set(pedido);
+      },
+      error(err) {
+        console.log(err)
+      },
+    })
+  }
+
+  onRetirar(pedido: Pedido) {
+    console.log("Retirando pedido: "+pedido.codPedido)
+  }
+
+  onEnviarProducao(pedido: Pedido) {
+    console.log("Enviando para produção: "+pedido.codPedido)
+  }
+
+  fecharDetalhe() {
+    this.pedidoSelecionado.set(null);
+  }
 }

@@ -10,8 +10,11 @@ export class PedidoService {
   private readonly http = inject(HttpClient); 
   private readonly config = inject(ConfigService);
 
+  getPedido(){
+    return this.http.get<Pedido[]>( `${this.config.apiUrl}/api/pedidos`); 
+  }
+
   postPedido(pedido: Pedido){
-    console.log(pedido)
     return this.http.post( `${this.config.apiUrl}/api/pedidos`, pedido); 
   }
 }

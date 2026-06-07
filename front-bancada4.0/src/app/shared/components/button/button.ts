@@ -1,11 +1,10 @@
 import { Component, computed, input } from '@angular/core';
 
-// ── Public types ──────────────────────────────────────────────────────────────
+
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize    = 'sm' | 'md' | 'lg';
 export type ButtonType    = 'button' | 'submit' | 'reset';
 
-// ── Style maps ────────────────────────────────────────────────────────────────
 const VARIANT: Record<ButtonVariant, string> = {
   primary:
     'bg-accent text-base hover:bg-sky-300 focus-visible:outline-accent ' +
@@ -29,17 +28,6 @@ const SIZE: Record<ButtonSize, string> = {
   lg: 'px-7   py-3   text-base gap-2.5',
 };
 
-/**
- * AppButtonComponent
- *
- * Generic, accessible button for use across the entire application.
- * Content is projected via <ng-content />.
- *
- * @example
- * <app-button variant="primary" size="md">Salvar</app-button>
- * <app-button variant="secondary" [loading]="isSaving">Processar</app-button>
- * <app-button variant="ghost" type="button" (click)="cancel()">Cancelar</app-button>
- */
 @Component({
   selector: 'app-button',
   template: `
@@ -51,7 +39,6 @@ const SIZE: Record<ButtonSize, string> = {
       [attr.aria-busy]="loading() || null"
     >
       @if (loading()) {
-        <!-- Spinner -->
         <svg
           class="animate-spin h-4 w-4 shrink-0"
           xmlns="http://www.w3.org/2000/svg"
@@ -74,9 +61,10 @@ const SIZE: Record<ButtonSize, string> = {
         </svg>
       }
 
-      <span [class.invisible]="loading()">
+      <span class="inline-flex items-center gap-[inherit]" [class.invisible]="loading()">
         <ng-content />
       </span>
+
     </button>
   `,
   host: {

@@ -1,48 +1,34 @@
-<div style="overflow-x: auto; border-radius: var(--r-md);">
-  <table style="width: 100%; border-collapse: collapse;">
+<div class="overflow-x-auto rounded-lg">
+  <table class="w-full border-collapse" aria-label="Lista de pedidos">
     <thead>
-      <tr style="border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface);">
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">ID</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Ordem de Produção</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Tipo</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Tampa</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Blocos</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Status</th>
-        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Data</th>
-        <th style="padding: .65rem 1rem; text-align: right; font-family: var(--font-mono);
-                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
-                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Ações</th>
+      <tr class="border-b border-gray-800 bg-gray-900/60">
+        @for (col of colunas; track col.key) {
+          <th
+            scope="col"
+            [class]="'px-4 py-2.5 font-mono text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-gray-500 whitespace-nowrap ' + (col.align === 'right' ? 'text-right' : 'text-left')"
+          >
+            {{ col.label }}
+          </th>
+        }
       </tr>
     </thead>
-    <tbody>
+    <tbody class="divide-y divide-gray-800/60">
       @for (pedido of pedidos(); track pedido.id) {
-        <tr app-pedido-row
-            [pedido]="pedido"
-            (onVerDetalhe)="verDetalhe.emit($event)"
-            (onExcluir)="excluir.emit($event)">
-        </tr>
+        <tr
+          app-pedido-row
+          [pedido]="pedido"
+          (onVerDetalhe)="verDetalhe.emit($event)"
+          (onExcluir)="excluir.emit($event)"
+          class="transition-colors duration-150 hover:bg-gray-800/40"
+        ></tr>
       } @empty {
         <tr>
-          <td colspan="8">
-            <div class="empty-state">
-              <i class="fa-solid fa-inbox empty-icon" aria-hidden="true"></i>
-              <div class="empty-title">Nenhum pedido encontrado</div>
-              <div class="empty-text">Crie um novo pedido para começar</div>
-            </div>
+          <td colspan="8" class="p-0">
+            <app-table-empty-state
+              icon="fa-solid fa-inbox"
+              title="Nenhum pedido encontrado"
+              description="Crie um novo pedido para começar"
+            />
           </td>
         </tr>
       }

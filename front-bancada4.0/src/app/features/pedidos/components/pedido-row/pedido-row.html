@@ -1,48 +1,58 @@
-<td class="col-id" style="padding: .75rem 1rem; vertical-align: middle;">
+<td class="px-4 py-3 align-middle text-sm text-gray-400 font-mono">
   #{{ pedido().id }}
 </td>
 
-<td class="col-ordem" style="padding: .75rem 1rem; vertical-align: middle;">
+<td class="px-4 py-3 align-middle text-sm text-gray-200 font-medium">
   {{ pedido().codPedido }}
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle;
-           font-size: .875rem; color: var(--text-secondary);">
+<td class="px-4 py-3 align-middle text-sm text-gray-400">
   {{ tipoLabel[pedido().tipoPedido] }}
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle;">
-  <div style="display: flex; align-items: center; gap: .5rem;">
-    <span [class]="tampaCssClass[pedido().corTampa]"
-          style="width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;"></span>
-    <span style="font-size: .875rem; color: var(--text-secondary);">
+<td class="px-4 py-3 align-middle">
+  <div class="flex items-center gap-2">
+    <span
+      [class]="tampaCssClass[pedido().corTampa] + ' w-3.5 h-3.5 rounded-sm flex-shrink-0'"
+    ></span>
+    <span class="text-sm text-gray-400">
       {{ tampaLabel[pedido().corTampa] }}
     </span>
   </div>
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle;
-           font-family: var(--font-mono); font-size: .875rem; color: var(--text-secondary);">
+<td class="px-4 py-3 align-middle text-sm text-gray-400 font-mono">
   {{ totalBlocos() }}
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle;">
+<td class="px-4 py-3 align-middle">
   <span [class]="statusBadgeClass[pedido().status]">
     {{ statusLabel[pedido().status] }}
   </span>
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle;
-           font-family: var(--font-mono); font-size: .75rem; color: var(--text-secondary);">
+<td class="px-4 py-3 align-middle text-xs text-gray-500 font-mono whitespace-nowrap">
   {{ pedido().dataCriacao }}
 </td>
 
-<td style="padding: .75rem 1rem; vertical-align: middle; text-align: right;">
-  <div style="display: flex; align-items: center; justify-content: flex-end; gap: .4rem;">
-    <app-button [variant]="'ghost'" [size]="'sm'" [type]="'button'" (click)="verDetalhe()">
+<td class="px-4 py-3 align-middle text-right">
+  <div class="flex items-center justify-end gap-1">
+    <app-button
+      [variant]="'primary'"
+      [size]="'md'"
+      [type]="'button'"
+      aria-label="Ver detalhes do pedido"
+      (click)="verDetalhe()"
+    >
       <i class="fa-solid fa-eye" aria-hidden="true"></i>
     </app-button>
-    <app-button [variant]="'danger'" [size]="'sm'" [type]="'button'" (click)="excluir()">
+    <app-button
+      [variant]="'danger'"
+      [size]="'md'"
+      [type]="'button'"
+      aria-label="Excluir pedido"
+      (click)="excluir()"
+    >
       <i class="fa-solid fa-trash" aria-hidden="true"></i>
     </app-button>
   </div>
