@@ -1,0 +1,49 @@
+<td class="col-id" style="padding: .75rem 1rem; vertical-align: middle;">
+  #{{ pedido().id }}
+</td>
+
+<td class="col-ordem" style="padding: .75rem 1rem; vertical-align: middle;">
+  {{ pedido().codPedido }}
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle;
+           font-size: .875rem; color: var(--text-secondary);">
+  {{ tipoLabel[pedido().tipoPedido] }}
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle;">
+  <div style="display: flex; align-items: center; gap: .5rem;">
+    <span [class]="tampaCssClass[pedido().corTampa]"
+          style="width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;"></span>
+    <span style="font-size: .875rem; color: var(--text-secondary);">
+      {{ tampaLabel[pedido().corTampa] }}
+    </span>
+  </div>
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle;
+           font-family: var(--font-mono); font-size: .875rem; color: var(--text-secondary);">
+  {{ totalBlocos() }}
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle;">
+  <span [class]="statusBadgeClass[pedido().status]">
+    {{ statusLabel[pedido().status] }}
+  </span>
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle;
+           font-family: var(--font-mono); font-size: .75rem; color: var(--text-secondary);">
+  {{ pedido().dataCriacao }}
+</td>
+
+<td style="padding: .75rem 1rem; vertical-align: middle; text-align: right;">
+  <div style="display: flex; align-items: center; justify-content: flex-end; gap: .4rem;">
+    <app-button [variant]="'ghost'" [size]="'sm'" [type]="'button'" (click)="verDetalhe()">
+      <i class="fa-solid fa-eye" aria-hidden="true"></i>
+    </app-button>
+    <app-button [variant]="'danger'" [size]="'sm'" [type]="'button'" (click)="excluir()">
+      <i class="fa-solid fa-trash" aria-hidden="true"></i>
+    </app-button>
+  </div>
+</td>

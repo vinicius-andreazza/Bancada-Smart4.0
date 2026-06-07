@@ -1,0 +1,51 @@
+<div style="overflow-x: auto; border-radius: var(--r-md);">
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface);">
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">ID</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Ordem de Produção</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Tipo</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Tampa</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Blocos</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Status</th>
+        <th style="padding: .65rem 1rem; text-align: left; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Data</th>
+        <th style="padding: .65rem 1rem; text-align: right; font-family: var(--font-mono);
+                   font-size: .65rem; font-weight: 600; letter-spacing: .12em;
+                   text-transform: uppercase; color: var(--text-secondary); white-space: nowrap;">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (pedido of pedidos(); track pedido.id) {
+        <tr app-pedido-row
+            [pedido]="pedido"
+            (onVerDetalhe)="verDetalhe.emit($event)"
+            (onExcluir)="excluir.emit($event)">
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <i class="fa-solid fa-inbox empty-icon" aria-hidden="true"></i>
+              <div class="empty-title">Nenhum pedido encontrado</div>
+              <div class="empty-text">Crie um novo pedido para começar</div>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PedidoForm } from './pedido-form';
+import { PedidoRow } from './pedido-row';
 
-describe('PedidoForm', () => {
-  let component: PedidoForm;
-  let fixture: ComponentFixture<PedidoForm>;
+describe('PedidoRow', () => {
+  let component: PedidoRow;
+  let fixture: ComponentFixture<PedidoRow>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PedidoForm],
+      imports: [PedidoRow],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PedidoForm);
+    fixture = TestBed.createComponent(PedidoRow);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -7,5 +7,5 @@ export interface Bloco {
     corBloco: CorBloco,
     posEstoque: number,
     andar: AndarBloco,
-    laminas: Lamina
+    laminas: Lamina[]
 }

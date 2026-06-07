@@ -9,10 +9,17 @@ export const routes: Routes = [
   },
 
   {
-    path: 'pedido',
+    path: 'pedido/novo',
     loadChildren: () =>
       import('./features/pedidos/novo-pedido.routes')
         .then(m => m.NOVO_PEDIDO_ROUTES)
+  },
+
+  {
+    path: 'pedidos',
+    loadChildren: () =>
+      import('./features/pedidos/lista-pedido.routes')
+        .then(m => m.LISTA_PEDIDO_ROUTES)
   },
 
   {
@@ -20,11 +27,19 @@ export const routes: Routes = [
     redirectTo: 'dashboard',
     pathMatch: 'full'
   },
+
   {
     path: 'pedidoNovo',
-    redirectTo: 'pedido',
+    redirectTo: 'pedido/novo',
     pathMatch: 'full'
   },
+
+  {
+    path: 'pedido',
+    redirectTo: 'pedidos',
+    pathMatch: 'full'
+  },
+  
   {
     path: '**',
     redirectTo: 'dashboard'

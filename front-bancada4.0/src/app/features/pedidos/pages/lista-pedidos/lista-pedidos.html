@@ -1,1 +1,49 @@
-<p>lista-pedidos works!</p>
+<div class="">
+
+    <app-navbar></app-navbar>
+    <div class="">
+        <main class="">
+
+            
+            <div class="" style="grid-template-columns: repeat(4, 1fr);">
+                <app-status-card-pedido [type]="'total'" [total]="totalPedidos()" />
+                <app-status-card-pedido [type]="'pendente'" [total]="qtdPendentes()" />
+                <app-status-card-pedido [type]="'producao'" [total]="qtdProducao()" />
+                <app-status-card-pedido [type]="'concluido'" [total]="qtdConcluidos()" />
+            </div>
+
+            <div class="smart-card">
+
+                <div class="card-header" style="flex-wrap: wrap; gap: .75rem;">
+                    <div class="card-title">
+                        <i class="fa-solid fa-table-list card-title-icon" aria-hidden="true"></i>
+                        Lista de Pedidos
+                    </div>
+
+                    <div class="filter-bar">
+                        <app-button [type]="'button'" [size]="'md'" [variant]="filtroAtual()=='TODOS' ? 'secondary' : 'ghost'"
+                            (click)="setFiltro('TODOS')">Todos</app-button>
+                        <app-button [type]="'button'" [size]="'md'" [variant]="filtroAtual()=='PENDENTE' ? 'secondary' : 'ghost'" 
+                            (click)="setFiltro('PENDENTE')">Pendente</app-button>
+                        <app-button [type]="'button'" [size]="'md'" [variant]="filtroAtual()=='PRODUCAO' ? 'secondary' : 'ghost'"
+                            (click)="setFiltro('PRODUCAO')">Produção</app-button>
+                        <app-button [type]="'button'" [size]="'md'" [variant]="filtroAtual()=='CONCLUIDO' ? 'secondary' : 'ghost'"
+                            (click)="setFiltro('CONCLUIDO')">Concluído</app-button>
+                    </div>
+
+                    <div style="margin-left: auto;">
+                        <app-input-field id="busca" label="" [control]="buscaControl" />
+                    </div>
+                </div>
+
+                <app-pedido-table [pedidos]="pedidosFiltrados()" (verDetalhe)="abrirDetalhe($event)"
+                    (excluir)="abrirConfirmacaoExclusao($event)" />
+
+            </div>
+
+        </main>
+    </div>
+
+    <app-footer />
+</div>
+

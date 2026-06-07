@@ -3,7 +3,7 @@ import { NovoPedido } from './pages/novo-pedido/novo-pedido';
 
 export const NOVO_PEDIDO_ROUTES: Routes = [
   {
-    path: 'novo',
+    path: '',
     component: NovoPedido
   }
 ];

@@ -12,6 +12,6 @@ export interface Pedido {
     corTampa: CorTampa,
     dataEntrada: string | null,
     expedicao: number,
-    blocos: Bloco
+    blocos: Bloco[]
 
 }
