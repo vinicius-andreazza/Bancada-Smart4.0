@@ -17,108 +17,65 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EstoqueService {
 
-    
     private final EstoqueRepository estoqueRepository;
- 
-    private static final List<Integer> CORES_VALIDAS = List.of(0, 1, 2, 3);
- 
-    // -------------------------------------------------------------------------
-    // CREATE
-    // -------------------------------------------------------------------------
- 
-    @Transactional
-    public Estoque create(Estoque estoque) {
-        validarCor(estoque.getCor());
-        validarPosicaoUnica(estoque.getPosicao(), null);
-        return estoqueRepository.save(estoque);
-    }
- 
-    // -------------------------------------------------------------------------
-    // READ
-    // -------------------------------------------------------------------------
- 
+
     public List<Estoque> findAll() {
         return estoqueRepository.findAll();
     }
- 
-    public Estoque findById(Long id) {
-        return estoqueRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Estoque não encontrado com id: " + id));
-    }
- 
+
     public Estoque findByPosicao(Integer posicao) {
         return estoqueRepository.findByPosicao(posicao)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Nenhuma posição de estoque encontrada com posicao: " + posicao));
+                        "Posição não existe: " + posicao));
     }
- 
+
     public List<EstoqueDTO> findByCor(Integer cor) {
-        validarCor(cor);
+        if (cor < 1 || cor > 3) {
+            throw new IllegalArgumentException("Cor invalida");
+        }
         return estoqueRepository.findByCor(cor).stream().map(EstoqueMapper::toDto).toList();
     }
 
-    public Estoque findFirstByCor(Integer cor){
+    public Estoque findFirstByCor(Integer cor) {
         return estoqueRepository.findFirstByCor(cor).orElseThrow(() -> new EntityNotFoundException(
-            "Nenhuma posição de estoque encontrada com cor: " + cor));
+                "Nenhuma posição de estoque encontrada com cor: " + cor));
     }
- 
-    // -------------------------------------------------------------------------
-    // UPDATE (PUT)
-    // -------------------------------------------------------------------------
- 
+
     @Transactional
-    public Estoque put(Long id, Estoque estoqueAtualizado) {
-        Estoque estoqueExistente = findById(id);
- 
-        validarCor(estoqueAtualizado.getCor());
- 
+    public Estoque put(Long position, Estoque estoqueAtualizado) {
+        Estoque estoqueExistente = findByPosicao(Math.toIntExact(position));
+
         estoqueExistente.setCor(estoqueAtualizado.getCor());
- 
+
         return estoqueRepository.save(estoqueExistente);
     }
- 
-    // -------------------------------------------------------------------------
-    // PATCH
-    // -------------------------------------------------------------------------
- 
+
     @Transactional
-    public Estoque patch(Long id, Estoque estoqueParcial) {
-        Estoque estoqueExistente = findById(id);
- 
-        if (estoqueParcial.getCor() != null) {
-            validarCor(estoqueParcial.getCor());
-            estoqueExistente.setCor(estoqueParcial.getCor());
-        }
- 
-        return estoqueRepository.save(estoqueExistente);
+    public List<Estoque> putAll(List<EstoqueDTO> listaEstoqueAtualizar) {
+
+        List<Estoque> estoques = validarLista(listaEstoqueAtualizar);
+
+        updateList(estoques, listaEstoqueAtualizar);
+
+        return estoqueRepository.saveAll(estoques);
     }
- 
-    // -------------------------------------------------------------------------
-    // DELETE
-    // -------------------------------------------------------------------------
- 
-    @Transactional
-    public void delete(Long id) {
-        estoqueRepository.delete(findById(id));
+
+    private List<Estoque> validarLista(List<EstoqueDTO> listaEstoqueAtualizar) {
+        return listaEstoqueAtualizar.stream().distinct().map(e -> findByPosicao(e.posicao())).toList();
     }
- 
-    // -------------------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------------------
- 
-    private void validarCor(Integer cor) {
-        if (cor == null || !CORES_VALIDAS.contains(cor)) {
-            throw new IllegalArgumentException(
-                    "Cor inválida: " + cor + ". Valores permitidos: " + CORES_VALIDAS);
+
+    private void updateList(
+            List<Estoque> listaEstoque,
+            List<EstoqueDTO> listaEstoqueAtualizar) {
+
+        listaEstoque.sort((e1, e2) -> Integer.compare(e1.getPosicao(), e2.getPosicao()));
+
+        listaEstoqueAtualizar.sort((e1, e2) -> Integer.compare(e1.posicao(), e2.posicao()));
+
+        for (int i = 0; i < listaEstoque.size(); i++) {
+            listaEstoque.get(i)
+                    .setCor(listaEstoqueAtualizar.get(i).cor());
         }
     }
- 
-    private void validarPosicaoUnica(Integer posicao, Long idIgnorar) {
-        estoqueRepository.findByPosicao(posicao).ifPresent(existente -> {
-            if (!existente.getId().equals(idIgnorar)) {
-                throw new IllegalArgumentException(
-                        "Já existe uma posição de estoque cadastrada com o número: " + posicao);
-            }
-        });
-    }
+
 }
