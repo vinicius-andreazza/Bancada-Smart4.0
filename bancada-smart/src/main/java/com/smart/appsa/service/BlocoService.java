@@ -28,7 +28,7 @@ public class BlocoService {
     private final LaminaService laminaService;
 
     private final EstoqueService estoqueService;
-    
+
     @Transactional
     public BlocoDTO create(BlocoDTO dto) {
         validateDTO(dto);
@@ -75,13 +75,12 @@ public class BlocoService {
         blocoRepository.delete(findEntityById(id));
     }
 
-
     private List<Lamina> createLaminas(List<Lamina> laminas, Bloco bloco){
         if(laminas == null){
             return null;
         }
 
-        List<LaminaDTO> laminasDTO = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l, bloco)).toList();
+        List<LaminaDTO> laminasDTO = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.create(l, bloco)).toList();
 
         return laminasDTO.stream().map(b -> LaminaMapper.toEntity(b)).toList();
     }
