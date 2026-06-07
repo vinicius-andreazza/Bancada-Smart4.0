@@ -194,6 +194,7 @@ export class Dashboard {
   }
  
   onDiscardEstoque(): void {
+    this.discardChanges(); 
     this.refreshEstoque();
   }
 
