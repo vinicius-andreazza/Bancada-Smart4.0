@@ -11,10 +11,10 @@ const ICON_CLASS: Record<StatusCardType, string> = {
 };
 
 const ICON_COLOR_CLASS: Record<StatusCardType, string> = {
-  TOTAL:                   'gray',
-  [StatusPedido.PENDENTE]: 'amber',
-  [StatusPedido.PRODUCAO]: 'blue',
-  [StatusPedido.CONCLUIDO]:'green',
+  TOTAL:                   'bg-slate-500/15 text-slate-400',
+  [StatusPedido.PENDENTE]: 'bg-amber-500/15 text-amber-400',
+  [StatusPedido.PRODUCAO]: 'bg-blue-500/15 text-blue-400',
+  [StatusPedido.CONCLUIDO]:'bg-emerald-500/15 text-emerald-400',
 };
 
 const LABEL: Record<StatusCardType, string> = {
@@ -28,13 +28,15 @@ const LABEL: Record<StatusCardType, string> = {
   selector: 'app-status-card-pedido',
   imports: [],
   template: `
-    <div class="stat-card" [attr.aria-label]="labelText() + ': ' + total()">
-      <div class="stat-icon" [class]="color()">
+    <div class=" bg-bg-card border border-border-subtle rounded-smart p-4 flex items-center gap-4
+           transition-all duration-300
+           hover:border-border-mid hover:shadow-card" [attr.aria-label]="labelText() + ': ' + total()">
+      <div class="w-10.5 h-10.5 rounded-lg flex items-center justify-center text-lg shrink-0" [class]="color()">
         <i [class]="icon()" aria-hidden="true"></i>
       </div>
       <div>
-        <div class="stat-value">{{ total() }}</div>
-        <div class="stat-label">{{ labelText() }}</div>
+        <div class="font-heading text-[1.8rem] font-bold leading-none">{{ total() }}</div>
+        <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase mt-1">{{ labelText() }}</div>
       </div>
     </div>
   `,

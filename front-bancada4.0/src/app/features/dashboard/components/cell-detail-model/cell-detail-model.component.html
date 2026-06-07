@@ -1,23 +1,28 @@
 @if (opened()) {
 
 <div
-    class="smart-modal-overlay"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm z-1050
+           flex items-center justify-center p-4 animate-overlay-in"
     (click)="close.emit()">
 
     <div
-        class="smart-modal"
+        class=" bg-bg-card border border-border-mid rounded-2xl w-full max-w-120
+           max-h-[90vh] overflow-y-auto shadow-modal animate-modal-in"
         (click)="$event.stopPropagation()">
 
-        <div class="modal-header">
+        <div class="flex items-center justify-between px-5 py-[1.1rem] border-b border-border-subtle">
 
-            <div class="modal-title">
+            <div class="font-heading text-[1.1rem] font-bold tracking-[0.06em]">
 
                 Detalhe da Posição
 
             </div>
 
             <button
-                class="btn-icon"
+                class="w-8 h-8 p-0 inline-flex items-center justify-center rounded
+           border border-border-subtle bg-transparent text-text-secondary text-[0.8rem]
+           transition-all duration-150
+           hover:text-text-primary hover:border-border-active hover:bg-bg-hoverbtn-icon"
                 (click)="close.emit()">
 
                 X
@@ -26,7 +31,7 @@
 
         </div>
 
-        <div class="modal-body">
+        <div class="p-5">
 
             @if (position()) {
 

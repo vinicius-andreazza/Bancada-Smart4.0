@@ -90,8 +90,36 @@
     from { opacity: 0; transform: translateX(20px) scale(0.96); }
     to   { opacity: 1; transform: translateX(0) scale(1); }
   }
+
 }
 
-@import "./styles/theme.css";
-@import "./styles/components.css";
-@import "./styles/utilities.css";
+@layer base {
+  *, *::before, *::after {
+    @apply box-border m-0 p-0;
+  }
+ 
+  html {
+    scroll-behavior: smooth;
+  }
+ 
+  body {
+    @apply bg-bg-base text-text-primary font-body text-sm leading-relaxed min-h-screen antialiased;
+
+    background-size: 40px 40px;
+  }
+ 
+  a {
+    @apply text-text-accent no-underline transition-colors duration-150;
+  }
+  a:hover {
+    @apply text-[#90cdf4];
+  }
+ 
+  button {
+    @apply cursor-pointer font-body;
+  }
+ 
+  ::-webkit-scrollbar       { @apply w-1.5 h-1.5; }
+  ::-webkit-scrollbar-track { @apply bg-bg-surface; }
+  ::-webkit-scrollbar-thumb { @apply bg-border-mid rounded-full; }
+}
