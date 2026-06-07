@@ -27,17 +27,17 @@ public class PedidoController {
 
     @GetMapping("")
     public ResponseEntity<List<PedidoResponseDTO>> findAll() {
-        return ResponseEntity.ok(pedidoService.listarTodos());
+        return ResponseEntity.ok(pedidoService.findAll());
     }
 
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO){
-        return ResponseEntity.status(201).body(pedidoService.criar(pedidoRequestDTO));
+        return ResponseEntity.status(201).body(pedidoService.create(pedidoRequestDTO));
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<PedidoResponseDTO> atualizarParaConcluido(@PathVariable Long id){
-        return ResponseEntity.ok(pedidoService.atualizarParaConcluido(id));
+    public ResponseEntity<PedidoResponseDTO> updateToConcluido(@PathVariable Long id){
+        return ResponseEntity.ok(pedidoService.updateToConcluido(id));
     }
     
 }
