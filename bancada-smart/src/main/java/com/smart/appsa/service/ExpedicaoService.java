@@ -35,6 +35,7 @@ public class ExpedicaoService {
         return expedicaoRepository.findAll().stream().map(ExpedicaoMapper::toDto).toList();
     }
 
+    
     public Expedicao assignPedido(Long pedidoId) {
         Expedicao expedicao = expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
 

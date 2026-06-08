@@ -3,6 +3,7 @@ package com.smart.appsa.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.LaminaDTO;
 import com.smart.appsa.mapper.LaminaMapper;
@@ -11,7 +12,7 @@ import com.smart.appsa.model.Lamina;
 import com.smart.appsa.repository.BlocoRepository;
 import com.smart.appsa.repository.LaminaRepository;
 
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,18 +37,23 @@ public class LaminaService {
 
     public List<Lamina> findByBloco(Long blocoId) {
         Bloco bloco = blocoRepository.findById(blocoId)
-                .orElseThrow(() -> new RuntimeException("Bloco não encontrado com id: " + blocoId));
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não encontrado com id: " + blocoId));
         return laminaRepository.findByBloco(bloco);
     }
 
-    public Lamina findById(Long id) {
+    public LaminaDTO findById(Long id) {
+        return LaminaMapper.toDto(laminaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lâmina não encontrada com id: " + id)));
+    }
+
+    private Lamina findEntityById(Long id) {
         return laminaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lâmina não encontrada com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Lamina not found. id=" + id));
     }
 
     @Transactional
     public void delete(Long id) {
-        Lamina lamina = findById(id);
+        Lamina lamina = findEntityById(id);
         laminaRepository.delete(lamina);
     }
 
@@ -65,7 +71,7 @@ public class LaminaService {
 
     private void validatePositionLamina(Lamina lamina, Bloco bloco){
         boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
-                .anyMatch(l -> l.getPosicaoLamina() == lamina.getPosicaoLamina());
+                .anyMatch(l -> l.getPosicaoLamina().equals(lamina.getPosicaoLamina()));
         if (posicaoOcupada) {
             throw new IllegalArgumentException(
                     "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");

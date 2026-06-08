@@ -94,7 +94,8 @@ public class PedidoService {
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
-
+    
+    @Transactional
     public PedidoResponseDTO updateToConcluido(Long id) {
         Pedido pedidoExistente = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
