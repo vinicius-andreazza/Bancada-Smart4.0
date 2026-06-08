@@ -13,7 +13,6 @@ import com.smart.appsa.model.enums.AndarBloco;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;
-import com.smart.appsa.repository.ExpedicaoRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -34,232 +33,182 @@ public class PedidoService {
     private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
-    private final ExpedicaoRepository expedicaoRepository;
-    private final EstoqueService estoqueService;
 
-    public PedidoResponseDTO criar(PedidoRequestDTO dto) {
-        System.out.println(dto);
-        validarPedido(dto);
-        
+    @Transactional
+    public PedidoResponseDTO create(PedidoRequestDTO dto) {
         Pedido pedido = PedidoMapper.toEntity(dto);
+
+        validatePedido(pedido, dto);
 
         pedido.setDataCriacao(LocalDateTime.now());
 
         pedidoRepository.save(pedido);
 
-        atribuirPosPedidoNaExpedicao(pedido);
+        assignPosPedidoInExpedicao(pedido);
 
-        // pedido.setExpedicao(resolverExpedicao(dto.idExpedicao()));
-        
-        atualizarPedidoDosBlocos(pedido);
+        updateBlocoReferencePedido(pedido);
 
-        List<Bloco> blocosCriados = criarBlocos(pedido.getBlocos());
+        List<Bloco> blocosCriados = createBlocos(pedido.getBlocos());
         pedido.setBlocos(blocosCriados);
 
         return PedidoMapper.toResponse(pedido);
     }
 
-    public List<PedidoResponseDTO> listarTodos() {
+    public List<PedidoResponseDTO> findAll() {
         return pedidoRepository.findAll()
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
 
-    public PedidoResponseDTO buscarPorId(Long id) {
-        return PedidoMapper.toResponse(findById(id));
+    public PedidoResponseDTO findById(Long id) {
+        return PedidoMapper.toResponse(
+                pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
 
-    public PedidoResponseDTO buscarPorCodigo(String codPedido) {
+    public PedidoResponseDTO findByCodigo(String codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
                         .orElseThrow(() -> new EntityNotFoundException(
                                 "Pedido não encontrado com código: " + codPedido)));
     }
 
-    public List<PedidoResponseDTO> buscarPorStatus(StatusPedido status) {
+    public List<PedidoResponseDTO> findByStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status)
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
 
-    public List<PedidoResponseDTO> buscarPorTipo(TipoPedido tipoPedido) {
+    public List<PedidoResponseDTO> findByTipo(TipoPedido tipoPedido) {
         return pedidoRepository.findByTipoPedido(tipoPedido)
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
 
-    public List<PedidoResponseDTO> buscarPorCorTampa(CorTampa corTampa) {
-        return pedidoRepository.findByCorTampa(corTampa)
-                .stream()
-                .map(PedidoMapper::toResponse)
-                .toList();
-    }
-    /*
-     * @Transactional(readOnly = true)
-     * public List<PedidoResponseDTO> buscarPorExpedicao(Long idExpedicao) {
-     * Expedicao expedicao = expedicaoRepository.findById(idExpedicao)
-     * .orElseThrow(() -> new EntityNotFoundException(
-     * "Expedição não encontrada com id: " + idExpedicao));
-     * return pedidoRepository.findByExpedicao(expedicao)
-     * .stream()
-     * .map(PedidoMapper::toResponse)
-     * .toList();
-     * }
-     */
-
-    public List<PedidoResponseDTO> buscarPorPeriodoCriacao(LocalDateTime inicio, LocalDateTime fim) {
+    public List<PedidoResponseDTO> findByCreationPeriod(LocalDateTime inicio, LocalDateTime fim) {
         return pedidoRepository.findByDataCriacaoBetween(inicio, fim)
                 .stream()
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
+    
+    @Transactional
+    public PedidoResponseDTO updateToConcluido(Long id) {
+        Pedido pedidoExistente = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
-    public PedidoResponseDTO atualizarParaConcluido(Long id){
-        Pedido pedidoExistente = findById(id);
-        if(pedidoExistente.getStatus()==StatusPedido.CONCLUIDO){
+        if (pedidoExistente.getStatus() == StatusPedido.CONCLUIDO) {
             throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
         pedidoExistente.setDataEntrada(LocalDateTime.now());
-        /* 
-        expedicaoService.atribuirPedido(pedidoExistente.getId());
-        */
+
         pedidoRepository.save(pedidoExistente);
-        
+
         return PedidoMapper.toResponse(pedidoExistente);
     }
 
     @Transactional
     public PedidoResponseDTO put(Long id, PedidoRequestDTO dto) {
-        Pedido pedidoExistente = findById(id);
+        Pedido pedidoExistente = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         pedidoExistente.setCodPedido(dto.codPedido());
         pedidoExistente.setStatus(dto.status());
         pedidoExistente.setTipoPedido(dto.tipoPedido());
         pedidoExistente.setCorTampa(dto.corTampa());
         pedidoExistente.setDataEntrada(dto.dataEntrada());
-        /* pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao())); */
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
 
     @Transactional
     public PedidoResponseDTO patch(Long id, PedidoRequestDTO dto) {
-        Pedido pedidoExistente = findById(id);
+        Pedido pedidoExistente = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         if (dto.codPedido() != null) {
             if (dto.codPedido().isBlank())
                 throw new IllegalArgumentException("O código do pedido não pode ser vazio.");
             pedidoExistente.setCodPedido(dto.codPedido());
         }
-
         if (dto.status() != null) {
             pedidoExistente.setStatus(dto.status());
         }
-
         if (dto.tipoPedido() != null) {
             pedidoExistente.setTipoPedido(dto.tipoPedido());
         }
-
         if (dto.corTampa() != null) {
             pedidoExistente.setCorTampa(dto.corTampa());
         }
-
         if (dto.dataEntrada() != null) {
             pedidoExistente.setDataEntrada(dto.dataEntrada());
         }
-        /*
-         * if (dto.idExpedicao() != null) {
-         * pedidoExistente.setExpedicao(resolverExpedicao(dto.idExpedicao()));
-         * }
-         */
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
 
     @Transactional
-    public void deletar(Long id) {
-        pedidoRepository.delete(findById(id));
+    public void delete(Long id) {
+        pedidoRepository.delete(
+                pedidoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
 
-    private List<Bloco> criarBlocos(List<Bloco> blocos){
-        List<BlocoDTO> blocoDTOs = blocos.stream().map(b -> BlocoMapper.toDto(b)).map(b -> blocoService.create(b)).toList();
+    private List<Bloco> createBlocos(List<Bloco> blocos) {
+        List<BlocoDTO> blocoDTOs = blocos.stream().map(b -> BlocoMapper.toDto(b)).map(b -> blocoService.create(b))
+                .toList();
         return blocoDTOs.stream().map(b -> BlocoMapper.toEntity(b)).toList();
     }
 
-    private Pedido findById(Long id) {
-        return pedidoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
-    }
-    /*
-     * private Expedicao resolverExpedicao(Long idExpedicao) {
-     * if (idExpedicao == null) return null;
-     * return expedicaoRepository.findById(idExpedicao)
-     * .orElseThrow(() -> new EntityNotFoundException(
-     * "Expedição não encontrada com id: " + idExpedicao));
-     * }
-     */
-
-    public void validarQuantidadeBlocosPorTipo(Pedido pedido) {
-        if(pedido.getBlocos().size()<=0){
+    public void validateBlocosQuantityByType(Pedido pedido) {
+        if (pedido.getBlocos().size() <= 0) {
             throw new IllegalArgumentException("Quantidade invalida de blocos");
         }
-        System.out.println(pedido.getBlocos().size());
-        System.out.println(pedido.getTipoPedido().getValue());
-        if(pedido.getTipoPedido().getValue()!=pedido.getBlocos().size()){
+        if (pedido.getTipoPedido().getValue() != pedido.getBlocos().size()) {
             throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
         }
     }
 
-    public void validarEstoqueParaPedido(Pedido pedido) {
-       // List<Bloco> blocos = blocoRepository.findByPedido(pedido);
-    }
-
-    private void validarCorTampa(CorTampa corTampa) {
+    private void validateCorTampa(CorTampa corTampa) {
         if (corTampa == null) {
             throw new IllegalArgumentException("A cor da tampa é obrigatória e deve ser um valor válido.");
         }
     }
 
-
-    private void validarAndaresDuplicados(List<Bloco> blocos) {
+    private void validateDuplicatedFloors(List<Bloco> blocos) {
         Map<AndarBloco, Long> contagemPorAndar = blocos.stream()
-            .collect(Collectors.groupingBy(
-                Bloco::getAndar,
-                Collectors.counting()
-            ));
+                .collect(Collectors.groupingBy(
+                        Bloco::getAndar,
+                        Collectors.counting()));
 
         List<AndarBloco> andaresDuplicados = contagemPorAndar.entrySet()
-            .stream()
-            .filter(entry -> entry.getValue() > 1)
-            .map(Map.Entry::getKey)
-            .toList();
+                .stream()
+                .filter(entry -> entry.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .toList();
 
         if (!andaresDuplicados.isEmpty()) {
             throw new IllegalArgumentException(
-                "Existem blocos com andares duplicados: " + andaresDuplicados
-            );
+                    "Existem blocos com andares duplicados: " + andaresDuplicados);
         }
     }
 
-    private void atualizarPedidoDosBlocos(Pedido pedido){
+    private void updateBlocoReferencePedido(Pedido pedido) {
         pedido.getBlocos().forEach(b -> b.setPedido(pedido));
     }
 
-    private void atribuirPosPedidoNaExpedicao(Pedido pedido){
-        Expedicao expedicao = expedicaoService.atribuirPedido(pedido.getId());
+    private void assignPosPedidoInExpedicao(Pedido pedido) {
+        Expedicao expedicao = expedicaoService.assignPedido(pedido.getId());
 
         pedido.setPosExpedicao(expedicao.getPosicao());
     }
 
-    private void validarPedido(PedidoRequestDTO dto){
-        Pedido pedido = PedidoMapper.toEntity(dto);
-        validarCorTampa(dto.corTampa());
-        validarQuantidadeBlocosPorTipo(pedido);
-        validarAndaresDuplicados(pedido.getBlocos());
-        pedido.getBlocos().forEach(b -> estoqueService.findFirstByCor(b.getVl_cor().getValue()));
+    private void validatePedido(Pedido pedido, PedidoRequestDTO dto) {
+        validateCorTampa(dto.corTampa());
+        validateBlocosQuantityByType(pedido);
+        validateDuplicatedFloors(pedido.getBlocos());
     }
 }

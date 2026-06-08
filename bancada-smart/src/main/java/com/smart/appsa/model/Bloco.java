@@ -18,13 +18,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Data
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,7 +44,7 @@ public class Bloco {
 
     
     @Column(name = "vl_cor", nullable = false)
-    private CorBloco vl_cor;
+    private CorBloco corBloco;
 
     @Column(name="pos_estoque", nullable = false)
     private Integer posEstoque;
