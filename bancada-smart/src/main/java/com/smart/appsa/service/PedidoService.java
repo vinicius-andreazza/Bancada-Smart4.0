@@ -200,7 +200,7 @@ public class PedidoService {
     }
 
     private void assignPosPedidoInExpedicao(Pedido pedido) {
-        Expedicao expedicao = expedicaoService.atribuirPedido(pedido.getId());
+        Expedicao expedicao = expedicaoService.assignPedido(pedido.getId());
 
         pedido.setPosExpedicao(expedicao.getPosicao());
     }
