@@ -44,7 +44,9 @@ public class EstoqueService {
 
     @Transactional
     public EstoqueDTO put(Integer position, EstoqueDTO estoqueAtualizado) {
-        Estoque estoqueExistente = EstoqueMapper.toEntity(findByPosicao(position));
+        Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Posição não existe: " + position));
 
         estoqueExistente.setCor(estoqueAtualizado.cor());
 
@@ -80,7 +82,7 @@ public class EstoqueService {
         });
     }
 
-    private void validateCor(Integer cor){
+    private void validateCor(Integer cor) {
         if (cor < 1 || cor > 3) {
             throw new IllegalArgumentException("Cor invalida");
         }
