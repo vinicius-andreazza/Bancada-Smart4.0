@@ -34,6 +34,7 @@ public class PedidoController {
 
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO){
+        System.out.println(pedidoRequestDTO);
         return ResponseEntity.status(201).body(pedidoService.create(pedidoRequestDTO));
     }
 

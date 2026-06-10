@@ -20,4 +20,8 @@ public class GlobalHandlerException {
     public ResponseEntity<?> handlePedidoIsAlreadyConcluidoException(PedidoIsAlreadyConcluidoException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+    @ExceptionHandler(SeletorTampaException.class)
+    public ResponseEntity<?> handleSeletorTampaException(SeletorTampaException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }
