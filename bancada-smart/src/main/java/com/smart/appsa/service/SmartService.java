@@ -47,7 +47,7 @@ public class SmartService {
 
         printHex(buffer);
         // 2. Obter a conexão única via seu Service
-        /*PlcConnector connector = plcConnectionService.getConnection(pedidoRequest.clpIp());
+        PlcConnector connector = plcConnectionService.getConnection(pedidoRequest.clpIp());
 
         if (connector != null) {
             try {
@@ -62,7 +62,7 @@ public class SmartService {
             } catch (Exception ex) {
                 System.err.println("Erro ao enviar dados para o CLP: " + ex.getMessage());
             }
-        }*/
+        }
     }
 
     private void escreverBloco(Bloco bloco, ByteBuffer buffer) {
