@@ -1,5 +1,6 @@
 package com.smart.appsa.controller;
 
+import com.smart.appsa.service.SmartService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 @RequestMapping("/api/pedidos")
 public class PedidoController {
+    private final SmartService smartService;
     private final PedidoService pedidoService;
 
     @GetMapping("")
@@ -33,6 +35,13 @@ public class PedidoController {
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO){
         return ResponseEntity.status(201).body(pedidoService.create(pedidoRequestDTO));
+    }
+
+    @PostMapping("/enviar")
+    public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO){
+        System.out.println(pedidoRequestDTO);
+        smartService.enviarParaProducao(pedidoRequestDTO);
+        return ResponseEntity.ok("Okkkkkkkkkkkk");
     }
 
     @PutMapping("/{id}/status")

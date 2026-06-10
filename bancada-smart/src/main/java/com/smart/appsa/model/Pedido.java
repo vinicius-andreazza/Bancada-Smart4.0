@@ -50,7 +50,7 @@ public class Pedido {
     private Long id;
 
     @Column(name = "cod_pedido", nullable = false)
-    private String codPedido;
+    private Integer codPedido;
 
     @Column(name = "dt_criacao", nullable = false)
     private LocalDateTime dataCriacao;

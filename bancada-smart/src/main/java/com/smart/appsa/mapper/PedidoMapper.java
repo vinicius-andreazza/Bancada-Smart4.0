@@ -30,7 +30,7 @@ public class PedidoMapper {
                 .tipoPedido(pedido.getTipoPedido())
                 .corTampa(pedido.getCorTampa())
                 .dataEntrada(pedido.getDataEntrada())
-                .expedicao(pedido.getPosExpedicao())
+                .idExpedicao(pedido.getPosExpedicao())
                 .blocos(pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
                 .build();
     }

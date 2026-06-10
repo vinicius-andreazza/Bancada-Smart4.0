@@ -12,7 +12,7 @@ import lombok.Builder;
 public record PedidoRequestDTO(
         Long id,
         String clpIp,
-        String codPedido,
+        Integer codPedido,
         StatusPedido status,
         TipoPedido tipoPedido,
         CorTampa corTampa,

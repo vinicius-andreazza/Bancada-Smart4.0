@@ -11,13 +11,13 @@ import lombok.Builder;
 @Builder
 public record PedidoResponseDTO(
         Long id,
-        String codPedido,
+        Integer codPedido,
         LocalDateTime dataCriacao,
         StatusPedido status,
         TipoPedido tipoPedido,
         CorTampa corTampa,
         LocalDateTime dataEntrada,
-        Integer expedicao,
+        Integer idExpedicao,
         List<BlocoDTO> blocos
 ) {
 
