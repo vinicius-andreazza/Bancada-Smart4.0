@@ -17,4 +17,8 @@ export class PedidoService {
   postPedido(pedido: Pedido){
     return this.http.post( `${this.config.apiUrl}/api/pedidos`, pedido); 
   }
+  postEnviarPedido(pedido: Pedido){
+    console.log(`${this.config.apiUrl}/api/pedidos/enviar`);
+    return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido); 
+  }
 }

@@ -6,7 +6,7 @@ import { BadgeComponent } from '../badge/badge.component';
   imports: [BadgeComponent],
   template: `
     <div class="flex items-center gap-2">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <h3 class="text-lg font-semibold text-gray-100">
         {{ title() }}
       </h3>
       @if (badge()) {

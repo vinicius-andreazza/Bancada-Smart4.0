@@ -5,13 +5,14 @@ import { TipoPedido } from "./enums/tipopedido.enum";
 
 export interface Pedido {
     id: number,
-    codPedido: string,
+    codPedido: number,
+    clpIp: string,
     dataCriacao: string,
     status: StatusPedido,
     tipoPedido: TipoPedido,
     corTampa: CorTampa,
     dataEntrada: string | null,
-    expedicao: number,
+    idExpedicao: number,
     blocos: Bloco[]
 
 }
