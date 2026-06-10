@@ -105,7 +105,7 @@ public class BlocoService {
         if (dto.pedido() == null || dto.pedido().getId() == null) {
             throw new IllegalArgumentException("O pedido do bloco é obrigatório.");
         }
-        if (dto.laminas().size() > 3 || dto.laminas().isEmpty()) {
+        if (dto.laminas().size() > 3) {
             throw new IllegalArgumentException("Número inválido de laminas");
         }
     }
@@ -115,8 +115,8 @@ public class BlocoService {
             bloco.getLaminas().forEach(l -> l.setBloco(bloco));
         }
     }
-
-    private void assignEstoquePosition(Bloco bloco) {
+    @Transactional
+    public void assignEstoquePosition(Bloco bloco) {
         Estoque pos = estoqueService.findFirstByCor(bloco.getCorBloco().getValue());
         bloco.setPosEstoque(pos.getPosicao());
         pos.setCor(0);

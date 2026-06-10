@@ -67,7 +67,7 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
 
-    public PedidoResponseDTO findByCodigo(String codPedido) {
+    public PedidoResponseDTO findByCodigo(Integer codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
                         .orElseThrow(() -> new EntityNotFoundException(
@@ -131,8 +131,6 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         if (dto.codPedido() != null) {
-            if (dto.codPedido().isBlank())
-                throw new IllegalArgumentException("O código do pedido não pode ser vazio.");
             pedidoExistente.setCodPedido(dto.codPedido());
         }
         if (dto.status() != null) {
