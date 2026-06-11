@@ -1,0 +1,25 @@
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4" [formGroup]="form()">
+
+  <app-select-field id="corLamina" label="Cor da lâmina" [control]="form().get('corLamina')!">
+    <option value="1">Vermelho</option>
+    <option value="2">Azul</option>
+    <option value="3">Amarelo</option>
+    <option value="4">Verde</option>
+    <option value="5">Preto</option>
+    <option value="6">Branco</option>
+  </app-select-field>
+
+  <app-select-field id="padraoLamina" label="Padrão" [control]="form().get('padraoLamina')!">
+    <option value="0">Nenhum</option>
+    <option value="1">Casa</option>
+    <option value="2">Navio</option>
+    <option value="3">Estrela</option>
+  </app-select-field>
+
+  <app-select-field id="posicaoLamina" label="Posição" [control]="form().get('posicaoLamina')!">
+    <option value="1">Esquerda</option>
+    <option value="2">Frente</option>
+    <option value="3">Direita</option>
+  </app-select-field>
+
+</div>

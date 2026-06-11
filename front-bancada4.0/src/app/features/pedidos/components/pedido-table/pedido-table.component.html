@@ -1,0 +1,37 @@
+<div class="overflow-x-auto rounded-lg">
+  <table class="w-full border-collapse" aria-label="Lista de pedidos">
+    <thead>
+      <tr class="border-b border-gray-800 bg-gray-900/60">
+        @for (col of colunas; track col.key) {
+          <th
+            scope="col"
+            [class]="'px-4 py-2.5 font-mono text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-gray-500 whitespace-nowrap ' + (col.align === 'right' ? 'text-right' : 'text-left')"
+          >
+            {{ col.label }}
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-800/60">
+      @for (pedido of pedidos(); track pedido.id) {
+        <tr
+          app-pedido-row
+          [pedido]="pedido"
+          (onVerDetalhe)="verDetalhe.emit($event)"
+          (onExcluir)="excluir.emit($event)"
+          class="transition-colors duration-150 hover:bg-gray-800/40"
+        ></tr>
+      } @empty {
+        <tr>
+          <td colspan="8" class="p-0">
+            <app-table-empty-state
+              icon="fa-solid fa-inbox"
+              title="Nenhum pedido encontrado"
+              description="Crie um novo pedido para começar"
+            />
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

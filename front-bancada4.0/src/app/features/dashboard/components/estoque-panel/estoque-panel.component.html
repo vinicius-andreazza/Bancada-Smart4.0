@@ -1,0 +1,116 @@
+<div
+  class="rounded-xl border bg-gray-900 transition-all duration-300"
+  [class]="editMode()
+    ? 'border-blue-500/40 shadow-[0_0_0_1px_rgba(59,130,246,0.15),0_0_24px_rgba(59,130,246,0.08)]'
+    : 'border-gray-800'"
+>
+
+  <div
+    class="flex items-center justify-between gap-3 px-5 py-4 border-b"
+    [class]="editMode() ? 'border-blue-500/20' : 'border-gray-800'"
+  >
+    <div class="flex items-center gap-2 text-sm font-semibold text-gray-100 tracking-wide">
+      <i class="fa-solid fa-boxes-stacked text-indigo-400" aria-hidden="true"></i>
+      Painel de Estoque
+      <span class="font-mono text-[0.65rem] font-normal text-gray-600 ml-0.5">
+        {{ positions().length }} posições
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2 h-8">
+
+      @if (!editMode()) {
+
+        <button
+          type="button"
+          aria-label="Recarregar estoque"
+          title="Recarregar estoque"
+          class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500
+                 hover:text-gray-300 hover:bg-gray-800 transition-colors duration-150
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          (click)="refresh.emit()"
+        >
+          <i class="fa-solid fa-arrows-rotate text-sm" aria-hidden="true"></i>
+        </button>
+
+        <app-button [variant]="'secondary'" [size]="'sm'" [type]="'button'"
+                    (click)="enterEditMode.emit()">
+          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+          Editar
+        </app-button>
+
+      } @else {
+
+        @if (hasChanges()) {
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono
+                   text-[0.65rem] font-semibold tracking-[0.08em]
+                   bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse"
+            aria-live="polite"
+          >
+            <i class="fa-solid fa-circle-dot text-[0.55rem]" aria-hidden="true"></i>
+            {{ changeCount() }} {{ changeCount() === 1 ? 'alteração' : 'alterações' }}
+          </span>
+        }
+
+        <app-button [variant]="'danger'" [size]="'sm'" [type]="'button'"
+                    (click)="discard.emit()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          Descartar
+        </app-button>
+
+        <app-button [variant]="'primary'" [size]="'sm'" [type]="'button'"
+                    [disabled]="!hasChanges()"
+                    (click)="save.emit()">
+          <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+          Salvar
+        </app-button>
+
+      }
+
+    </div>
+  </div>
+
+  <div
+    class="border-b overflow-hidden transition-all duration-200"
+    [class]="editMode()
+      ? 'border-blue-500/15 bg-blue-500/4 max-h-20 opacity-100'
+      : 'border-transparent max-h-0 opacity-0'"
+  >
+    <app-estoque-edit-toolbar
+      [selectedColor]="selectedColor()"
+      (colorSelect)="selectColor.emit($event)"
+    />
+  </div>
+
+  <div class="p-5">
+    <div
+      class="grid grid-cols-6  gap-2"
+      role="grid"
+      [attr.aria-label]="editMode() ? 'Grade de estoque em modo edição' : 'Grade de estoque'"
+    >
+      @for (pos of positions(); track pos.posicao) {
+        <div
+          app-estoque-cell
+          [pos]="pos"
+          [cor]="getCellColor(pos)"
+          [editMode]="editMode()"
+          [changed]="isCellChanged(pos)"
+          (cellClick)="onCellClick($event)"
+        ></div>
+      }
+    </div>
+  </div>
+
+</div>
+
+<style>
+  @keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  @keyframes editPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+    50%       { opacity: 0.7; box-shadow: 0 0 0 4px rgba(59,130,246,0); }
+  }
+</style>
