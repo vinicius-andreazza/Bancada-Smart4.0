@@ -168,9 +168,7 @@ public class EstoqueComm {
     }
 
     private void validarOperacaoPelasFlags() {
-        
         if (!estoquePlc.isStartOp() && !estoquePlc.isCancelOp() && !estoquePlc.isFinishOp()) {
-
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, false);
             } catch (Exception e) {
