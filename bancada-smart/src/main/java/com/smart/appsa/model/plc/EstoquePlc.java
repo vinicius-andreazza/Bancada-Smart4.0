@@ -1,5 +1,7 @@
 package com.smart.appsa.model.plc;
 
+import org.springframework.stereotype.Component;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Component
 public class EstoquePlc {
     private boolean recebidoOP;
 
