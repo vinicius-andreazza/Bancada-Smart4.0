@@ -14,14 +14,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Component
-public class ProcessoPlc {
+public class MontagemPlc {
     private boolean recebidoOP;
 
     private int numeroOP;
     private boolean cancelOP;
     private boolean finishOP;
     private boolean startOP;
-
 
     private boolean ocupado;
     private boolean aguardando;
