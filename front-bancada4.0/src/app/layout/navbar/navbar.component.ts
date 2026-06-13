@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { NavLinkComponent } from '../../shared/components/nav-link/nav-link.component'
 import { StatusBadgeComponent } from '../../shared/components/status-badges/status-badges.component'
 import { NavigationEnd, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
+import { ConexaoService } from '../../core/service/conexao.service';
 
 interface NavItem {
   readonly label: string;
@@ -18,12 +19,24 @@ interface NavItem {
 })
 export class Navbar {
   private readonly router = inject(Router);
- 
+  private readonly conexao = inject(ConexaoService);
+
+  readonly minimal = input(false);
+
+  readonly systemStatus = computed<'online' | 'offline'>(() =>
+    this.conexao.isConnected() ? 'online' : 'offline',
+  );
+
   readonly navItems: NavItem[] = [
     {
       label: 'Dashboard',
       route: '/dashboard',
       ariaLabel: 'Ir para o Dashboard',
+    },
+    {
+      label: 'Monitoramento',
+      route: '/monitoramento',
+      ariaLabel: 'Ir para Monitoramento',
     },
     {
       label: 'Criar Pedido',
@@ -35,8 +48,13 @@ export class Navbar {
       route: '/pedidos',
       ariaLabel: 'Ir para Ver Pedidos',
     },
+    {
+      label: 'Configuração',
+      route: '/configuracao',
+      ariaLabel: 'Ir para Configuração',
+    },
   ];
- 
+
   readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
