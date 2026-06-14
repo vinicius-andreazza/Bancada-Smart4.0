@@ -15,6 +15,12 @@
 
     <div slot="body" class="flex flex-col">
 
+        @if (editMode() && editForm) {
+        <form [formGroup]="editForm" class="px-6 py-4">
+            <app-pedido-card [form]="editForm" />
+        </form>
+        } @else {
+
         <div class="grid grid-cols-3 gap-px bg-gray-800 border-b border-gray-800">
             @for (meta of metaInfo(); track meta.label) {
             <div class="flex flex-col gap-0.5 px-5 py-3 bg-gray-950">
@@ -33,14 +39,29 @@
             }
         </div>
 
+        }
+
     </div>
 
     <ng-container slot="footer">
+        @if (editMode()) {
+        <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="descartar()">
+            Descartar
+        </app-button>
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="confirmarEdicao()">
+            <i class="fa-solid fa-floppy-disk mr-1.5" aria-hidden="true"></i>
+            Salvar
+        </app-button>
+        } @else {
         @switch (pedido().status) {
 
         @case (StatusPedido.PENDENTE) {
         <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="fechar.emit()">
             Cancelar
+        </app-button>
+        <app-button [variant]="'secondary'" [size]="'md'" [type]="'button'" (click)="entrarEdicao()">
+            <i class="fa-solid fa-pen-to-square mr-1.5" aria-hidden="true"></i>
+            Editar
         </app-button>
         <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="enviarProducao.emit(pedido())">
             <i class="fa-solid fa-gears mr-1.5" aria-hidden="true"></i>
@@ -69,6 +90,7 @@
         </app-button>
         }
 
+        }
         }
     </ng-container>
 

@@ -67,5 +67,15 @@
     (fechar)="fecharDetalhe()"
     (enviarProducao)="onEnviarProducao($event)"
     (retirar)="onRetirar($event)"
+    (salvar)="onSalvarEdicao($event)"
   />
 }
+
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+  @if (saveSuccess()) {
+  <app-toast-notifications [text]="'Pedido atualizado com sucesso!'" [variant]="'success'" />
+  }
+  @if (saveError()) {
+  <app-toast-notifications [text]="'Houve um erro ao atualizar o pedido'" [variant]="'error'" />
+  }
+</div>

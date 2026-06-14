@@ -12,6 +12,7 @@ import { StatusCardPedido } from '../../../../shared/components/status-card-pedi
 import { PedidoService } from '../../../../core/service/pedido.service';
 import { PedidoDetalheModalComponent } from "../../components/pedido-detalhe-modal/pedido-detalhe-modal.component";
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
 
 type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
 
@@ -26,7 +27,8 @@ type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
     StatusCardPedido,
     PedidoTable,
     PedidoDetalheModalComponent,
-    ModalComponent
+    ModalComponent,
+    ToastNotifications
   ],
   templateUrl: './lista-pedidos.component.html',
 })
@@ -46,6 +48,9 @@ export class ListaPedidos {
   readonly pedidoSelecionado = signal<Pedido | null>(null);
 
   readonly pedidoProducao = signal<Pedido | null>(null);
+
+  readonly saveSuccess = signal(false);
+  readonly saveError = signal(false);
 
   readonly ipClpControl = new FormControl('');
 
@@ -96,6 +101,22 @@ export class ListaPedidos {
 
   onRetirar(pedido: Pedido) {
     console.log("Retirando pedido: "+pedido.codPedido)
+  }
+
+  onSalvarEdicao(pedido: Pedido) {
+    this.pedidoService.patchPedido(pedido.id, pedido).subscribe({
+      next: () => {
+        this.getPedidos();
+        this.fecharDetalhe();
+        this.saveSuccess.set(true);
+        setTimeout(() => this.saveSuccess.set(false), 2000);
+      },
+      error: (err) => {
+        console.log(err);
+        this.saveError.set(true);
+        setTimeout(() => this.saveError.set(false), 3000);
+      },
+    });
   }
 
   onEnviarProducao(pedido: Pedido) {

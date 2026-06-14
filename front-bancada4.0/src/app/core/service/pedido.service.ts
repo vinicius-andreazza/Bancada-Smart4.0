@@ -20,6 +20,10 @@ export class PedidoService {
   
   postEnviarPedido(pedido: Pedido){
     console.log(`${this.config.apiUrl}/api/pedidos/enviar`);
-    return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido); 
+    return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido);
+  }
+
+  patchPedido(id: number, pedido: Pedido){
+    return this.http.patch( `${this.config.apiUrl}/api/pedidos/${id}`, pedido);
   }
 }
