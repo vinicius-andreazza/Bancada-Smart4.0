@@ -20,6 +20,18 @@ public class PedidoMapper {
                 // expedicao é resolvida no service via idExpedicao
                 .build();
     }
+
+    public static Pedido toEntity(PedidoResponseDTO dto) {
+        return Pedido.builder()
+                .id(dto.id())
+                .codPedido(dto.codPedido())
+                .status(dto.status())
+                .tipoPedido(dto.tipoPedido())
+                .corTampa(dto.corTampa())
+                .dataEntrada(dto.dataEntrada())
+                .blocos(dto.blocos().stream().map(b -> BlocoMapper.toEntity(b)).toList())
+                .build();
+    }
  
     public static PedidoResponseDTO toResponse(Pedido pedido) {
         return PedidoResponseDTO.builder()
