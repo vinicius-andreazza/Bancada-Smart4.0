@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.dto.EstoqueDTO;
 import com.smart.appsa.mapper.clp.EstoquePlcMapper;
 import com.smart.appsa.model.plc.EstoquePlc;
@@ -16,6 +17,8 @@ import com.smart.appsa.service.clp.reader.PlcReader;
 @Service
 public class EstoqueComm {
 
+    private final EstoqueIp estoqueIp;
+
     private PlcReader plcReader;
 
     private final PlcConnectionService plcConnectionService;
@@ -24,8 +27,6 @@ public class EstoqueComm {
 
     private final EstoquePlc estoquePlc;
 
-    private String ip = "10.74.241.10";
-    
     private final ExecutorService estoquePool = Executors.newSingleThreadExecutor();
 
     private static final int DELAY = 600;
@@ -34,21 +35,20 @@ public class EstoqueComm {
     private static final int OFFSET_GERENCIAMENTO_ESTOQUE = 64;
     private static final int OFFSET_POSICAO_GUARDAR = 66;
 
-    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc) {
+    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc, EstoqueIp estoqueIp) {
         this.plcConnectionService = plcConnectionService;
         this.estoqueService = estoqueService;
         this.estoquePlc = estoquePlc;
+        this.estoqueIp = estoqueIp;
     }
 
-    public void startComm(String ip) {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(ip), "Estoque", DB_ESTOQUE, 0, 108,
-                data -> handleData(data, ip));
+    public void startComm() {
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(estoqueIp.getIp()), "Estoque", DB_ESTOQUE, 0, 108,
+                data -> handleData(data));
         estoquePool.execute(plcReader);
     }
 
-    private void handleData(byte[] data, String ip) {
-        this.ip = ip;
-
+    private void handleData(byte[] data) {
         EstoquePlcMapper.updateData(data, estoquePlc);
 
         validarPedido();
@@ -213,7 +213,7 @@ public class EstoqueComm {
     }
 
     private PlcConnector getConnector() {
-        return plcConnectionService.getConnection(ip);
+        return plcConnectionService.getConnection(estoqueIp.getIp());
     }
 
 }

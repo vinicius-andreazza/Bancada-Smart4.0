@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp;
 
+import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.service.ExpedicaoService;
 import com.smart.appsa.service.PedidoService;
 
@@ -18,6 +19,7 @@ import com.smart.appsa.service.clp.reader.PlcReader;
 
 @Service
 public class ExpedicaoComm {
+    private final ExpedicaoIp expedicaoIp;
     private final ExpedicaoService expedicaoService;
     private final PedidoService pedidoService;
 
@@ -26,8 +28,6 @@ public class ExpedicaoComm {
     private final PlcConnectionService plcConnectionService;
 
     private final ExpedicaoPlc expedicaoPlc;
-
-    private String ip = "10.74.241.40";
 
     private final ExecutorService expedicaoPool = Executors.newSingleThreadExecutor();
 
@@ -38,21 +38,21 @@ public class ExpedicaoComm {
     private static final int OFFSET_POSICAO_GUARDAR = 4;
 
     public ExpedicaoComm(PlcConnectionService plcConnectionService,
-                         ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService) {
+                         ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService, ExpedicaoIp expedicaoIp) {
         this.plcConnectionService = plcConnectionService;
         this.expedicaoPlc = expedicaoPlc;
         this.expedicaoService = expedicaoService;
         this.pedidoService = pedidoService;
+        this.expedicaoIp = expedicaoIp;
     }
 
-    public void startComm(String ip) {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(ip), "Expedicao", DB_EXPEDICAO, 0, 46,
-                data -> handleData(data, ip));
+    public void startComm() {
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(expedicaoIp.getIp()), "Expedicao", DB_EXPEDICAO, 0, 46,
+                data -> handleData(data));
         expedicaoPool.execute(plcReader);
     }
 
-    private void handleData(byte[] data, String ip) {
-        this.ip = ip;
+    private void handleData(byte[] data) {
 
         ExpedicaoPlcMapper.updateData(data, expedicaoPlc);
 
@@ -211,6 +211,6 @@ public class ExpedicaoComm {
     }
 
     private PlcConnector getConnector() {
-        return plcConnectionService.getConnection(ip);
+        return plcConnectionService.getConnection(expedicaoIp.getIp());
     }
 }

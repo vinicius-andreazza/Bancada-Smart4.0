@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp;
 
+import com.smart.appsa.config.ipconfig.MontagemIp;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,13 +15,13 @@ import com.smart.appsa.service.clp.reader.PlcReader;
 @Service
 public class MontagemComm {
     
+    private final MontagemIp montagemIp;
+
     private PlcReader plcReader;
 
     private final PlcConnectionService plcConnectionService;
 
     private final MontagemPlc montagemPlc;
-
-    private String ip = "10.74.241.30";
 
     private final ExecutorService processoPool = Executors.newSingleThreadExecutor();
 
@@ -28,19 +29,19 @@ public class MontagemComm {
     private static final int DB_MONTAGEM = 57;
     private static final int OFFSET_RECEBIDO_OP = 0;
 
-    public MontagemComm(PlcConnectionService plcConnectionService, MontagemPlc montagemPlc) {
+    public MontagemComm(PlcConnectionService plcConnectionService, MontagemPlc montagemPlc, MontagemIp montagemIp) {
         this.plcConnectionService = plcConnectionService;
         this.montagemPlc = montagemPlc;
+        this.montagemIp = montagemIp;
     }
 
-    public void startComm(String ip) {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(ip), "Montagem", DB_MONTAGEM, 0, 6,
-                data -> handleData(data, ip));
+    public void startComm() {
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(montagemIp.getIp()), "Montagem", DB_MONTAGEM, 0, 6,
+                data -> handleData(data));
         processoPool.execute(plcReader);
     }
 
-    private void handleData(byte[] data, String ip) {
-        this.ip = ip;
+    private void handleData(byte[] data) {
 
         MontagemPlcMapper.updateData(data, montagemPlc);
 
@@ -88,7 +89,7 @@ public class MontagemComm {
     }
 
     private PlcConnector getConnector() {
-        return plcConnectionService.getConnection(ip);
+        return plcConnectionService.getConnection(montagemIp.getIp());
     }
 
 
