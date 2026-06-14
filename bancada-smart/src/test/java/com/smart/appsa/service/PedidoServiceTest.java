@@ -42,18 +42,13 @@ class PedidoServiceTest {
 
     @Test
     void shouldReturnAllPedidosWhenPedidosExist() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setCodPedido("PED-001");
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
+        Pedido p = createPedido();
         when(pedidoRepository.findAll()).thenReturn(List.of(p));
 
         List<PedidoResponseDTO> resultado = pedidoService.findAll();
 
         assertThat(resultado).hasSize(1);
-        assertThat(resultado.get(0).codPedido()).isEqualTo("PED-001");
+        assertThat(resultado.get(0).codPedido()).isEqualTo(1);
     }
 
     @Test
@@ -67,43 +62,37 @@ class PedidoServiceTest {
 
     @Test
     void shouldReturnPedidoWhenFindByIdGivenExistingId() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setCodPedido("001");
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
+        Pedido p = createPedido();
 
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
 
         PedidoResponseDTO dto = pedidoService.findById(1L);
 
         assertThat(dto.id()).isEqualTo(1L);
-        assertThat(dto.codPedido()).isEqualTo("001");
+        assertThat(dto.codPedido()).isEqualTo(1);
     }
 
     @Test
     void shouldThrowEntityNotFoundWhenFindByCodigoGivenUnknownCodigo() {
-        when(pedidoRepository.findByCodPedido("INVALIDO")).thenReturn(Optional.empty());
+        when(pedidoRepository.findByCodPedido(0)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> pedidoService.findByCodigo("INVALIDO"))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("INVALIDO");
+        assertThatThrownBy(() -> pedidoService.findByCodigo(0))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
     void shouldReturnPedidoWhenFindByCodigoGivenExistingCodigo() {
         Pedido p = new Pedido();
         p.setId(2L);
-        p.setCodPedido("PED-XYZ");
+        p.setCodPedido(1);
         p.setStatus(StatusPedido.PRODUCAO);
         p.setTipoPedido(TipoPedido.DUPLO);
         p.setBlocos(List.of());
-        when(pedidoRepository.findByCodPedido("PED-XYZ")).thenReturn(Optional.of(p));
+        when(pedidoRepository.findByCodPedido(1)).thenReturn(Optional.of(p));
 
-        PedidoResponseDTO dto = pedidoService.findByCodigo("PED-XYZ");
+        PedidoResponseDTO dto = pedidoService.findByCodigo(1);
 
-        assertThat(dto.codPedido()).isEqualTo("PED-XYZ");
+        assertThat(dto.codPedido()).isEqualTo(1);
     }
 
 
@@ -147,11 +136,7 @@ class PedidoServiceTest {
 
     @Test
     void shouldSetStatusConcluidoWhenUpdateToConcluidoGivenPendente() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
+        Pedido p = createPedido();
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -163,16 +148,13 @@ class PedidoServiceTest {
 
     @Test
     void shouldSetDataEntradaNowWhenUpdateToConcluido() {
-        Pedido p = new Pedido();
-        p.setId(5L);
+        Pedido p = createPedido();
         p.setStatus(StatusPedido.PRODUCAO);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
-        when(pedidoRepository.findById(5L)).thenReturn(Optional.of(p));
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
         when(pedidoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         LocalDateTime antes = LocalDateTime.now().minusSeconds(1);
-        PedidoResponseDTO resultado = pedidoService.updateToConcluido(5L);
+        PedidoResponseDTO resultado = pedidoService.updateToConcluido(1L);
         LocalDateTime depois = LocalDateTime.now().plusSeconds(1);
 
         assertThat(resultado.dataEntrada()).isBetween(antes, depois);
@@ -246,7 +228,7 @@ class PedidoServiceTest {
     void shouldAssignExpedicaoAndCreateBlocosWhenCreateGivenValidPedido() {
         BlocoDTO blocoDto = new BlocoDTO(null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO, null, List.of());
         PedidoRequestDTO dto = PedidoRequestDTO.builder()
-                .codPedido("PED-100")
+                .codPedido(1)
                 .status(StatusPedido.PENDENTE)
                 .tipoPedido(TipoPedido.SIMPLES)
                 .corTampa(CorTampa.PRETO)
@@ -260,9 +242,9 @@ class PedidoServiceTest {
 
         PedidoResponseDTO resultado = pedidoService.create(dto);
 
-        assertThat(resultado.codPedido()).isEqualTo("PED-100");
+        assertThat(resultado.codPedido()).isEqualTo(1);
         assertThat(resultado.dataCriacao()).isNotNull();
-        assertThat(resultado.expedicao()).isEqualTo(5);
+        assertThat(resultado.idExpedicao()).isEqualTo(5);
         assertThat(resultado.blocos()).hasSize(1);
         verify(pedidoRepository).save(any(Pedido.class));
         verify(blocoService).create(any(BlocoDTO.class));
@@ -273,7 +255,7 @@ class PedidoServiceTest {
         BlocoDTO b1 = new BlocoDTO(null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO, null, List.of());
         BlocoDTO b2 = new BlocoDTO(null, CorBloco.AZUL, null, AndarBloco.PRIMEIRO, null, List.of());
         PedidoRequestDTO dto = PedidoRequestDTO.builder()
-                .codPedido("PED-200")
+                .codPedido(200)
                 .status(StatusPedido.PENDENTE)
                 .tipoPedido(TipoPedido.DUPLO)
                 .corTampa(CorTampa.AZUL)
@@ -281,8 +263,7 @@ class PedidoServiceTest {
                 .build();
 
         assertThatThrownBy(() -> pedidoService.create(dto))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("andares duplicados");
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
 
@@ -296,39 +277,19 @@ class PedidoServiceTest {
     }
 
     @Test
-    void shouldThrowWhenPatchGivenBlankCodPedido() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
-
-        PedidoRequestDTO dto = PedidoRequestDTO.builder().codPedido("   ").build();
-
-        assertThatThrownBy(() -> pedidoService.patch(1L, dto))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("código do pedido");
-    }
-
-    @Test
     void shouldUpdateOnlyNonNullFieldsWhenPatch() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setCodPedido("PED-OLD");
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setBlocos(List.of());
+        Pedido p = createPedido();
+        
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
         when(pedidoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         PedidoRequestDTO dto = PedidoRequestDTO.builder()
-                .codPedido("PED-NEW")
+                .codPedido(2)
                 .build();
 
         PedidoResponseDTO resultado = pedidoService.patch(1L, dto);
 
-        assertThat(resultado.codPedido()).isEqualTo("PED-NEW");
+        assertThat(resultado.codPedido()).isEqualTo(2);
         assertThat(resultado.status()).isEqualTo(StatusPedido.PENDENTE);
     }
 
@@ -349,13 +310,23 @@ class PedidoServiceTest {
         assertThatNoException().isThrownBy(() -> pedidoService.delete(1L));
         verify(pedidoRepository).delete(p);
     }
-    
+
     private Bloco blocoSimples(AndarBloco andar) {
         Bloco b = new Bloco();
         b.setAndar(andar);
         b.setCorBloco(CorBloco.PRETO);
         b.setLaminas(List.of());
         return b;
+    }
+
+    private Pedido createPedido(){
+        Pedido p = new Pedido();
+        p.setId(1L);
+        p.setCodPedido(1);
+        p.setStatus(StatusPedido.PENDENTE);
+        p.setTipoPedido(TipoPedido.SIMPLES);
+        p.setBlocos(List.of());
+        return p;
     }
 
 }

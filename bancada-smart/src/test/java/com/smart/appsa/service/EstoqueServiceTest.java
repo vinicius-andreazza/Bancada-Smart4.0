@@ -115,7 +115,7 @@ class EstoqueServiceTest {
         when(estoqueRepository.findByPosicao(1)).thenReturn(Optional.of(estoqueExistente));
         when(estoqueRepository.save(any(Estoque.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        EstoqueDTO dtoAtualizado = new EstoqueDTO(1, 3);
+        EstoqueDTO dtoAtualizado = new EstoqueDTO(null,1, 3);
         EstoqueDTO resultado = estoqueService.put(1, dtoAtualizado);
 
         assertThat(resultado.cor()).isEqualTo(3);
@@ -125,7 +125,7 @@ class EstoqueServiceTest {
     void shouldThrowEntityNotFoundWhenPutGivenUnknownPosicao() {
         when(estoqueRepository.findByPosicao(50)).thenReturn(Optional.empty());
 
-        EstoqueDTO dto = new EstoqueDTO(50, 1);
+        EstoqueDTO dto = new EstoqueDTO(null, 50, 1);
 
         assertThatThrownBy(() -> estoqueService.put(50, dto))
                 .isInstanceOf(EntityNotFoundException.class);
@@ -137,7 +137,7 @@ class EstoqueServiceTest {
         when(estoqueRepository.findByPosicao(2)).thenReturn(Optional.of(estoqueComPosicao(2, 1)));
         when(estoqueRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
-        List<EstoqueDTO> entrada = List.of(new EstoqueDTO(1, 3), new EstoqueDTO(2, 0));
+        List<EstoqueDTO> entrada = List.of(new EstoqueDTO(null,1, 3), new EstoqueDTO(null,2, 0));
         List<EstoqueDTO> resultado = estoqueService.putAll(entrada);
 
         assertThat(resultado).hasSize(2);
@@ -155,7 +155,7 @@ class EstoqueServiceTest {
     void shouldThrowEntityNotFoundWhenPutAllGivenUnknownPosicao() {
         when(estoqueRepository.findByPosicao(99)).thenReturn(Optional.empty());
 
-        List<EstoqueDTO> entrada = List.of(new EstoqueDTO(99, 1));
+        List<EstoqueDTO> entrada = List.of(new EstoqueDTO(null,99, 1));
 
         assertThatThrownBy(() -> estoqueService.putAll(entrada))
                 .isInstanceOf(EntityNotFoundException.class);
