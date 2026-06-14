@@ -1,19 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EstoqueCell } from './estoque-cell.component';
+import { EstoqueCellComponent } from './estoque-cell.component';
+import { CorBloco } from '../../../../../core/models/enums/corbloco.enum';
+import { Estoque } from '../../../../../core/models/estoque.model';
 
-describe('EstoqueCell', () => {
-  let component: EstoqueCell;
-  let fixture: ComponentFixture<EstoqueCell>;
+describe('EstoqueCellComponent', () => {
+  let component: EstoqueCellComponent;
+  let fixture: ComponentFixture<EstoqueCellComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EstoqueCell],
+      imports: [EstoqueCellComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EstoqueCell);
+    fixture = TestBed.createComponent(EstoqueCellComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    const pos: Estoque = { posicao: 1, cor: CorBloco.VAZIO };
+    fixture.componentRef.setInput('pos', pos);
+    fixture.componentRef.setInput('editMode', false);
+    fixture.componentRef.setInput('cor', CorBloco.VAZIO);
   });
 
   it('should create', () => {

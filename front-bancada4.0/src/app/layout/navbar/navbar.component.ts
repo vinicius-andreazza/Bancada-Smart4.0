@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { NavLinkComponent } from '../../shared/components/nav-link/nav-link.component'
 import { StatusBadgeComponent } from '../../shared/components/status-badges/status-badges.component'
 import { NavigationEnd, Router } from '@angular/router';
@@ -66,4 +66,8 @@ export class Navbar {
   isActive(route: string): boolean {
     return this.currentUrl()?.startsWith(route) ?? false;
   }
+
+  menuOpen = signal(false);
+  toggleMenu() { this.menuOpen.update(v => !v); }
+  closeMenu() { this.menuOpen.set(false); }
 }

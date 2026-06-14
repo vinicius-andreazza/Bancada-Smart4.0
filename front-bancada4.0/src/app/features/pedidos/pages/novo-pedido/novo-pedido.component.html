@@ -2,7 +2,7 @@
 
   <app-navbar />
 
-  <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
 
     <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
       Novo pedido
@@ -10,25 +10,31 @@
 
     <div>
       @if (saveSuccess()) {
-        <app-toast-notifications [text]="'Pedido criado com sucesso!'" [variant]="'success'"></app-toast-notifications>
+      <app-toast-notifications [text]="'Pedido criado com sucesso!'" [variant]="'success'"></app-toast-notifications>
       }
       @if (saveError()) {
-        <app-toast-notifications [text]="'Houve um erro na criação do pedido'" [variant]="'error'"></app-toast-notifications>
+      <app-toast-notifications [text]="'Houve um erro na criação do pedido'"
+        [variant]="'error'"></app-toast-notifications>
       }
       @if (isSaving()) {
-        <app-toast-notifications [text]="'Pedido enviado...'" [variant]="'info'"></app-toast-notifications>
+      <app-toast-notifications [text]="'Pedido enviado...'" [variant]="'info'"></app-toast-notifications>
       }
     </div>
 
     <form id="pedidoForm" [formGroup]="pedidoForm" (ngSubmit)="enviarPedido()" class="flex flex-col gap-6">
 
-      <app-pedido-card [form]="pedidoForm" />
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+        <div class="min-w-0">
+          <app-pedido-card [form]="pedidoForm" />
+        </div>
+        <app-pedido-3d-preview [form]="pedidoForm" />
+      </div>
 
       <div class="flex items-center gap-3">
         <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="gerarJson()">
           Gerar JSON
         </app-button>
-        <app-button [variant]="'primary'" [size]="'md'" [type]="'submit'" >
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'submit'">
           Enviar pedido
         </app-button>
       </div>
@@ -36,7 +42,7 @@
     </form>
 
     @if (jsonOutput()) {
-      <pre class="rounded-lg border border-gray-200 dark:border-gray-700
+    <pre class="rounded-lg border border-gray-200 dark:border-gray-700
                   bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200
                   text-sm p-4 overflow-x-auto">{{ jsonOutput() }}</pre>
     }

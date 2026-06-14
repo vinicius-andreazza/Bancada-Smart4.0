@@ -1,19 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ColorPick } from './color-pick.component';
+import { ColorPickerComponent } from './color-pick.component';
+import { CorBloco } from '../../../../core/models/enums/corbloco.enum';
 
-describe('ColorPick', () => {
-  let component: ColorPick;
-  let fixture: ComponentFixture<ColorPick>;
+describe('ColorPickerComponent', () => {
+  let component: ColorPickerComponent;
+  let fixture: ComponentFixture<ColorPickerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ColorPick],
+      imports: [ColorPickerComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ColorPick);
+    fixture = TestBed.createComponent(ColorPickerComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.componentRef.setInput('selectedCor', CorBloco.AZUL);
   });
 
   it('should create', () => {

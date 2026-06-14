@@ -7,10 +7,11 @@ import { PedidoCard } from '../../components/pedido-card/pedido-card.component';
 import { PedidoService } from '../../../../core/service/pedido.service';
 import { Pedido } from '../../../../core/models/pedido.model';
 import { ToastNotifications } from "../../../../shared/components/toast-notifications/toast-notifications.component";
+import { Pedido3dPreviewComponent } from "../../components/pedido-3d-preview/pedido-3d-preview.component";
 
 @Component({
   selector: 'app-novo-pedido',
-  imports: [ReactiveFormsModule, Navbar, ButtonComponent, Footer, PedidoCard, ToastNotifications],
+  imports: [ReactiveFormsModule, Navbar, ButtonComponent, Footer, PedidoCard, ToastNotifications, Pedido3dPreviewComponent],
   templateUrl: './novo-pedido.component.html',
 })
 export class NovoPedido {
