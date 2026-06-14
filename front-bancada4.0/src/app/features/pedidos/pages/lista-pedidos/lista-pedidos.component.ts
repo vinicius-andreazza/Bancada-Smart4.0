@@ -99,8 +99,8 @@ export class ListaPedidos {
   }
 
   onEnviarProducao(pedido: Pedido) {
-    this.ipClpControl.setValue('');
-  this.pedidoProducao.set(pedido);
+    this.pedidoProducao.set(pedido);
+    this.confirmarEnvioProducao();
   }
 
   fecharDetalhe() {
@@ -108,25 +108,15 @@ export class ListaPedidos {
   }
 
   cancelarEnvioProducao() {
-    console.log("Cancelouu");
     this.pedidoProducao.set(null);
-    this.ipClpControl.setValue('');
   }
   
   confirmarEnvioProducao() {
-    console.log("Enviou");
     const pedido = this.pedidoProducao();
-    const ip = this.ipClpControl.value?.trim();
-  
-    if (!pedido || !ip) {
+
+    if (!pedido) {
       return;
     }
-  
-    console.log(
-      `Enviando pedido ${pedido.codPedido} para o CLP ${ip}`
-    );
-  
-    pedido.clpIp = ip;
 
    this.pedidoService.postEnviarPedido(pedido).subscribe({
     next: (pedido) =>{

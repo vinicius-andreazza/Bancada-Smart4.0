@@ -18,7 +18,17 @@ export class ConexaoService {
   readonly bancadaConfig = signal<BancadaConfig | null>(this.lerStorage());
 
   connect(bancada: BancadaConfig): Observable<unknown> {
-    return this.http.post(`${this.config.apiUrl}/api/configuracao`, bancada).pipe(
+    const body = {
+      estoqueIp: bancada.estoqueIp,
+      processoIp: bancada.processoIp,
+      montagemIp: bancada.montagemIp,
+      expedicaoIp: bancada.expedicaoIp,
+      endpointSeletorTampa: bancada.seletorTampasIp
+        ? bancada.seletorTampasIp
+        : null,
+    };
+
+    return this.http.post(`${this.config.apiUrl}/api/configuracao`, body).pipe(
       tap(() => {
         this.bancadaConfig.set(bancada);
         this.salvarStorage(bancada);
@@ -60,7 +70,6 @@ export class ConexaoService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bancada));
     } catch {
-      // localStorage indisponível — segue sem persistir
     }
   }
 }

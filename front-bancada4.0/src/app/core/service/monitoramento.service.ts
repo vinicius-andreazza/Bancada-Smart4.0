@@ -18,15 +18,20 @@ export class MonitoramentoService {
   readonly connectionStatus = signal<MonitoramentoConnectionStatus>('connecting');
 
   connect(): void {
-    this.eventSource = new EventSource(`${this.config.apiUrl}/api/monitoramento/stream`);
+    this.eventSource = new EventSource(`${this.config.apiUrl}/api/smart/readAll`);
 
     this.eventSource.onopen = () => {
       this.connectionStatus.set('connected');
     };
 
-    this.eventSource.onmessage = (event: MessageEvent<string>) => {
-      this.snapshot.set(JSON.parse(event.data) as MonitoramentoSnapshot);
-    };
+   this.eventSource.addEventListener('monitoramento', (event: MessageEvent<string>) => {
+      const raw = JSON.parse(event.data);
+      this.snapshot.set({
+        codPedidoAtual: raw.codPedidoAtual ?? null,
+        inicioPedido: raw.inicioPedido ?? null,
+        estacoes: raw.estacaoStatus ?? [],
+      } as MonitoramentoSnapshot);
+    });
 
     this.eventSource.onerror = () => {
       this.connectionStatus.set('error');
@@ -39,6 +44,6 @@ export class MonitoramentoService {
   }
 
   getUltimoPedidoResumo() {
-    return this.http.get<UltimoPedidoResumo>(`${this.config.apiUrl}/api/monitoramento/ultimo-pedido`);
+    return this.http.get<UltimoPedidoResumo>(`${this.config.apiUrl}/api/smart/ultimo-pedido`);
   }
 }
