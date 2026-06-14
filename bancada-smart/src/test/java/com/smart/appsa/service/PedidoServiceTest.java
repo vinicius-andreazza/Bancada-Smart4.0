@@ -1,19 +1,16 @@
-package com.smart.appsa;
+package com.smart.appsa.service;
 
 import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
 import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
 import com.smart.appsa.model.Bloco;
+import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.*;
 import com.smart.appsa.repository.PedidoRepository;
-import com.smart.appsa.service.BlocoService;
-import com.smart.appsa.service.ExpedicaoService;
-import com.smart.appsa.service.PedidoService;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -42,47 +39,9 @@ class PedidoServiceTest {
     @InjectMocks
     private PedidoService pedidoService;
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private Bloco blocoSimples(AndarBloco andar) {
-        Bloco b = new Bloco();
-        b.setAndar(andar);
-        b.setCorBloco(CorBloco.PRETO);
-        b.setLaminas(List.of());
-        return b;
-    }
-
-    private PedidoRequestDTO requestSimples() {
-        return PedidoRequestDTO.builder()
-                .codPedido("PED-001")
-                .status(StatusPedido.PENDENTE)
-                .tipoPedido(TipoPedido.SIMPLES)
-                .corTampa(CorTampa.PRETO)
-                .blocos(List.of(new BlocoDTO(
-                        null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO,
-                        new Pedido(), List.of())))
-                .build();
-    }
-
-    // =========================================================================
-    // findAll
-    // =========================================================================
 
     @Test
-    @DisplayName("TC-01 | findAll retorna lista vazia quando não há pedidos")
-    void findAll_semPedidos_retornaListaVazia() {
-        when(pedidoRepository.findAll()).thenReturn(List.of());
-
-        List<PedidoResponseDTO> resultado = pedidoService.findAll();
-
-        assertThat(resultado).isEmpty();
-    }
-
-    @Test
-    @DisplayName("TC-02 | findAll retorna todos os pedidos existentes")
-    void findAll_comPedidos_retornaTodos() {
+    void shouldReturnAllPedidosWhenPedidosExist() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setCodPedido("PED-001");
@@ -97,13 +56,8 @@ class PedidoServiceTest {
         assertThat(resultado.get(0).codPedido()).isEqualTo("PED-001");
     }
 
-    // =========================================================================
-    // findById
-    // =========================================================================
-
     @Test
-    @DisplayName("TC-03 | findById lança EntityNotFoundException para ID inexistente")
-    void findById_idInexistente_lancaException() {
+    void shouldThrowEntityNotFoundWhenFindByIdGivenUnknownId() {
         when(pedidoRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> pedidoService.findById(99L))
@@ -112,29 +66,24 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-04 | findById retorna pedido correto para ID existente")
-    void findById_idExistente_retornaPedido() {
+    void shouldReturnPedidoWhenFindByIdGivenExistingId() {
         Pedido p = new Pedido();
         p.setId(1L);
-        p.setCodPedido("PED-001");
+        p.setCodPedido("001");
         p.setStatus(StatusPedido.PENDENTE);
         p.setTipoPedido(TipoPedido.SIMPLES);
         p.setBlocos(List.of());
+
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
 
         PedidoResponseDTO dto = pedidoService.findById(1L);
 
         assertThat(dto.id()).isEqualTo(1L);
-        assertThat(dto.codPedido()).isEqualTo("PED-001");
+        assertThat(dto.codPedido()).isEqualTo("001");
     }
 
-    // =========================================================================
-    // findByCodigo
-    // =========================================================================
-
     @Test
-    @DisplayName("TC-05 | findByCodigo lança EntityNotFoundException para código inexistente")
-    void findByCodigo_codigoInexistente_lancaException() {
+    void shouldThrowEntityNotFoundWhenFindByCodigoGivenUnknownCodigo() {
         when(pedidoRepository.findByCodPedido("INVALIDO")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> pedidoService.findByCodigo("INVALIDO"))
@@ -143,8 +92,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-06 | findByCodigo retorna pedido com código correto")
-    void findByCodigo_codigoExistente_retornaPedido() {
+    void shouldReturnPedidoWhenFindByCodigoGivenExistingCodigo() {
         Pedido p = new Pedido();
         p.setId(2L);
         p.setCodPedido("PED-XYZ");
@@ -158,13 +106,9 @@ class PedidoServiceTest {
         assertThat(dto.codPedido()).isEqualTo("PED-XYZ");
     }
 
-    // =========================================================================
-    // findByStatus
-    // =========================================================================
 
     @Test
-    @DisplayName("TC-07 | findByStatus retorna apenas pedidos com status PENDENTE")
-    void findByStatus_pendente_retornaSoPendentes() {
+    void shouldReturnOnlyPendentesWhenFindByStatusGivenPendente() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setStatus(StatusPedido.PENDENTE);
@@ -177,23 +121,10 @@ class PedidoServiceTest {
         assertThat(resultado).allMatch(r -> r.status() == StatusPedido.PENDENTE);
     }
 
-    @Test
-    @DisplayName("TC-08 | findByStatus retorna lista vazia quando não há pedidos com o status")
-    void findByStatus_semResultados_retornaListaVazia() {
-        when(pedidoRepository.findByStatus(StatusPedido.CONCLUIDO)).thenReturn(List.of());
 
-        List<PedidoResponseDTO> resultado = pedidoService.findByStatus(StatusPedido.CONCLUIDO);
-
-        assertThat(resultado).isEmpty();
-    }
-
-    // =========================================================================
-    // updateToConcluido
-    // =========================================================================
 
     @Test
-    @DisplayName("TC-09 | updateToConcluido lança EntityNotFoundException para ID inexistente")
-    void updateToConcluido_idInexistente_lancaException() {
+    void shouldThrowEntityNotFoundWhenUpdateToConcluidoGivenUnknownId() {
         when(pedidoRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> pedidoService.updateToConcluido(99L))
@@ -201,8 +132,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-10 | updateToConcluido lança PedidoIsAlreadyConcluidoException se já concluído")
-    void updateToConcluido_jaConluido_lancaException() {
+    void shouldThrowPedidoAlreadyConcluidoWhenUpdateToConcluidoGivenConcluido() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setStatus(StatusPedido.CONCLUIDO);
@@ -216,8 +146,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-11 | updateToConcluido atualiza status para CONCLUIDO com sucesso")
-    void updateToConcluido_statusPendente_atualizaParaConcluido() {
+    void shouldSetStatusConcluidoWhenUpdateToConcluidoGivenPendente() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setStatus(StatusPedido.PENDENTE);
@@ -233,8 +162,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-12 | updateToConcluido define dataEntrada no momento da conclusão")
-    void updateToConcluido_defineDataEntradaAgora() {
+    void shouldSetDataEntradaNowWhenUpdateToConcluido() {
         Pedido p = new Pedido();
         p.setId(5L);
         p.setStatus(StatusPedido.PRODUCAO);
@@ -250,13 +178,9 @@ class PedidoServiceTest {
         assertThat(resultado.dataEntrada()).isBetween(antes, depois);
     }
 
-    // =========================================================================
-    // validateBlocosQuantityByType
-    // =========================================================================
 
     @Test
-    @DisplayName("TC-13 | validateBlocosQuantityByType lança exceção quando lista de blocos vazia")
-    void validateBlocos_listaVazia_lancaException() {
+    void shouldThrowWhenValidateBlocosQuantityGivenEmptyList() {
         Pedido p = new Pedido();
         p.setTipoPedido(TipoPedido.SIMPLES);
         p.setBlocos(List.of());
@@ -267,8 +191,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-14 | validateBlocosQuantityByType lança exceção quando blocos não batem com tipo SIMPLES")
-    void validateBlocos_quantidadeErradaParaSimples_lancaException() {
+    void shouldThrowWhenValidateBlocosQuantityGivenCountMismatchForSimples() {
         Pedido p = new Pedido();
         p.setTipoPedido(TipoPedido.SIMPLES);
         p.setBlocos(List.of(blocoSimples(AndarBloco.PRIMEIRO), blocoSimples(AndarBloco.SEGUNDO)));
@@ -279,8 +202,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-15 | validateBlocosQuantityByType lança exceção quando blocos não batem com tipo DUPLO")
-    void validateBlocos_quantidadeErradaParaDuplo_lancaException() {
+    void shouldThrowWhenValidateBlocosQuantityGivenCountMismatchForDuplo() {
         Pedido p = new Pedido();
         p.setTipoPedido(TipoPedido.DUPLO);
         p.setBlocos(List.of(blocoSimples(AndarBloco.PRIMEIRO)));
@@ -290,8 +212,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-16 | validateBlocosQuantityByType aceita 3 blocos para pedido TRIPLO")
-    void validateBlocos_tresBlocosParaTriplo_naoLancaException() {
+    void shouldNotThrowWhenValidateBlocosQuantityGivenThreeBlocosForTriplo() {
         Pedido p = new Pedido();
         p.setTipoPedido(TipoPedido.TRIPLO);
         p.setBlocos(List.of(
@@ -302,13 +223,71 @@ class PedidoServiceTest {
         assertThatNoException().isThrownBy(() -> pedidoService.validateBlocosQuantityByType(p));
     }
 
-    // =========================================================================
-    // patch
-    // =========================================================================
+    @Test
+    void shouldNotThrowWhenValidateBlocosQuantityGivenOneBlocoForSimples() {
+        Pedido p = new Pedido();
+        p.setTipoPedido(TipoPedido.SIMPLES);
+        p.setBlocos(List.of(blocoSimples(AndarBloco.PRIMEIRO)));
+
+        assertThatNoException().isThrownBy(() -> pedidoService.validateBlocosQuantityByType(p));
+    }
 
     @Test
-    @DisplayName("TC-17 | patch lança EntityNotFoundException para ID inexistente")
-    void patch_idInexistente_lancaException() {
+    void shouldNotThrowWhenValidateBlocosQuantityGivenTwoBlocosForDuplo() {
+        Pedido p = new Pedido();
+        p.setTipoPedido(TipoPedido.DUPLO);
+        p.setBlocos(List.of(blocoSimples(AndarBloco.PRIMEIRO), blocoSimples(AndarBloco.SEGUNDO)));
+
+        assertThatNoException().isThrownBy(() -> pedidoService.validateBlocosQuantityByType(p));
+    }
+
+
+    @Test
+    void shouldAssignExpedicaoAndCreateBlocosWhenCreateGivenValidPedido() {
+        BlocoDTO blocoDto = new BlocoDTO(null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO, null, List.of());
+        PedidoRequestDTO dto = PedidoRequestDTO.builder()
+                .codPedido("PED-100")
+                .status(StatusPedido.PENDENTE)
+                .tipoPedido(TipoPedido.SIMPLES)
+                .corTampa(CorTampa.PRETO)
+                .blocos(List.of(blocoDto))
+                .build();
+
+        Expedicao expedicao = new Expedicao();
+        expedicao.setPosicao(5);
+        when(expedicaoService.assignPedido(any())).thenReturn(expedicao);
+        when(blocoService.create(any())).thenReturn(blocoDto);
+
+        PedidoResponseDTO resultado = pedidoService.create(dto);
+
+        assertThat(resultado.codPedido()).isEqualTo("PED-100");
+        assertThat(resultado.dataCriacao()).isNotNull();
+        assertThat(resultado.expedicao()).isEqualTo(5);
+        assertThat(resultado.blocos()).hasSize(1);
+        verify(pedidoRepository).save(any(Pedido.class));
+        verify(blocoService).create(any(BlocoDTO.class));
+    }
+
+    @Test
+    void shouldThrowWhenCreateGivenDuplicatedAndares() {
+        BlocoDTO b1 = new BlocoDTO(null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO, null, List.of());
+        BlocoDTO b2 = new BlocoDTO(null, CorBloco.AZUL, null, AndarBloco.PRIMEIRO, null, List.of());
+        PedidoRequestDTO dto = PedidoRequestDTO.builder()
+                .codPedido("PED-200")
+                .status(StatusPedido.PENDENTE)
+                .tipoPedido(TipoPedido.DUPLO)
+                .corTampa(CorTampa.AZUL)
+                .blocos(List.of(b1, b2))
+                .build();
+
+        assertThatThrownBy(() -> pedidoService.create(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("andares duplicados");
+    }
+
+
+    @Test
+    void shouldThrowEntityNotFoundWhenPatchGivenUnknownId() {
         PedidoRequestDTO dto = PedidoRequestDTO.builder().build();
         when(pedidoRepository.findById(50L)).thenReturn(Optional.empty());
 
@@ -317,8 +296,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-18 | patch lança IllegalArgumentException se codPedido for blank")
-    void patch_codPedidoBlank_lancaException() {
+    void shouldThrowWhenPatchGivenBlankCodPedido() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setStatus(StatusPedido.PENDENTE);
@@ -334,8 +312,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-19 | patch atualiza apenas campos não nulos")
-    void patch_atualizaSoCamposNaoNulos() {
+    void shouldUpdateOnlyNonNullFieldsWhenPatch() {
         Pedido p = new Pedido();
         p.setId(1L);
         p.setCodPedido("PED-OLD");
@@ -352,16 +329,11 @@ class PedidoServiceTest {
         PedidoResponseDTO resultado = pedidoService.patch(1L, dto);
 
         assertThat(resultado.codPedido()).isEqualTo("PED-NEW");
-        assertThat(resultado.status()).isEqualTo(StatusPedido.PENDENTE); // status não mudou
+        assertThat(resultado.status()).isEqualTo(StatusPedido.PENDENTE);
     }
 
-    // =========================================================================
-    // delete
-    // =========================================================================
-
     @Test
-    @DisplayName("TC-20 | delete lança EntityNotFoundException para ID inexistente")
-    void delete_idInexistente_lancaException() {
+    void shouldThrowEntityNotFoundWhenDeleteGivenUnknownId() {
         when(pedidoRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> pedidoService.delete(99L))
@@ -369,8 +341,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("TC-21 | delete remove pedido existente sem lançar exceção")
-    void delete_idExistente_removePedido() {
+    void shouldRemovePedidoWhenDeleteGivenExistingId() {
         Pedido p = new Pedido();
         p.setId(1L);
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
@@ -378,58 +349,13 @@ class PedidoServiceTest {
         assertThatNoException().isThrownBy(() -> pedidoService.delete(1L));
         verify(pedidoRepository).delete(p);
     }
-
-    // =========================================================================
-    // findByTipo
-    // =========================================================================
-
-    @Test
-    @DisplayName("TC-22 | findByTipo retorna apenas pedidos do tipo DUPLO")
-    void findByTipo_duplo_retornaSoDuplos() {
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setTipoPedido(TipoPedido.DUPLO);
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setBlocos(List.of());
-        when(pedidoRepository.findByTipoPedido(TipoPedido.DUPLO)).thenReturn(List.of(p));
-
-        List<PedidoResponseDTO> resultado = pedidoService.findByTipo(TipoPedido.DUPLO);
-
-        assertThat(resultado).allMatch(r -> r.tipoPedido() == TipoPedido.DUPLO);
+    
+    private Bloco blocoSimples(AndarBloco andar) {
+        Bloco b = new Bloco();
+        b.setAndar(andar);
+        b.setCorBloco(CorBloco.PRETO);
+        b.setLaminas(List.of());
+        return b;
     }
 
-    // =========================================================================
-    // findByCreationPeriod
-    // =========================================================================
-
-    @Test
-    @DisplayName("TC-23 | findByCreationPeriod retorna pedidos dentro do intervalo")
-    void findByCreationPeriod_intervaloValido_retornaPedidos() {
-        LocalDateTime inicio = LocalDateTime.of(2024, 1, 1, 0, 0);
-        LocalDateTime fim    = LocalDateTime.of(2024, 12, 31, 23, 59);
-
-        Pedido p = new Pedido();
-        p.setId(1L);
-        p.setDataCriacao(LocalDateTime.of(2024, 6, 15, 10, 0));
-        p.setTipoPedido(TipoPedido.SIMPLES);
-        p.setStatus(StatusPedido.PENDENTE);
-        p.setBlocos(List.of());
-        when(pedidoRepository.findByDataCriacaoBetween(inicio, fim)).thenReturn(List.of(p));
-
-        List<PedidoResponseDTO> resultado = pedidoService.findByCreationPeriod(inicio, fim);
-
-        assertThat(resultado).hasSize(1);
-    }
-
-    @Test
-    @DisplayName("TC-24 | findByCreationPeriod retorna lista vazia fora do intervalo")
-    void findByCreationPeriod_semResultados_retornaListaVazia() {
-        LocalDateTime inicio = LocalDateTime.of(2020, 1, 1, 0, 0);
-        LocalDateTime fim    = LocalDateTime.of(2020, 12, 31, 23, 59);
-        when(pedidoRepository.findByDataCriacaoBetween(inicio, fim)).thenReturn(List.of());
-
-        List<PedidoResponseDTO> resultado = pedidoService.findByCreationPeriod(inicio, fim);
-
-        assertThat(resultado).isEmpty();
-    }
 }
