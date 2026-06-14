@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.config.ipconfig.SeletorTampaIp;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.exception.SeletorTampaException;
@@ -38,6 +39,8 @@ public class SmartService {
     
     private final SeletorTampaIp seletorTampaIp;
 
+    private final EstoqueIp estoqueIp;
+
     private static final int TOTAL_SHORTS = 30;
     private static final int TOTAL_BYTES = TOTAL_SHORTS * 2;
 
@@ -49,18 +52,18 @@ public class SmartService {
         pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
 
         printHex(buffer);
-        // 2. Obter a conexão única via seu Service
-        PlcConnector connector = plcConnectionService.getConnection(pedidoRequest.clpIp());
+        
+        PlcConnector connector = plcConnectionService.getConnection(estoqueIp.getIp());
 
         if (connector != null) {
             try {
                 // 3. Escrever bloco de bytes no CLP (ex: a partir da DB19, offset 2)
                 connector.writeBlock(9, 2, 60, buffer);
-                System.out.println("Dados enviados para o CLP: " + pedidoRequest.clpIp());
+                System.out.println("Dados enviados para o CLP: " + estoqueIp.getIp());
 
                 atualizarTampa(pedido.getCorTampa().getValue());
 
-                iniciarExecucaoPedido(pedidoRequest.clpIp());
+                iniciarExecucaoPedido(estoqueIp.getIp());
 
             } catch (Exception ex) {
                 System.err.println("Erro ao enviar dados para o CLP: " + ex.getMessage());
@@ -169,8 +172,10 @@ public class SmartService {
     }
 
     private void atualizarTampa(int tampa) {
+        if(seletorTampaIp.getEndpointApi()==null){
+            return;
+        }
         System.out.println("\n\nSELETOR DE TAMPAS INSTALADO NA BANCADA\n\n");
-        // Passo 2) Selecionar a tampa via POST
         try {
             RestTemplate apiSeletorTampa = new RestTemplate();
             String url = seletorTampaIp.getEndpointApi();
