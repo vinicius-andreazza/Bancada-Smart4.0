@@ -168,7 +168,7 @@ public class EstoqueComm {
     }
 
     private void validarOperacaoPelasFlags() {
-        if (!estoquePlc.isStartOp() && !estoquePlc.isCancelOp() && !estoquePlc.isFinishOp()) {
+        if (!estoquePlc.isStartOP() && !estoquePlc.isCancelOP() && !estoquePlc.isFinishOP()) {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, false);
             } catch (Exception e) {
@@ -179,7 +179,7 @@ public class EstoqueComm {
 
     private void validarInicioDaOperacao() {
         
-        if (estoquePlc.isStartOp() && !estoquePlc.isRecebidoOP()) {
+        if (estoquePlc.isStartOP() && !estoquePlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, true); // coloca RecebidoOPEst em TRUE
             } catch (Exception e) {
@@ -191,7 +191,7 @@ public class EstoqueComm {
 
     private void validarFinalizacaoDaOperacao() {
         
-        if (estoquePlc.isFinishOp() && !estoquePlc.isRecebidoOP()) {
+        if (estoquePlc.isFinishOP() && !estoquePlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, true); // coloca RecebidoOPEst em TRUE
             } catch (Exception e) {

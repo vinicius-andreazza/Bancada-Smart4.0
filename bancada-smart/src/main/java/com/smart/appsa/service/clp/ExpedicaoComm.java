@@ -83,7 +83,7 @@ public class ExpedicaoComm {
     }
 
     private void validarRecebido(){
-        if (expedicaoPlc.isStartOP() && !expedicaoPlc.isRecebidoOp()) {
+        if (expedicaoPlc.isStartOP() && !expedicaoPlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {
@@ -91,7 +91,7 @@ public class ExpedicaoComm {
             }
         }
 
-        if (expedicaoPlc.isFinishOP() && !expedicaoPlc.isRecebidoOp()) {
+        if (expedicaoPlc.isFinishOP() && !expedicaoPlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {

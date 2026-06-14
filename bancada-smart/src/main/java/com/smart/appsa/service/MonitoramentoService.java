@@ -1,5 +1,6 @@
 package com.smart.appsa.service;
 
+import com.smart.appsa.model.plc.EstacaoPlc;
 import com.smart.appsa.model.plc.EstoquePlc;
 import com.smart.appsa.model.plc.ExpedicaoPlc;
 import com.smart.appsa.model.plc.MontagemPlc;
@@ -14,7 +15,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.smart.appsa.dto.sse.EstacaoStatus;
 import com.smart.appsa.dto.sse.SseDto;
-import com.smart.appsa.model.enums.StatusEstacao;
 
 import lombok.RequiredArgsConstructor;
 
@@ -58,63 +58,22 @@ public class MonitoramentoService {
     }
 
     private SseDto constructData(){
-        EstacaoStatus estoque = EstacaoStatus.builder().estacao("ESTOQUE").status(getStatusEstacaoEstoque()).atualizadoEm(LocalDateTime.now()).build();
-        EstacaoStatus processo = EstacaoStatus.builder().estacao("PROCESSO").status(getStatusEstacaoProcesso()).atualizadoEm(LocalDateTime.now()).build();
-        EstacaoStatus montagem = EstacaoStatus.builder().estacao("MONTAGEM").status(getStatusEstacaoMontagem()).atualizadoEm(LocalDateTime.now()).build();
-        EstacaoStatus expedicao = EstacaoStatus.builder().estacao("EXPEDICAO").status(getStatusEstacaoExpedicao()).atualizadoEm(LocalDateTime.now()).build();
-
-        return SseDto.builder().codPedidoAtual(estoquePlc.getNumeroPedido()).estacaoStatus(List.of(estoque, processo, montagem, expedicao)).inicioPedido(null).build();
+        return SseDto.builder()
+                .codPedidoAtual(estoquePlc.getNumeroPedido())
+                .estacaoStatus(List.of(
+                        status("ESTOQUE", estoquePlc),
+                        status("PROCESSO", processoPlc),
+                        status("MONTAGEM", montagemPlc),
+                        status("EXPEDICAO", expedicaoPlc)))
+                .inicioPedido(null)
+                .build();
     }
 
-    private StatusEstacao getStatusEstacaoEstoque(){
-        if(estoquePlc.isCancelOp()){
-            return StatusEstacao.CANCELADO;
-        }
-        if(estoquePlc.isFinishOp()){
-            return StatusEstacao.FINALIZADO;
-        }
-        if(estoquePlc.isOcupado()){
-            return StatusEstacao.OCUPADO;
-        }
-        return StatusEstacao.START;
-    }
-
-    private StatusEstacao getStatusEstacaoProcesso(){
-        if(processoPlc.isCancelOP()){
-            return StatusEstacao.CANCELADO;
-        }
-        if(processoPlc.isFinishOP()){
-            return StatusEstacao.FINALIZADO;
-        }
-        if(processoPlc.isOcupado()){
-            return StatusEstacao.OCUPADO;
-        }
-        return StatusEstacao.START;
-    }
-
-    private StatusEstacao getStatusEstacaoMontagem(){
-        if(montagemPlc.isCancelOP()){
-            return StatusEstacao.CANCELADO;
-        }
-        if(montagemPlc.isFinishOP()){
-            return StatusEstacao.FINALIZADO;
-        }
-        if(montagemPlc.isOcupado()){
-            return StatusEstacao.OCUPADO;
-        }
-        return StatusEstacao.START;
-    }
-
-    private StatusEstacao getStatusEstacaoExpedicao(){
-        if(expedicaoPlc.isCancelOP()){
-            return StatusEstacao.CANCELADO;
-        }
-        if(expedicaoPlc.isFinishOP()){
-            return StatusEstacao.FINALIZADO;
-        }
-        if(expedicaoPlc.isOcupado()){
-            return StatusEstacao.OCUPADO;
-        }
-        return StatusEstacao.START;
+    private EstacaoStatus status(String nome, EstacaoPlc plc){
+        return EstacaoStatus.builder()
+                .estacao(nome)
+                .status(plc.getStatus())
+                .atualizadoEm(LocalDateTime.now())
+                .build();
     }
 }

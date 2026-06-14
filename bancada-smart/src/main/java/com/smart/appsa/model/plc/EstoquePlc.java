@@ -2,8 +2,6 @@ package com.smart.appsa.model.plc;
 
 import org.springframework.stereotype.Component;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,11 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Component
-public class EstoquePlc {
-    private boolean recebidoOP;
+public class EstoquePlc extends EstacaoPlc {
 
     private int corAndar1;
     private int posEstoqueAndar1;
@@ -57,16 +52,6 @@ public class EstoquePlc {
     private int posicaoGuardar;
 
     private byte[] posicoes;
-
-    private int numeroOp;
-    private boolean cancelOp;
-    private boolean finishOp;
-    private boolean startOp;
-
-    private boolean ocupado;
-    private boolean aguardando;
-    private boolean manual;
-    private boolean emergencia;
 
     private boolean pedirPosicao;
     private int posicaoEstoque;

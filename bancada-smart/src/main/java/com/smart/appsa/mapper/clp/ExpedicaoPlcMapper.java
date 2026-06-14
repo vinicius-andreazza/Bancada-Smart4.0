@@ -4,7 +4,7 @@ import com.smart.appsa.model.plc.ExpedicaoPlc;
 
 public interface ExpedicaoPlcMapper {
     public static void updateData(byte[] data, ExpedicaoPlc expedicaoPlc){
-        expedicaoPlc.setRecebidoOp((data[0] & 0x01) != 0);
+        expedicaoPlc.setRecebidoOP((data[0] & 0x01) != 0);
 
         expedicaoPlc.setRecebidoExpedicao((data[2] & 0x01) != 0);
         expedicaoPlc.setIniciarGuardar((data[2] & 0x02) != 0);

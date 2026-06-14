@@ -20,9 +20,9 @@ public interface EstoquePlcMapper {
         estoquePlc.setPosicoes(posicoes);
 
         estoquePlc.setNumeroPedido(((data[96] & 0xFF) << 8) | (data[97] & 0xFF));
-        estoquePlc.setCancelOp((data[98] & 0x01) != 0);
-        estoquePlc.setFinishOp((data[98] & 0x02) != 0);
-        estoquePlc.setStartOp((data[98] & 0x04) != 0);
+        estoquePlc.setCancelOP((data[98] & 0x01) != 0);
+        estoquePlc.setFinishOP((data[98] & 0x02) != 0);
+        estoquePlc.setStartOP((data[98] & 0x04) != 0);
 
         estoquePlc.setOcupado((data[100] & 0x01) != 0);
         estoquePlc.setAguardando((data[100] & 0x02) != 0);
