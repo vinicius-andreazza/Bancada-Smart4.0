@@ -48,6 +48,11 @@ public class EstoqueComm {
         estoquePool.execute(plcReader);
     }
 
+    public boolean isConnected() {
+        return plcReader != null && 
+           plcConnectionService.getConnection(estoqueIp.getIp()).isConnected();
+    }
+
     private void handleData(byte[] data) {
         EstoquePlcMapper.updateData(data, estoquePlc);
 

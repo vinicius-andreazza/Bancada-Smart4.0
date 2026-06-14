@@ -41,6 +41,11 @@ public class ProcessoComm {
         processoPool.execute(plcReader);
     }
 
+    public boolean isConnected() {
+        return plcReader != null && 
+           plcConnectionService.getConnection(processoIp.getIp()).isConnected();
+    }
+
     private void handleData(byte[] data) {
 
         ProcessoPlcMapper.updateData(data, processoPlc);

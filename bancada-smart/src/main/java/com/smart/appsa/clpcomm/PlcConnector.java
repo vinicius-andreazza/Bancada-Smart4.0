@@ -34,6 +34,10 @@ public class PlcConnector {
         }
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
     public void disconnect() throws Exception {
         try {
             client.disconnect();

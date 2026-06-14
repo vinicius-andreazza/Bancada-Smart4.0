@@ -41,6 +41,11 @@ public class MontagemComm {
         processoPool.execute(plcReader);
     }
 
+    public boolean isConnected() {
+        return plcReader != null && 
+           plcConnectionService.getConnection(montagemIp.getIp()).isConnected();
+    }
+
     private void handleData(byte[] data) {
 
         MontagemPlcMapper.updateData(data, montagemPlc);

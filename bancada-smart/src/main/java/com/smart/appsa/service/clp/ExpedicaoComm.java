@@ -52,6 +52,11 @@ public class ExpedicaoComm {
         expedicaoPool.execute(plcReader);
     }
 
+    public boolean isConnected() {
+        return plcReader != null && 
+           plcConnectionService.getConnection(expedicaoIp.getIp()).isConnected();
+    }
+
     private void handleData(byte[] data) {
 
         ExpedicaoPlcMapper.updateData(data, expedicaoPlc);
