@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp;
 
+import com.smart.appsa.config.ipconfig.ProcessoIp;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,13 +15,13 @@ import com.smart.appsa.service.clp.reader.PlcReader;
 @Service
 public class ProcessoComm {
 
+    private final ProcessoIp processoIp;
+
     private PlcReader plcReader;
 
     private final PlcConnectionService plcConnectionService;
 
     private final ProcessoPlc processoPlc;
-
-    private String ip = "10.74.241.20";
 
     private final ExecutorService processoPool = Executors.newSingleThreadExecutor();
 
@@ -28,19 +29,19 @@ public class ProcessoComm {
     private static final int DB_PROCESSO = 2;
     private static final int OFFSET_RECEBIDO_OP = 0;
 
-    public ProcessoComm(PlcConnectionService plcConnectionService, ProcessoPlc processoPlc) {
+    public ProcessoComm(PlcConnectionService plcConnectionService, ProcessoPlc processoPlc, ProcessoIp processoIp) {
         this.plcConnectionService = plcConnectionService;
         this.processoPlc = processoPlc;
+        this.processoIp = processoIp;
     }
 
-    public void startComm(String ip) {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(ip), "Processo", DB_PROCESSO, 0, 6,
-                data -> handleData(data, ip));
+    public void startComm() {
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(processoIp.getIp()), "Processo", DB_PROCESSO, 0, 6,
+                data -> handleData(data));
         processoPool.execute(plcReader);
     }
 
-    private void handleData(byte[] data, String ip) {
-        this.ip = ip;
+    private void handleData(byte[] data) {
 
         ProcessoPlcMapper.updateData(data, processoPlc);
 
@@ -88,7 +89,7 @@ public class ProcessoComm {
     }
 
     private PlcConnector getConnector() {
-        return plcConnectionService.getConnection(ip);
+        return plcConnectionService.getConnection(processoIp.getIp());
     }
 
 

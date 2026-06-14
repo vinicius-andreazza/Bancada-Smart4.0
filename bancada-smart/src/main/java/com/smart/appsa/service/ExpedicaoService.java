@@ -35,9 +35,23 @@ public class ExpedicaoService {
         return expedicaoRepository.findAll().stream().map(ExpedicaoMapper::toDto).toList();
     }
 
+    public Expedicao findFirstAvailable (){
+        return expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
+    }
+
     
     public Expedicao assignPedido(Long pedidoId) {
         Expedicao expedicao = expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
+
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido não encontrado "));
+        
+        expedicao.setPedido(pedido);
+
+        return expedicao;
+    }
+
+    public Expedicao assignPedidoByPosition(Long pedidoId, int position) {
+        Expedicao expedicao = expedicaoRepository.findByPosicao(position).orElseThrow(() -> new IllegalArgumentException("Posição não existe"));
 
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido não encontrado "));
         

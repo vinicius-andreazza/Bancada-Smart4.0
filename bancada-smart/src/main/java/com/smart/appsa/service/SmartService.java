@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.config.ipconfig.SeletorTampaIp;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.exception.SeletorTampaException;
 import com.smart.appsa.model.Bloco;
@@ -34,6 +35,8 @@ public class SmartService {
     private final PedidoRepository pedidoRepository;
 
     private final BlocoService blocoService;
+    
+    private final SeletorTampaIp seletorTampaIp;
 
     private static final int TOTAL_SHORTS = 30;
     private static final int TOTAL_BYTES = TOTAL_SHORTS * 2;
@@ -170,7 +173,7 @@ public class SmartService {
         // Passo 2) Selecionar a tampa via POST
         try {
             RestTemplate apiSeletorTampa = new RestTemplate();
-            String url = "http://10.74.241.245/api/move_pos";
+            String url = seletorTampaIp.getEndpointApi();
 
             // 1. Definir o cabeçalho como application/x-www-form-urlencoded
             HttpHeaders headers = new HttpHeaders();
