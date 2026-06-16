@@ -4,6 +4,7 @@ import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.service.ExpedicaoService;
 import com.smart.appsa.service.PedidoService;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.mapper.ExpedicaoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
 import com.smart.appsa.mapper.clp.ExpedicaoPlcMapper;
+import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.plc.ExpedicaoPlc;
 import com.smart.appsa.service.clp.reader.PlcReader;
@@ -48,7 +51,7 @@ public class ExpedicaoComm {
 
     public void startComm() {
         this.plcReader = new PlcReader(plcConnectionService.getConnection(expedicaoIp.getIp()), "Expedicao", DB_EXPEDICAO, 0, 46,
-                data -> handleData(data));
+                data -> handleData(data), DELAY);
         expedicaoPool.execute(plcReader);
     }
 
@@ -67,12 +70,10 @@ public class ExpedicaoComm {
         validarAdicao();
         validarRetirada();
         validarFinalizacaoOP();
+        concluirPedido();
 
-        try {
-            Thread.sleep(DELAY);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        atualizarExpedicao();
+
     }
 
     private void validarOperacao() {
@@ -207,12 +208,32 @@ public class ExpedicaoComm {
         }
     }
 
+    private void concluirPedido(){
+        if(expedicaoPlc.isFinishOP() && expedicaoPlc.getOpGuardado()>0){
+            pedidoService.updateToConcluido(getPedidoByCod(expedicaoPlc.getOpGuardado()).getId());
+        }
+    }
+
+    private void atualizarExpedicao(){
+
+        List<Expedicao> expedicao = expedicaoService.findAllExpedicao();
+        expedicao.forEach(e -> {
+            try {
+                if(e.getPedido()!=null){
+                    getConnector().writeInt(DB_EXPEDICAO, 6+((e.getPosicao()-1)*2), e.getPedido().getCodPedido());
+                }
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+
     private int buscarPrimeiraPosicaoLivre() {
         return expedicaoService.findFirstAvailable().getPosicao();
     }
 
     private Pedido getPedidoByCod(int codigo){
-        return PedidoMapper.toEntity(pedidoService.findByCodigo(expedicaoPlc.getOpGuardado()));
+        return pedidoService.findPedidoByCodigo(expedicaoPlc.getOpGuardado());
     }
 
     private PlcConnector getConnector() {

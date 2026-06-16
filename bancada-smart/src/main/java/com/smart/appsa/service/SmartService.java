@@ -22,6 +22,7 @@ import com.smart.appsa.exception.SeletorTampaException;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.model.Pedido;
+import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SmartService {
+
+    private final PedidoService pedidoService;
 
     private final PlcConnectionService plcConnectionService;
 
@@ -45,12 +48,16 @@ public class SmartService {
     private static final int TOTAL_BYTES = TOTAL_SHORTS * 2;
 
     public void enviarParaProducao(PedidoRequestDTO pedidoRequest) {
+        System.out.println("Iniciar Pedido");
         Pedido pedido = pedidoRepository.findByCodPedido(pedidoRequest.codPedido())
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
-        byte[] buffer = converterParaBytes(pedido);
         pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
 
+        pedidoService.assignPosPedidoInExpedicao(pedido);
+
+        byte[] buffer = converterParaBytes(pedido);
+        
         printHex(buffer);
         
         PlcConnector connector = plcConnectionService.getConnection(estoqueIp.getIp());
@@ -69,6 +76,9 @@ public class SmartService {
                 System.err.println("Erro ao enviar dados para o CLP: " + ex.getMessage());
             }
         }
+        pedido.setStatus(StatusPedido.PRODUCAO);
+
+        pedidoRepository.save(pedido);
     }
 
     private void escreverBloco(Bloco bloco, ByteBuffer buffer) {

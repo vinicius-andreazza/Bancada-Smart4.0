@@ -44,7 +44,7 @@ public class PedidoService {
 
         pedidoRepository.save(pedido);
 
-        assignPosPedidoInExpedicao(pedido);
+        //assignPosPedidoInExpedicao(pedido);
 
         updateBlocoReferencePedido(pedido);
 
@@ -74,6 +74,11 @@ public class PedidoService {
                                 "Pedido não encontrado com código: " + codPedido)));
     }
 
+    public Pedido findPedidoByCodigo(Integer codPedido) {
+        return pedidoRepository.findByCodPedido(codPedido).orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+    }
+
+
     public List<PedidoResponseDTO> findByStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status)
                 .stream()
@@ -101,10 +106,12 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         if (pedidoExistente.getStatus() == StatusPedido.CONCLUIDO) {
-            throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
+            //throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
+            System.out.println("Pedido concluido");
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
         pedidoExistente.setDataEntrada(LocalDateTime.now());
+        //assignPosPedidoInExpedicao(pedidoExistente);
 
         pedidoRepository.save(pedidoExistente);
 
@@ -198,7 +205,7 @@ public class PedidoService {
         pedido.getBlocos().forEach(b -> b.setPedido(pedido));
     }
 
-    private void assignPosPedidoInExpedicao(Pedido pedido) {
+    public void assignPosPedidoInExpedicao(Pedido pedido) {
         Expedicao expedicao = expedicaoService.assignPedido(pedido.getId());
 
         pedido.setPosExpedicao(expedicao.getPosicao());

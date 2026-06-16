@@ -60,6 +60,7 @@ public class SmartController {
 
     @GetMapping(value = "/readAll", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter readAll() {
+        System.out.println("SSE aberto");
         return monitoramentoService.conectar();
     }
     

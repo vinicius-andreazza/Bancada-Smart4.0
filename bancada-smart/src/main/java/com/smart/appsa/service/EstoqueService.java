@@ -49,7 +49,7 @@ public class EstoqueService {
                         "Posição não existe: " + position));
 
         estoqueExistente.setCor(estoqueAtualizado.cor());
-
+        
         return EstoqueMapper.toDto(estoqueRepository.save(estoqueExistente));
     }
 

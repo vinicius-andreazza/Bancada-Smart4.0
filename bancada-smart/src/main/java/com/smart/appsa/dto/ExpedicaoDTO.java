@@ -8,6 +8,5 @@ import lombok.Builder;
 public record ExpedicaoDTO (
     Long id,
     Integer posicao,
-    @JsonIgnore
-    PedidoRequestDTO pedido
+    PedidoResponseDTO pedido
 ){}

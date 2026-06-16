@@ -20,7 +20,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final EstoqueRepository repository;
 
-    private ExpedicaoRepository expedicaoRepository;
+    private final ExpedicaoRepository expedicaoRepository;
 
 
     @Override

@@ -46,7 +46,7 @@ public class Bloco {
     @Column(name = "vl_cor", nullable = false)
     private CorBloco corBloco;
 
-    @Column(name="pos_estoque", nullable = false)
+    @Column(name="pos_estoque", nullable = true)
     private Integer posEstoque;
 
     @Column(name="andar", nullable = false)

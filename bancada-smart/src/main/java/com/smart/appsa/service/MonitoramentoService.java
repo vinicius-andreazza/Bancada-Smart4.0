@@ -53,7 +53,7 @@ public class MonitoramentoService {
                 removidos.add(emitter);
             }
         }
-
+        System.out.println(constructData());
         emitters.removeAll(removidos);
     }
 

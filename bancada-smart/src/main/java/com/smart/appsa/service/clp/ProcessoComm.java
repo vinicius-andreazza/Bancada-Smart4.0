@@ -36,8 +36,8 @@ public class ProcessoComm {
     }
 
     public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(processoIp.getIp()), "Processo", DB_PROCESSO, 0, 6,
-                data -> handleData(data));
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(processoIp.getIp()), "Processo", DB_PROCESSO, 0, 8,
+                data -> handleData(data),DELAY);
         processoPool.execute(plcReader);
     }
 
@@ -53,12 +53,6 @@ public class ProcessoComm {
         validarOperacaoPelasFlags();
         validarInicioDaOperacao();
         validarFinalizacaoDaOperacao();
-
-        try {
-            Thread.sleep(DELAY);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private void validarOperacaoPelasFlags() {

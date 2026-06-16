@@ -12,21 +12,24 @@ public class PlcReader implements Runnable {
     private final int offset;
     private final int size;
     private final Consumer<byte[]> data;
+    private final int DELAY;
 
-    public PlcReader(PlcConnector plcConnector, String nome, int db, int offset, int size, Consumer<byte[]> data) {
+    public PlcReader(PlcConnector plcConnector, String nome, int db, int offset, int size, Consumer<byte[]> data, int delay) {
         this.plcConnector = plcConnector;
         this.nome = nome;
         this.db = db;
         this.offset = offset;
         this.size = size;
         this.data = data;
+        this.DELAY = delay;
     }
 
     @Override
     public void run() {
-        if(plcConnector!=null){
+        while(plcConnector!=null){
             try {
                 data.accept(plcConnector.readBlock(db, offset, size));
+                Thread.sleep(DELAY);
             } catch (Exception e) {
                 e.printStackTrace();
             }

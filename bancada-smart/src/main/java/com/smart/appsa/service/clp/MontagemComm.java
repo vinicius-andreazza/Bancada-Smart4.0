@@ -36,8 +36,8 @@ public class MontagemComm {
     }
 
     public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(montagemIp.getIp()), "Montagem", DB_MONTAGEM, 0, 6,
-                data -> handleData(data));
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(montagemIp.getIp()), "Montagem", DB_MONTAGEM, 0, 8,
+                data -> handleData(data), DELAY);
         processoPool.execute(plcReader);
     }
 
@@ -54,11 +54,6 @@ public class MontagemComm {
         validarInicioDaOperacao();
         validarFinalizacaoDaOperacao();
 
-        try {
-            Thread.sleep(DELAY);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private void validarOperacaoPelasFlags() {

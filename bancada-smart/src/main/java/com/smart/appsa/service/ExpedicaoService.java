@@ -35,6 +35,10 @@ public class ExpedicaoService {
         return expedicaoRepository.findAll().stream().map(ExpedicaoMapper::toDto).toList();
     }
 
+    public List<Expedicao> findAllExpedicao() {
+        return expedicaoRepository.findAll();
+    }
+
     public Expedicao findFirstAvailable (){
         return expedicaoRepository.findFirstByPedidoIsNull().orElseThrow(() -> new EntityNotFoundException("Expedição cheio"));
     }

@@ -40,7 +40,8 @@ public class BlocoService {
 
         bloco.setPedido(pedido);
 
-        assignEstoquePosition(bloco);
+        //assignEstoquePosition(bloco);
+        bloco.setPosEstoque(null);
 
         blocoRepository.save(bloco);
 

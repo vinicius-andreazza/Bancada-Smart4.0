@@ -1,5 +1,8 @@
 package com.smart.appsa.service.clp;
 
+import com.smart.appsa.service.MonitoramentoService;
+
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,13 +12,17 @@ import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.dto.EstoqueDTO;
+import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.mapper.clp.EstoquePlcMapper;
+import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.plc.EstoquePlc;
 import com.smart.appsa.service.EstoqueService;
 import com.smart.appsa.service.clp.reader.PlcReader;
 
 @Service
 public class EstoqueComm {
+
+    private final MonitoramentoService monitoramentoService;
 
     private final EstoqueIp estoqueIp;
 
@@ -35,16 +42,17 @@ public class EstoqueComm {
     private static final int OFFSET_GERENCIAMENTO_ESTOQUE = 64;
     private static final int OFFSET_POSICAO_GUARDAR = 66;
 
-    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc, EstoqueIp estoqueIp) {
+    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc, EstoqueIp estoqueIp, MonitoramentoService monitoramentoService) {
         this.plcConnectionService = plcConnectionService;
         this.estoqueService = estoqueService;
         this.estoquePlc = estoquePlc;
         this.estoqueIp = estoqueIp;
+        this.monitoramentoService = monitoramentoService;
     }
 
     public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(estoqueIp.getIp()), "Estoque", DB_ESTOQUE, 0, 108,
-                data -> handleData(data));
+        this.plcReader = new PlcReader(plcConnectionService.getConnection(estoqueIp.getIp()), "Estoque", DB_ESTOQUE, 0, 110,
+                data -> handleData(data), DELAY);
         estoquePool.execute(plcReader);
     }
 
@@ -63,11 +71,9 @@ public class EstoqueComm {
         validarIniciarGuardar();
         retornarPosicao();
 
-        try {
-            Thread.sleep(DELAY);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        atualizarEstoque();
+
+        monitoramentoService.enviarSnapshot();
     }
 
     private void validarIniciarGuardar() {
@@ -215,6 +221,19 @@ public class EstoqueComm {
                 System.out.println("ERRO: Atualização da Flag RecebidoEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.0] para FALSE");
             }
         }
+    }
+
+    private void atualizarEstoque(){
+        List<Estoque> estoque = estoqueService.findAll().stream().map(EstoqueMapper::toEntity).toList();
+
+        estoque.forEach(e -> {
+            try {
+                getConnector().writeByte(DB_ESTOQUE, (67+e.getPosicao()), e.getCor().byteValue());
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
     }
 
     private PlcConnector getConnector() {
