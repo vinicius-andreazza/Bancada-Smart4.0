@@ -67,51 +67,15 @@
     (fechar)="fecharDetalhe()"
     (enviarProducao)="onEnviarProducao($event)"
     (retirar)="onRetirar($event)"
+    (salvar)="onSalvarEdicao($event)"
   />
 }
 
-@if (pedidoProducao()) {
-  <app-modal
-    [hasFooter]="true"
-    maxWidth="sm"
-    (fechar)="cancelarEnvioProducao()"
-  >
-
-    <div slot="header">
-      <h2 class="text-lg font-semibold text-gray-100">
-        Enviar para produção
-      </h2>
-    </div>
-
-    <div slot="body" class="p-6">
-      <p class="text-sm text-gray-400 mb-4">
-        Informe o IP do CLP para enviar o pedido
-        <strong>{{ pedidoProducao()?.codPedido }}</strong>.
-      </p>
-
-      <app-input-field
-        id="ipClp"
-        label="IP do CLP"
-        placeholder="Ex: 192.168.0.100"
-        [control]="ipClpControl"
-      />
-    </div>
-
-    <div slot="footer">
-      <app-button
-      [type]="'button'"
-        [size]="'md'"
-        [variant]="'danger'"
-        (click)="cancelarEnvioProducao()"
-      >Cancelar</app-button>
-
-      <app-button
-      [type]="'button'"
-      [size]="'md'"
-      [variant]="'secondary'"
-        (click)="confirmarEnvioProducao()"
-      >Enviar</app-button>
-    </div>
-
-  </app-modal>
-}
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+  @if (saveSuccess()) {
+  <app-toast-notifications [text]="'Pedido atualizado com sucesso!'" [variant]="'success'" />
+  }
+  @if (saveError()) {
+  <app-toast-notifications [text]="'Houve um erro ao atualizar o pedido'" [variant]="'error'" />
+  }
+</div>

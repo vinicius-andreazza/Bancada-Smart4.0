@@ -1,19 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
-import { NavLink } from './nav-link.component';
+import { NavLinkComponent } from './nav-link.component';
 
-describe('NavLink', () => {
-  let component: NavLink;
-  let fixture: ComponentFixture<NavLink>;
+describe('NavLinkComponent', () => {
+  let component: NavLinkComponent;
+  let fixture: ComponentFixture<NavLinkComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavLink],
+      imports: [NavLinkComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(NavLink);
+    fixture = TestBed.createComponent(NavLinkComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.componentRef.setInput('label', 'Dashboard');
+    fixture.componentRef.setInput('route', '/dashboard');
   });
 
   it('should create', () => {

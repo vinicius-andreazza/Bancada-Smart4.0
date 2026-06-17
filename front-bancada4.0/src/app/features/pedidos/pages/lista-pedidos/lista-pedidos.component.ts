@@ -12,6 +12,7 @@ import { StatusCardPedido } from '../../../../shared/components/status-card-pedi
 import { PedidoService } from '../../../../core/service/pedido.service';
 import { PedidoDetalheModalComponent } from "../../components/pedido-detalhe-modal/pedido-detalhe-modal.component";
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
 
 type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
 
@@ -26,7 +27,8 @@ type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
     StatusCardPedido,
     PedidoTable,
     PedidoDetalheModalComponent,
-    ModalComponent
+    ModalComponent,
+    ToastNotifications
   ],
   templateUrl: './lista-pedidos.component.html',
 })
@@ -46,6 +48,9 @@ export class ListaPedidos {
   readonly pedidoSelecionado = signal<Pedido | null>(null);
 
   readonly pedidoProducao = signal<Pedido | null>(null);
+
+  readonly saveSuccess = signal(false);
+  readonly saveError = signal(false);
 
   readonly ipClpControl = new FormControl('');
 
@@ -98,9 +103,25 @@ export class ListaPedidos {
     console.log("Retirando pedido: "+pedido.codPedido)
   }
 
+  onSalvarEdicao(pedido: Pedido) {
+    this.pedidoService.patchPedido(pedido.id, pedido).subscribe({
+      next: () => {
+        this.getPedidos();
+        this.fecharDetalhe();
+        this.saveSuccess.set(true);
+        setTimeout(() => this.saveSuccess.set(false), 2000);
+      },
+      error: (err) => {
+        console.log(err);
+        this.saveError.set(true);
+        setTimeout(() => this.saveError.set(false), 3000);
+      },
+    });
+  }
+
   onEnviarProducao(pedido: Pedido) {
-    this.ipClpControl.setValue('');
-  this.pedidoProducao.set(pedido);
+    this.pedidoProducao.set(pedido);
+    this.confirmarEnvioProducao();
   }
 
   fecharDetalhe() {
@@ -108,25 +129,15 @@ export class ListaPedidos {
   }
 
   cancelarEnvioProducao() {
-    console.log("Cancelouu");
     this.pedidoProducao.set(null);
-    this.ipClpControl.setValue('');
   }
   
   confirmarEnvioProducao() {
-    console.log("Enviou");
     const pedido = this.pedidoProducao();
-    const ip = this.ipClpControl.value?.trim();
-  
-    if (!pedido || !ip) {
+
+    if (!pedido) {
       return;
     }
-  
-    console.log(
-      `Enviando pedido ${pedido.codPedido} para o CLP ${ip}`
-    );
-  
-    pedido.clpIp = ip;
 
    this.pedidoService.postEnviarPedido(pedido).subscribe({
     next: (pedido) =>{
