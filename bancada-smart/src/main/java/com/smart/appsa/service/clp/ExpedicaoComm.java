@@ -28,13 +28,15 @@ public class ExpedicaoComm {
 
     private PlcReader plcReader;
 
+    private int opAntiga = 0;
+
     private final PlcConnectionService plcConnectionService;
 
     private final ExpedicaoPlc expedicaoPlc;
 
     private final ExecutorService expedicaoPool = Executors.newSingleThreadExecutor();
 
-    private static final int DELAY = 600;
+    private static final int DELAY = 400;
     private static final int DB_EXPEDICAO = 9;
     private static final int OFFSET_STATUS_OP = 0;
     private static final int OFFSET_GERENCIAMENTO_EXPEDICAO = 2;
@@ -209,7 +211,8 @@ public class ExpedicaoComm {
     }
 
     private void concluirPedido(){
-        if(expedicaoPlc.isFinishOP() && expedicaoPlc.getOpGuardado()>0){
+        if(((expedicaoPlc.isFinishOP() || !expedicaoPlc.isRecebidoOP()) && (expedicaoPlc.getOpGuardado()>0 && expedicaoPlc.getOpGuardado() != opAntiga))){
+            opAntiga = expedicaoPlc.getOpGuardado();
             pedidoService.updateToConcluido(getPedidoByCod(expedicaoPlc.getOpGuardado()).getId());
         }
     }
