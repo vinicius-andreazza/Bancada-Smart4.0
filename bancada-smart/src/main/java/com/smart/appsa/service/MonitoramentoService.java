@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class MonitoramentoService {
-    private final PedidoResponseDTO pedidoResponseDTO;
+    
     private final PedidoService pedidoService;
     private final ExpedicaoPlc expedicaoPlc;
     private final MontagemPlc montagemPlc;
@@ -55,6 +55,10 @@ public class MonitoramentoService {
 
     @Scheduled(fixedDelay = 500)
     public void enviarSnapshot() {
+        if(emitters.size() == 0){
+            return;
+        }
+
         List<SseEmitter> removidos = new ArrayList<>();
 
         for (SseEmitter emitter : emitters) {
@@ -95,11 +99,11 @@ public class MonitoramentoService {
     }
 
     private String calculateDuracao(){
-        pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
-        if(pedidoResponseDTO.status().equals(StatusPedido.CONCLUIDO)){
-            return Duration.between(pedidoResponseDTO.dataInicio(), pedidoResponseDTO.dataEntrada()).toString();
+        PedidoResponseDTO pedido = pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
+        if(pedido.status().equals(StatusPedido.CONCLUIDO)){
+            return Duration.between(pedido.dataInicio(), pedido.dataEntrada()).toString();
         }
-        return Duration.between(pedidoResponseDTO.dataInicio(), LocalDateTime.now()).toString();
+        return Duration.between(pedido.dataInicio(), LocalDateTime.now()).toString();
     }
 
     private List<EstoqueDTO> getDataEstoque(){

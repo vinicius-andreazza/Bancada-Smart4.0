@@ -18,6 +18,8 @@ import com.smart.appsa.repository.PedidoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,11 +54,20 @@ public class PedidoService {
         return PedidoMapper.toResponse(pedido);
     }
 
-    public List<PedidoResponseDTO> findAll() {
-        return pedidoRepository.findAll()
-                .stream()
-                .map(PedidoMapper::toResponse)
-                .toList();
+    public Page<PedidoResponseDTO> findAll(Pageable pageable) {
+        return pedidoRepository.findAll(pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findPendente(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.PENDENTE, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findProducao(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.PRODUCAO, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findConcluido(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.CONCLUIDO, pageable).map(PedidoMapper::toResponse);
     }
 
     public PedidoResponseDTO findById(Long id) {

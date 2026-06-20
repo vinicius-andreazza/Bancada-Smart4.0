@@ -118,7 +118,6 @@ public class SmartService {
         }
     }
 
-
     public void printHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         System.out.println("--- BLOCO DE BYTES (HEXADECIMAL) ---");
