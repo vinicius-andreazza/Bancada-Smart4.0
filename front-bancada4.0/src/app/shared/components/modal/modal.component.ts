@@ -39,7 +39,7 @@ import { Component, computed, input, output } from '@angular/core';
         </div>
 
         @if (hasFooter()) {
-          <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-800 flex-shrink-0">
+          <div class="flex flex-wrap items-center justify-end gap-2 px-6 py-4 border-t border-gray-800 flex-shrink-0">
             <ng-content select="[slot=footer]" />
           </div>
         }

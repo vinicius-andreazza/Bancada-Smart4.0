@@ -1,4 +1,5 @@
-<div class="overflow-x-auto rounded-lg">
+<!-- Tabela (tablet / desktop) -->
+<div class="hidden md:block overflow-x-auto rounded-lg">
   <table class="w-full border-collapse" aria-label="Lista de pedidos">
     <thead>
       <tr class="border-b border-gray-800 bg-gray-900/60">
@@ -34,4 +35,21 @@
       }
     </tbody>
   </table>
+</div>
+
+<!-- Cards (mobile) -->
+<div class="md:hidden flex flex-col gap-3">
+  @for (pedido of pedidos(); track pedido.id) {
+    <app-pedido-card-item
+      [pedido]="pedido"
+      (verDetalhe)="verDetalhe.emit($event)"
+      (excluir)="excluir.emit($event)"
+    />
+  } @empty {
+    <app-table-empty-state
+      icon="fa-solid fa-inbox"
+      title="Nenhum pedido encontrado"
+      description="Crie um novo pedido para começar"
+    />
+  }
 </div>

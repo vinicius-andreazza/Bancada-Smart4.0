@@ -1,4 +1,4 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { Pedido } from '../../../../core/models/pedido.model';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import {
@@ -8,18 +8,22 @@ import {
   TAMPA_LABEL,
   TAMPA_CSS_CLASS,
   getTotalBlocos,
-} from './pedido-labels';
+} from '../pedido-row/pedido-labels';
 
+/**
+ * Versão em card de um pedido, usada na lista de pedidos em telas pequenas (`md:hidden`),
+ * onde a tabela de 8 colunas não cabe. Espelha os dados/ações da `pedido-row`.
+ */
 @Component({
-  selector: 'tr[app-pedido-row]',
+  selector: 'app-pedido-card-item',
   imports: [ButtonComponent],
-  templateUrl: './pedido-row.component.html',
+  templateUrl: './pedido-card-item.component.html',
 })
-export class PedidoRow {
+export class PedidoCardItem {
   readonly pedido = input.required<Pedido>();
 
-  readonly onVerDetalhe = output<Pedido>();
-  readonly onExcluir    = output<number>();
+  readonly verDetalhe = output<Pedido>();
+  readonly excluir    = output<number>();
 
   readonly statusLabel      = STATUS_LABEL;
   readonly statusBadgeClass = STATUS_BADGE_CLASS;
@@ -28,12 +32,4 @@ export class PedidoRow {
   readonly tampaCssClass    = TAMPA_CSS_CLASS;
 
   readonly totalBlocos = computed(() => getTotalBlocos(this.pedido()));
-
-  verDetalhe(): void {
-    this.onVerDetalhe.emit(this.pedido());
-  }
-
-  excluir(): void {
-    this.onExcluir.emit(this.pedido().id);
-  }
 }

@@ -1,19 +1,19 @@
-<div class="relative flex items-center h-full w-full">
+<div class="relative flex flex-col w-full">
 
-  <div
-    class="absolute bottom-0 inset-x-0 h-px pointer-events-none
-           bg-linear-to-r from-transparent via-accent/25 to-transparent"
-    aria-hidden="true"
-  ></div>
+  <!-- Barra principal -->
+  <div class="relative flex items-center w-full mx-auto px-3 sm:px-5 md:px-7 h-[60px] gap-3">
 
-  <div class="flex items-center w-full mx-auto px-4 sm:px-7 h-full gap-3">
+    <div
+      class="absolute bottom-0 inset-x-0 h-px pointer-events-none
+             bg-linear-to-r from-transparent via-text-accent/25 to-transparent"
+      aria-hidden="true"
+    ></div>
 
-    <!-- Logo -->
-    
-     
+    <!-- Logo (oculto no mobile quando o menu está aberto) -->
     <a  class="group inline-flex items-center gap-3 px-2 py-1.5 rounded-md no-underline
              transition-colors duration-200 hover:bg-panel mr-auto shrink-0
              focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-2"
+      [class.max-md:hidden]="menuOpen()"
       routerLink="/dashboard"
       aria-label="Planta SMART 4.0 – Exxer, voltar ao Dashboard">
       <span
@@ -41,7 +41,7 @@
         </span>
       </span>
 
-      <span class="font-mono-tech text-sm text-rule mx-0.5 select-none" aria-hidden="true">//</span>
+      <span class="font-mono-tech text-sm text-rule mx-0.5 select-none hidden sm:inline" aria-hidden="true">//</span>
     </a>
 
     <!-- Nav desktop -->
@@ -62,21 +62,22 @@
       </nav>
     }
 
-    <!-- Status badge -->
-    <div class="shrink-0">
+    <!-- Status badge (oculto no mobile quando o menu está aberto) -->
+    <div class="shrink-0" [class.max-md:hidden]="menuOpen()">
       <app-status-badge [status]="systemStatus()" />
     </div>
 
-    <!-- Botão hambúrguer -->
+    <!-- Botão hambúrguer (vira X quando aberto; empurrado p/ direita quando o logo some) -->
     @if (!minimal()) {
       <button
         class="md:hidden p-2 rounded-md text-muted hover:text-bright hover:bg-panel
                transition-colors duration-200 shrink-0
                focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-2"
+        [class.max-md:ml-auto]="menuOpen()"
         (click)="toggleMenu()"
         [attr.aria-expanded]="menuOpen()"
         aria-controls="mobile-menu"
-        aria-label="Abrir menu de navegação"
+        [attr.aria-label]="menuOpen() ? 'Fechar menu de navegação' : 'Abrir menu de navegação'"
       >
         <!-- Hambúrguer via CSS — sem @if dentro de SVG -->
         <span class="flex flex-col gap-[5px] w-5">
@@ -101,12 +102,11 @@
 
   </div>
 
-  <!-- Menu mobile dropdown -->
+  <!-- Menu mobile: em fluxo (empurra o conteúdo para baixo), fundo sólido -->
   @if (!minimal() && menuOpen()) {
     <div
       id="mobile-menu"
-      class="absolute top-full inset-x-0 z-50 md:hidden
-             bg-panel border-b border-rule/20 shadow-lg shadow-black/40"
+      class="md:hidden w-full bg-bg-card border-t border-border-subtle shadow-lg shadow-black/40"
     >
       <nav aria-label="Navegação mobile">
         <ul class="flex flex-col list-none m-0 p-2" role="list">

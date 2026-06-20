@@ -1,11 +1,12 @@
 import { Component, input, output } from '@angular/core';
 import { PedidoRow } from '../pedido-row/pedido-row.component';
+import { PedidoCardItem } from '../pedido-card-item/pedido-card-item.component';
 import { Pedido } from '../../../../core/models/pedido.model';
 import { TableEmptyStateComponent } from "../../../../shared/components/table-empty-state/table-empty-state.component";
 
 @Component({
   selector: 'app-pedido-table',
-  imports: [PedidoRow, TableEmptyStateComponent],
+  imports: [PedidoRow, PedidoCardItem, TableEmptyStateComponent],
   templateUrl: './pedido-table.component.html',
 })
 export class PedidoTable {

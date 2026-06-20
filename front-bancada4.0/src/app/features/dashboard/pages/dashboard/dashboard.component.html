@@ -3,7 +3,7 @@
  
   <app-navbar></app-navbar>
  
-  <main class="flex-1 w-full px-8 py-6">
+  <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
  
     <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
       <div class="flex items-center gap-3">
@@ -23,7 +23,7 @@
       <app-toast-notifications [text]="'Salvando alterações...'" [variant]="'info'"></app-toast-notifications>
     }
  
-    <div class="grid grid-cols-[auto_minmax(0,0.8fr)] gap-30 items-start justify-center">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] gap-6 lg:gap-10 items-start">
  
       <app-estoque-panel
         [positions]="estoquePositions()"

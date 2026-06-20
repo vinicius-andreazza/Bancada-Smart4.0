@@ -5,7 +5,7 @@
   <div class="flex-1 px-4 py-6 md:px-8 md:py-10">
     <main class="max-w-screen-xl mx-auto flex flex-col gap-6">
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <app-status-card-pedido [type]="'TOTAL'" [total]="totalPedidos()" />
         <app-status-card-pedido [type]="StatusPedido.PENDENTE" [total]="qtdPendentes()" />
         <app-status-card-pedido [type]="StatusPedido.PRODUCAO" [total]="qtdProducao()" />
@@ -45,7 +45,7 @@
 
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="p-4 md:p-0">
           <app-pedido-table
             [pedidos]="pedidosFiltrados()"
             (verDetalhe)="abrirDetalhe($event)"

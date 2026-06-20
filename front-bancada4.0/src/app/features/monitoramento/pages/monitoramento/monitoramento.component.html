@@ -2,10 +2,10 @@
 
   <app-navbar></app-navbar>
 
-  <main class="flex-1 w-full px-8 py-6">
+  <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
 
     <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
-      <h1 class="font-heading text-2xl font-bold text-text-primary">Monitoramento</h1>
+      <h1 class="font-heading text-xl sm:text-2xl font-bold text-text-primary">Monitoramento</h1>
 
       <div class="flex items-center gap-4">
         <app-pedido-timer
@@ -32,7 +32,7 @@
     }
 
     <div class="mt-4 bg-bg-card border border-border-subtle rounded-smart p-4">
-      <div class="grid grid-cols-3 gap-4 items-start">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
 
         <div class="flex justify-center">
           <app-estoque-panel-clp [positions]="estoquePositions()"></app-estoque-panel-clp>

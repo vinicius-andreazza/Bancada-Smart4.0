@@ -235,8 +235,7 @@ const UNIT_H  = BASE_T + WALL_H + PIN_HT; // vertical space one block occupies i
 
       <div
         #container
-        class="relative w-full rounded-b-lg overflow-hidden bg-[#080d18]"
-        style="height: 380px; min-width: 220px; cursor: grab;"
+        class="relative w-full h-[300px] sm:h-[340px] lg:h-[380px] rounded-b-lg overflow-hidden bg-[#080d18] cursor-grab"
       >
         <canvas #canvas class="block w-full h-full"></canvas>
 
