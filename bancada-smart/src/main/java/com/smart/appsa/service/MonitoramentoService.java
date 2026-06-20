@@ -1,10 +1,17 @@
 package com.smart.appsa.service;
 
+import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.model.Estoque;
+import com.smart.appsa.model.Expedicao;
+import com.smart.appsa.model.Pedido;
+import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.plc.EstacaoPlc;
 import com.smart.appsa.model.plc.EstoquePlc;
 import com.smart.appsa.model.plc.ExpedicaoPlc;
 import com.smart.appsa.model.plc.MontagemPlc;
 import com.smart.appsa.model.plc.ProcessoPlc;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +20,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.smart.appsa.dto.EstoqueDTO;
+import com.smart.appsa.dto.ExpedicaoDTO;
 import com.smart.appsa.dto.sse.EstacaoStatus;
 import com.smart.appsa.dto.sse.SseDto;
+import com.smart.appsa.mapper.EstoqueMapper;
+import com.smart.appsa.mapper.ExpedicaoMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MonitoramentoService {
+    private final PedidoResponseDTO pedidoResponseDTO;
+    private final PedidoService pedidoService;
     private final ExpedicaoPlc expedicaoPlc;
     private final MontagemPlc montagemPlc;
     private final ProcessoPlc processoPlc;
@@ -65,7 +78,9 @@ public class MonitoramentoService {
                         status("PROCESSO", processoPlc),
                         status("MONTAGEM", montagemPlc),
                         status("EXPEDICAO", expedicaoPlc)))
-                .inicioPedido(null)
+                .duracao(calculateDuracao())
+                .estoque(getDataEstoque())
+                .expedicao(getDataExpedicao())
                 .build();
     }
 
@@ -75,5 +90,36 @@ public class MonitoramentoService {
                 .status(plc.getStatus())
                 .atualizadoEm(LocalDateTime.now())
                 .build();
+    }
+
+    private String calculateDuracao(){
+        pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
+        if(pedidoResponseDTO.status().equals(StatusPedido.CONCLUIDO)){
+            return Duration.between(pedidoResponseDTO.dataInicio(), pedidoResponseDTO.dataEntrada()).toString();
+        }
+        return Duration.between(pedidoResponseDTO.dataInicio(), LocalDateTime.now()).toString();
+    }
+
+    private List<EstoqueDTO> getDataEstoque(){
+        byte positions[] = estoquePlc.getPosicoes();
+        List<Estoque> listaEstoque = new ArrayList<>();
+        for(int i=0;i<positions.length;i++){
+            listaEstoque.add(Estoque.builder().posicao(i+1).cor(Integer.parseInt(positions[i]+"")).build());
+        }
+
+        return listaEstoque.stream().map(EstoqueMapper::toDto).toList();
+    }
+
+    private List<ExpedicaoDTO> getDataExpedicao(){
+        int positions[] = expedicaoPlc.getPedidosExpedicao();
+        List<Expedicao> listaExpedicao = new ArrayList<>();
+        for(int i=0;i<positions.length;i++){
+            listaExpedicao.add(Expedicao.builder().posicao(i+1).pedido(createPedido(positions[i])).build());
+        }
+        return listaExpedicao.stream().map(ExpedicaoMapper::toDto).toList();
+    }
+
+    private Pedido createPedido(int codPedido){
+        return Pedido.builder().codPedido(codPedido).build();
     }
 }

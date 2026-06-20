@@ -64,6 +64,9 @@ public class Pedido {
     @Column(name = "vl_tampa", nullable = false)
     private CorTampa corTampa;
 
+    @Column(name = "dt_inicio", nullable = true)
+    private LocalDateTime dataInicio;
+
     @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;
 
