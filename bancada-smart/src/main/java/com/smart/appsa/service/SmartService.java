@@ -39,7 +39,7 @@ public class SmartService {
     private final PedidoRepository pedidoRepository;
 
     private final BlocoService blocoService;
-    
+
     private final SeletorTampaIp seletorTampaIp;
 
     private final EstoqueIp estoqueIp;
@@ -48,42 +48,50 @@ public class SmartService {
     private static final int TOTAL_BYTES = TOTAL_SHORTS * 2;
 
     public void enviarParaProducao(PedidoRequestDTO pedidoRequest) {
-        System.out.println("Iniciar Pedido");
-        Pedido pedido = pedidoRepository.findByCodPedido(pedidoRequest.codPedido())
+        Pedido pedido = setPedido(pedidoRequest.codPedido());
+
+        byte[] buffer = converterParaBytes(pedido);
+
+        printHex(buffer);
+
+        writeDataInPlc(pedido, buffer);
+
+        updatePedido(pedido);
+    }
+
+    private Pedido setPedido(int codPedido) {
+        Pedido pedido = pedidoRepository.findByCodPedido(codPedido)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
 
         pedidoService.assignPosPedidoInExpedicao(pedido);
+        return pedido;
+    }
 
-        byte[] buffer = converterParaBytes(pedido);
-        
-        printHex(buffer);
-        
-        PlcConnector connector = plcConnectionService.getConnection(estoqueIp.getIp());
+    private byte[] converterParaBytes(Pedido pedido) {
+        ByteBuffer buffer = ByteBuffer.allocate(TOTAL_BYTES);
 
-        if (connector != null) {
-            try {
-                // 3. Escrever bloco de bytes no CLP (ex: a partir da DB19, offset 2)
-                connector.writeBlock(9, 2, 60, buffer);
-                System.out.println("Dados enviados para o CLP: " + estoqueIp.getIp());
+        List<Bloco> blocos = pedido.getBlocos();
 
-                atualizarTampa(pedido.getCorTampa().getValue());
-
-                iniciarExecucaoPedido(estoqueIp.getIp());
-
-            } catch (Exception ex) {
-                System.err.println("Erro ao enviar dados para o CLP: " + ex.getMessage());
+        for (int i = 0; i < 3; i++) {
+            if (i < blocos.size()) {
+                escreverBloco(blocos.get(i), buffer);
+            } else {
+                escreverBlocoVazio(buffer);
             }
         }
-        pedido.setStatus(StatusPedido.PRODUCAO);
 
-        pedidoRepository.save(pedido);
+        buffer.putShort((short) pedido.getCodPedido().intValue());
+        buffer.putShort((short) pedido.getTipoPedido().getValue());
+        buffer.putShort((short) pedido.getPosExpedicao().intValue());
+
+        return buffer.array();
     }
 
     private void escreverBloco(Bloco bloco, ByteBuffer buffer) {
-        buffer.putShort((short) bloco.getCorBloco().getValue()); // Cor_Andar
-        buffer.putShort((short) bloco.getPosEstoque().intValue()); // Posicao_Estoque_Andar
+        buffer.putShort((short) bloco.getCorBloco().getValue());
+        buffer.putShort((short) bloco.getPosEstoque().intValue());
 
         List<Lamina> laminas = bloco.getLaminas();
 
@@ -110,37 +118,14 @@ public class SmartService {
         }
     }
 
-    private byte[] converterParaBytes(Pedido pedido) {
-        ByteBuffer buffer = ByteBuffer.allocate(TOTAL_BYTES);
 
-        List<Bloco> blocos = pedido.getBlocos();
-
-        for (int i = 0; i < 3; i++) {
-            if (i < blocos.size()) {
-                escreverBloco(blocos.get(i), buffer);
-            } else {
-                escreverBlocoVazio(buffer);
-            }
-        }
-
-        // Offset 56
-        buffer.putShort((short) pedido.getCodPedido().intValue()); // Numero_Pedido
-        buffer.putShort((short) pedido.getTipoPedido().getValue()); // Andares
-        buffer.putShort((short) pedido.getPosExpedicao().intValue()); // Posicao_Expedicao
-
-        return buffer.array();
-    }
-
-    // Printar bloco de bytes do Pedido no console
     public void printHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         System.out.println("--- BLOCO DE BYTES (HEXADECIMAL) ---");
 
         for (int i = 0; i < bytes.length; i++) {
-            // Converte o byte para Hex e garante que tenha 2 dígitos (ex: 0A em vez de A)
             sb.append(String.format("%02X ", bytes[i]));
 
-            // Opcional: Quebra de linha a cada 10 bytes para facilitar a leitura
             if ((i + 1) % 10 == 0) {
                 sb.append("\n");
             }
@@ -150,7 +135,81 @@ public class SmartService {
         System.out.println("------------------------------------");
     }
 
-    // Envia comando para a Planta Smart iniciar a produção do Pedido
+    private void writeDataInPlc(Pedido pedido, byte[] buffer) {
+        PlcConnector connector = plcConnectionService.getConnection(estoqueIp.getIp());
+
+        if (connector != null) {
+            try {
+                connector.writeBlock(9, 2, 60, buffer);
+                System.out.println("Dados enviados para o CLP: " + estoqueIp.getIp());
+
+                atualizarTampa(pedido.getCorTampa().getValue());
+
+                iniciarExecucaoPedido(estoqueIp.getIp());
+
+            } catch (Exception ex) {
+                System.err.println("Erro ao enviar dados para o CLP: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void atualizarTampa(int tampa) {
+        if (seletorTampaIp.getEndpointApi() == null) {
+            return;
+        }
+        System.out.println("\n\nSELETOR DE TAMPAS INSTALADO NA BANCADA\n\n");
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            setHeaders(headers);
+
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+            setBody(map, tampa);
+
+            Map<String, Object> body = sendRequest(headers, map);
+
+            verifyResponse(body);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SeletorTampaException("Erro seletor de tampa");
+        }
+    }
+
+    private void setHeaders(HttpHeaders headers) {
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    }
+
+    private void setBody(MultiValueMap<String, String> map, int tampa) {
+        map.add("pos", String.valueOf(tampa));
+        map.add("offset", "0");
+    }
+
+    private Map<String, Object> sendRequest(HttpHeaders headers, MultiValueMap<String, String> map) {
+        RestTemplate apiSeletorTampa = new RestTemplate();
+        String url = seletorTampaIp.getEndpointApi();
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> rawResponse = apiSeletorTampa.postForEntity(url, request, String.class);
+        System.out.println("Resposta Bruta do ESP32: " + rawResponse.getBody());
+
+        ResponseEntity<Map> response = apiSeletorTampa.postForEntity(url, request, Map.class);
+
+        return response.getBody();
+    }
+
+    private void verifyResponse(Map<String, Object> body) {
+        if (body == null || body.get("status") == null) {
+            throw new SeletorTampaException("Resposta invalida do seletor tampa");
+        }
+
+        String status = body.get("status").toString();
+
+        if (!status.toLowerCase().contains("ok")) {
+            throw new SeletorTampaException("Erro status: " + status);
+        }
+    }
+
     public void iniciarExecucaoPedido(String ipClp) {
         PlcConnector plcConnector = plcConnectionService.getConnection(ipClp);
         if (plcConnector == null) {
@@ -159,15 +218,8 @@ public class SmartService {
 
         try {
 
-            // Inicializa as flags da estação ESTOQUE
-            // plcConnector.connect();
-            plcConnector.writeBit(9, 0, 0, Boolean.parseBoolean("FALSE"));
-            plcConnector.writeBit(9, 64, 0, Boolean.parseBoolean("FALSE"));
-            plcConnector.writeBit(9, 64, 1, Boolean.parseBoolean("FALSE"));
-            plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
+            resetFlags(ipClp);
 
-            // plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
-            // Iniciar pedido
             System.out.println("SETAR FLAG INICIAR PEDIDO");
             plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("TRUE"));
 
@@ -181,51 +233,18 @@ public class SmartService {
         }
     }
 
-    private void atualizarTampa(int tampa) {
-        if(seletorTampaIp.getEndpointApi()==null){
-            return;
-        }
-        System.out.println("\n\nSELETOR DE TAMPAS INSTALADO NA BANCADA\n\n");
-        try {
-            RestTemplate apiSeletorTampa = new RestTemplate();
-            String url = seletorTampaIp.getEndpointApi();
-
-            // 1. Definir o cabeçalho como application/x-www-form-urlencoded
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            // 2. Usar MultiValueMap (específico para formulários no Spring)
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-            map.add("pos", String.valueOf(tampa));
-            map.add("offset", "0");
-
-            // 3. Criar a entidade com cabeçalhos e corpo
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-
-            // 4. Tente ler a resposta primeiro como String para ver o que o ESP32 está
-            // realmente enviando
-            ResponseEntity<String> rawResponse = apiSeletorTampa.postForEntity(url, request, String.class);
-            System.out.println("Resposta Bruta do ESP32: " + rawResponse.getBody());
-
-            // 5. Agora, para a sua lógica de negócio, usamos o Map
-            ResponseEntity<Map> response = apiSeletorTampa.postForEntity(url, request, Map.class);
-            Map<String, Object> body = response.getBody();
-
-            // Verificação robusta
-            if (body == null || body.get("status") == null) {
-                throw new SeletorTampaException("Resposta invalida do seletor tampa");
-            }
-
-            String status = body.get("status").toString();
-
-            // Verificação flexível (ignora maiúsculas/minúsculas)
-            if (!status.toLowerCase().contains("ok")) {
-                throw new SeletorTampaException("Erro status: "+status);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new SeletorTampaException("Erro seletor de tampa");
-        }
+    private void resetFlags(String ipClp) throws Exception {
+        PlcConnector plcConnector = plcConnectionService.getConnection(ipClp);
+        plcConnector.writeBit(9, 0, 0, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 64, 0, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 64, 1, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
     }
+
+    private void updatePedido(Pedido pedido) {
+        pedido.setStatus(StatusPedido.PRODUCAO);
+
+        pedidoRepository.save(pedido);
+    }
+
 }
