@@ -1,5 +1,7 @@
 import { Estacao } from './enums/estacao.enum';
 import { StatusEstacao } from './enums/statusestacao.enum';
+import { Estoque } from './estoque.model';
+import { Expedicao } from './expedicao.model';
 
 export interface EstacaoStatus {
   estacao: Estacao;
@@ -11,6 +13,8 @@ export interface MonitoramentoSnapshot {
   codPedidoAtual: number | null;
   inicioPedido: string | null;
   estacoes: EstacaoStatus[];
+  estoque: Estoque[];
+  expedicao: Expedicao[];
 }
 
 export interface UltimoPedidoResumo {

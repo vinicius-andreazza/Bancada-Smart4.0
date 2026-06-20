@@ -28,8 +28,10 @@ export class MonitoramentoService {
       const raw = JSON.parse(event.data);
       this.snapshot.set({
         codPedidoAtual: raw.codPedidoAtual ?? null,
-        inicioPedido: raw.inicioPedido ?? null,
-        estacoes: raw.estacaoStatus ?? [],
+        inicioPedido:   raw.inicioPedido ?? null,
+        estacoes:       raw.estacaoStatus ?? [],
+        estoque:        raw.estoque ?? [],        // ← ajustar nome se necessário quando backend definir
+        expedicao:      raw.expedicao ?? [],      // ← ajustar nome se necessário quando backend definir
       } as MonitoramentoSnapshot);
     });
 

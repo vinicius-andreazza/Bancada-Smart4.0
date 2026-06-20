@@ -31,9 +31,21 @@
       ></app-toast-notifications>
     }
 
-    <div class="mt-4 bg-bg-card border border-border-subtle rounded-smart p-4 flex justify-center">
-      <div class="w-full max-w-md sm:max-w-lg lg:max-w-xl">
-        <app-bancada-overview [estacoes]="estacoes()"></app-bancada-overview>
+    <div class="mt-4 bg-bg-card border border-border-subtle rounded-smart p-4">
+      <div class="grid grid-cols-3 gap-4 items-start">
+
+        <div class="flex justify-center">
+          <app-estoque-panel-clp [positions]="estoquePositions()"></app-estoque-panel-clp>
+        </div>
+
+        <div class="w-full">
+          <app-bancada-overview [estacoes]="estacoes()"></app-bancada-overview>
+        </div>
+
+        <div class="flex justify-center">
+          <app-expedicao-panel-clp [positions]="expedicaoPositions()"></app-expedicao-panel-clp>
+        </div>
+
       </div>
     </div>
 
