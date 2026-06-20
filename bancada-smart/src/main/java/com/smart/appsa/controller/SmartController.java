@@ -49,6 +49,11 @@ public class SmartController {
         montagemIp.setIp(commDto.montagemIp());
         expedicaoIp.setIp(commDto.expedicaoIp());
         seletorTampaIp.setEndpointApi(commDto.endpointSeletorTampa());
+        
+        estoqueComm.disconnect();
+        processoComm.disconnect();
+        montagemComm.disconnect();
+        expedicaoComm.disconnect();
 
         estoqueComm.startComm();
         processoComm.startComm();
@@ -63,5 +68,5 @@ public class SmartController {
         System.out.println("SSE aberto");
         return monitoramentoService.conectar();
     }
-    
+
 }

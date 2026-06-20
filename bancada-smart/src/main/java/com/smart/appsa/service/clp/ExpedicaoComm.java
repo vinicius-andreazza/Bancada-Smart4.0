@@ -3,22 +3,18 @@ package com.smart.appsa.service.clp;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.service.ExpedicaoService;
 import com.smart.appsa.service.PedidoService;
+import com.smart.appsa.service.clp.poller.PlcPoller;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
-import com.smart.appsa.mapper.ExpedicaoMapper;
-import com.smart.appsa.mapper.PedidoMapper;
 import com.smart.appsa.mapper.clp.ExpedicaoPlcMapper;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.plc.ExpedicaoPlc;
-import com.smart.appsa.service.clp.reader.PlcReader;
 
 @Service
 public class ExpedicaoComm {
@@ -26,15 +22,13 @@ public class ExpedicaoComm {
     private final ExpedicaoService expedicaoService;
     private final PedidoService pedidoService;
 
-    private PlcReader plcReader;
+    private final PlcPoller poller;
 
     private int opAntiga = 0;
 
     private final PlcConnectionService plcConnectionService;
 
     private final ExpedicaoPlc expedicaoPlc;
-
-    private final ExecutorService expedicaoPool = Executors.newSingleThreadExecutor();
 
     private static final int DELAY = 400;
     private static final int DB_EXPEDICAO = 9;
@@ -44,6 +38,7 @@ public class ExpedicaoComm {
 
     public ExpedicaoComm(PlcConnectionService plcConnectionService,
                          ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService, ExpedicaoIp expedicaoIp) {
+        this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.expedicaoPlc = expedicaoPlc;
         this.expedicaoService = expedicaoService;
@@ -52,15 +47,18 @@ public class ExpedicaoComm {
     }
 
     public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(expedicaoIp.getIp()), "Expedicao", DB_EXPEDICAO, 0, 46,
-                data -> handleData(data), DELAY);
-        expedicaoPool.execute(plcReader);
+        poller.start(expedicaoIp.getIp(), DELAY, () -> {
+            try {
+                handleData(getConnector().readBlock(DB_EXPEDICAO, 0, 46));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    public boolean isConnected() {
-        return plcReader != null && 
-           plcConnectionService.getConnection(expedicaoIp.getIp()).isConnected();
-    }
+    public void disconnect() { poller.stop(); }
+    public boolean isConnected() { return poller.isConnected(); }
+
 
     private void handleData(byte[] data) {
 
@@ -236,7 +234,7 @@ public class ExpedicaoComm {
     }
 
     private Pedido getPedidoByCod(int codigo){
-        return pedidoService.findPedidoByCodigo(expedicaoPlc.getOpGuardado());
+        return pedidoService.findPedidoByCodigo(codigo);
     }
 
     private PlcConnector getConnector() {

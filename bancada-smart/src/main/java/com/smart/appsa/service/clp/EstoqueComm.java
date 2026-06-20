@@ -1,10 +1,6 @@
 package com.smart.appsa.service.clp;
 
-import com.smart.appsa.service.MonitoramentoService;
-
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Service;
 
@@ -17,16 +13,14 @@ import com.smart.appsa.mapper.clp.EstoquePlcMapper;
 import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.plc.EstoquePlc;
 import com.smart.appsa.service.EstoqueService;
-import com.smart.appsa.service.clp.reader.PlcReader;
+import com.smart.appsa.service.clp.poller.PlcPoller;
 
 @Service
 public class EstoqueComm {
 
-    private final MonitoramentoService monitoramentoService;
-
     private final EstoqueIp estoqueIp;
 
-    private PlcReader plcReader;
+    private final PlcPoller poller;
 
     private final PlcConnectionService plcConnectionService;
 
@@ -34,32 +28,32 @@ public class EstoqueComm {
 
     private final EstoquePlc estoquePlc;
 
-    private final ExecutorService estoquePool = Executors.newSingleThreadExecutor();
-
     private static final int DELAY = 600;
     private static final int DB_ESTOQUE = 9;
     private static final int OFFSET_INICIAR_PEDIDO = 62;
     private static final int OFFSET_GERENCIAMENTO_ESTOQUE = 64;
     private static final int OFFSET_POSICAO_GUARDAR = 66;
 
-    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc, EstoqueIp estoqueIp, MonitoramentoService monitoramentoService) {
+    public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc, EstoqueIp estoqueIp) {
+        this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.estoqueService = estoqueService;
         this.estoquePlc = estoquePlc;
         this.estoqueIp = estoqueIp;
-        this.monitoramentoService = monitoramentoService;
     }
 
-    public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(estoqueIp.getIp()), "Estoque", DB_ESTOQUE, 0, 110,
-                data -> handleData(data), DELAY);
-        estoquePool.execute(plcReader);
+     public void startComm() {
+        poller.start(estoqueIp.getIp(), DELAY, () -> {
+            try {
+                handleData(getConnector().readBlock(DB_ESTOQUE, 0, 110));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    public boolean isConnected() {
-        return plcReader != null && 
-           plcConnectionService.getConnection(estoqueIp.getIp()).isConnected();
-    }
+    public void disconnect() { poller.stop(); }
+    public boolean isConnected() { return poller.isConnected(); }
 
     private void handleData(byte[] data) {
         EstoquePlcMapper.updateData(data, estoquePlc);
@@ -72,8 +66,6 @@ public class EstoqueComm {
         retornarPosicao();
 
         atualizarEstoque();
-
-        monitoramentoService.enviarSnapshot();
     }
 
     private void validarIniciarGuardar() {
@@ -94,7 +86,7 @@ public class EstoqueComm {
         if (estoquePlc.isPedirPosicao() && !estoquePlc.isOcupado()) {
 
 
-            int posEstoqueLivre = estoqueService.findFirstByCor(0).getCor();
+            int posEstoqueLivre = estoqueService.findFirstByCor(0).getPosicao();
 
             if (posEstoqueLivre > 0) {
 
@@ -230,7 +222,6 @@ public class EstoqueComm {
             try {
                 getConnector().writeByte(DB_ESTOQUE, (67+e.getPosicao()), e.getCor().byteValue());
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         });

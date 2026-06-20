@@ -83,7 +83,7 @@ public class EstoqueService {
     }
 
     private void validateCor(Integer cor) {
-        if (cor < 1 || cor > 3) {
+        if (cor < 0 || cor > 3) {
             throw new IllegalArgumentException("Cor invalida");
         }
     }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -52,6 +53,7 @@ public class MonitoramentoService {
         return emitter;
     }
 
+    @Scheduled(fixedDelay = 500)
     public void enviarSnapshot() {
         List<SseEmitter> removidos = new ArrayList<>();
 

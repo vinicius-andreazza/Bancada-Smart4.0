@@ -1,7 +1,5 @@
 package com.smart.appsa.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Builder;
 
 @Builder

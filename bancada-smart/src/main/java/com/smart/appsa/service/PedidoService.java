@@ -44,8 +44,6 @@ public class PedidoService {
 
         pedidoRepository.save(pedido);
 
-        //assignPosPedidoInExpedicao(pedido);
-
         updateBlocoReferencePedido(pedido);
 
         List<Bloco> blocosCriados = createBlocos(pedido.getBlocos());
@@ -106,12 +104,12 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         if (pedidoExistente.getStatus() == StatusPedido.CONCLUIDO) {
-            //throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
-            System.out.println("Pedido concluido");
+            throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
         pedidoExistente.setDataEntrada(LocalDateTime.now());
-        //assignPosPedidoInExpedicao(pedidoExistente);
+        expedicaoService.assignPedido(pedidoExistente.getId());
+        assignPosPedidoInExpedicao(pedidoExistente);
 
         pedidoRepository.save(pedidoExistente);
 
@@ -206,7 +204,7 @@ public class PedidoService {
     }
 
     public void assignPosPedidoInExpedicao(Pedido pedido) {
-        Expedicao expedicao = expedicaoService.assignPedido(pedido.getId());
+        Expedicao expedicao = expedicaoService.findFirstAvailable();
 
         pedido.setPosExpedicao(expedicao.getPosicao());
     }
