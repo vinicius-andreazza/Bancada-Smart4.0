@@ -3,7 +3,9 @@ package com.smart.appsa.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.producao.ProducaoSnapshot;
+import com.smart.appsa.mapper.cache.ProducaoCacheMapper;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.repository.PedidoRepository;
@@ -20,10 +22,20 @@ public class ProducaoService {
     private final PedidoService pedidoService;
     private final PedidoRepository pedidoRepository;
     private final ProducaoCacheRepository cacheRepository;
+    private final BlocoService blocoService;
 
 
-    public void iniciarProducao(Pedido pedido, ProducaoSnapshot snapshot) {
+    public Pedido iniciarProducao(PedidoRequestDTO pedidoRequest) {
+        Pedido pedido = pedidoRepository.findByCodPedido(pedidoRequest.codPedido())
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+
+        pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
+
+        pedidoService.assignPosPedidoInExpedicao(pedido);
+
         int codPedido = pedido.getCodPedido();
+
+        ProducaoSnapshot snapshot = ProducaoCacheMapper.constructSnapshot(pedido);
 
         cacheRepository.salvar(codPedido, snapshot);
 
@@ -34,6 +46,8 @@ public class ProducaoService {
             cacheRepository.remover(codPedido);
             throw e;
         }
+
+        return pedido;
     }
 
     @Transactional
@@ -72,4 +86,6 @@ public class ProducaoService {
 
         cacheRepository.remover(codPedido);
     }
+
+    
 }

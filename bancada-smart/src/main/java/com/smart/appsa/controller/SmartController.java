@@ -42,7 +42,7 @@ public class SmartController {
     private final MonitoramentoService monitoramentoService;
 
     @PostMapping("/start")
-    public ResponseEntity startComm(@RequestBody CommDto commDto) {
+    public ResponseEntity<Void> startComm(@RequestBody CommDto commDto) {
 
         estoqueIp.setIp(commDto.estoqueIp());
         processoIp.setIp(commDto.processoIp());
