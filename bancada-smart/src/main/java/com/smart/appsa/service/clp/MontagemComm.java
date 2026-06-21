@@ -77,6 +77,7 @@ public class MontagemComm {
 
     private void validarFinalizacaoDaOperacao() {
         if (montagemPlc.isFinishOP() && !montagemPlc.isRecebidoOP()) {
+            updateStatusConcluido();
             try {
                 getConnector().writeBit(DB_MONTAGEM, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
@@ -84,6 +85,10 @@ public class MontagemComm {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateStatusConcluido(){
+        montagemPlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {

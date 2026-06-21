@@ -78,6 +78,7 @@ public class ProcessoComm {
 
     private void validarFinalizacaoDaOperacao() {
         if (processoPlc.isFinishOP() && !processoPlc.isRecebidoOP()) {
+            updateStatusConcluido();
             try {
                 getConnector().writeBit(DB_PROCESSO, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
@@ -85,6 +86,10 @@ public class ProcessoComm {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateStatusConcluido(){
+        processoPlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {

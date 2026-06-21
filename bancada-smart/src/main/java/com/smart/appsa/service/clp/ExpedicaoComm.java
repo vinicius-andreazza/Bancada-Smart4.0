@@ -210,6 +210,7 @@ public class ExpedicaoComm {
         if (expedicaoPlc.getPosicaoGuardado() == expedicaoPlc.getPosicaoGuardar()
                 && !expedicaoPlc.isOcupado()
                 && expedicaoPlc.isFinishOP()) {
+            updateStatusConcluido();
             System.out.println("Operação OP:" + expedicaoPlc.getOpGuardado() + " Finalizada.");
         }
     }
@@ -242,6 +243,10 @@ public class ExpedicaoComm {
                 e1.printStackTrace();
             }
         });
+    }
+
+    private void updateStatusConcluido(){
+        expedicaoPlc.setConcluidoOP(true);
     }
 
     private int buscarPrimeiraPosicaoLivre() {

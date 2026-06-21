@@ -21,9 +21,11 @@ public abstract class EstacaoPlc {
     private boolean manual;
     private boolean emergencia;
 
+    private boolean concluidoOP;
+
     public StatusEstacao getStatus() {
         if (cancelOP)  return StatusEstacao.CANCELADO;
-        if (finishOP)  return StatusEstacao.FINALIZADO;
+        if (finishOP || concluidoOP)  return StatusEstacao.FINALIZADO;
         if (ocupado)   return StatusEstacao.OCUPADO;
         return StatusEstacao.START;
     }

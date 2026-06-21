@@ -195,6 +195,7 @@ public class EstoqueComm {
     private void validarFinalizacaoDaOperacao() {
         
         if (estoquePlc.isFinishOP() && !estoquePlc.isRecebidoOP()) {
+            updateStatusConcluido();
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, true); // coloca RecebidoOPEst em TRUE
             } catch (Exception e) {
@@ -225,6 +226,10 @@ public class EstoqueComm {
                 e1.printStackTrace();
             }
         });
+    }
+
+    private void updateStatusConcluido(){
+        estoquePlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {
