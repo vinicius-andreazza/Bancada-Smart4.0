@@ -3,6 +3,7 @@ package com.smart.appsa.service.clp;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.service.ExpedicaoService;
 import com.smart.appsa.service.PedidoService;
+import com.smart.appsa.service.ProducaoService;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
 import java.util.List;
@@ -21,10 +22,12 @@ public class ExpedicaoComm {
     private final ExpedicaoIp expedicaoIp;
     private final ExpedicaoService expedicaoService;
     private final PedidoService pedidoService;
+    private final ProducaoService producaoService;
 
     private final PlcPoller poller;
 
     private int opAntiga = 0;
+    private int opCancelada = 0;
 
     private final PlcConnectionService plcConnectionService;
 
@@ -37,12 +40,14 @@ public class ExpedicaoComm {
     private static final int OFFSET_POSICAO_GUARDAR = 4;
 
     public ExpedicaoComm(PlcConnectionService plcConnectionService,
-                         ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService, ExpedicaoIp expedicaoIp) {
+                         ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService,
+                         ProducaoService producaoService, ExpedicaoIp expedicaoIp) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.expedicaoPlc = expedicaoPlc;
         this.expedicaoService = expedicaoService;
         this.pedidoService = pedidoService;
+        this.producaoService = producaoService;
         this.expedicaoIp = expedicaoIp;
     }
 
@@ -70,6 +75,7 @@ public class ExpedicaoComm {
         validarAdicao();
         validarRetirada();
         validarFinalizacaoOP();
+        validarCancelamento();
         concluirPedido();
 
         atualizarExpedicao();
@@ -211,7 +217,16 @@ public class ExpedicaoComm {
     private void concluirPedido(){
         if(((expedicaoPlc.isFinishOP() || !expedicaoPlc.isRecebidoOP()) && (expedicaoPlc.getOpGuardado()>0 && expedicaoPlc.getOpGuardado() != opAntiga))){
             opAntiga = expedicaoPlc.getOpGuardado();
-            pedidoService.updateToConcluido(getPedidoByCod(expedicaoPlc.getOpGuardado()).getId());
+            producaoService.concluirProducao(expedicaoPlc.getOpGuardado());
+        }
+    }
+
+    private void validarCancelamento(){
+        if(expedicaoPlc.isCancelOP() && expedicaoPlc.getOpGuardado() > 0
+                && expedicaoPlc.getOpGuardado() != opCancelada){
+            opCancelada = expedicaoPlc.getOpGuardado();
+            producaoService.cancelarOuFalharProducao(expedicaoPlc.getOpGuardado(),
+                    "cancelamento sinalizado pelo CLP de expedição (CancelOP)");
         }
     }
 

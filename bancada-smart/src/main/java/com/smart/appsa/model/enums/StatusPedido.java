@@ -8,7 +8,8 @@ import jakarta.persistence.EnumeratedValue;
 public enum StatusPedido {
     PENDENTE(1),
     PRODUCAO(2),
-    CONCLUIDO(3);
+    CONCLUIDO(3),
+    CANCELADO(4);
 
     @EnumeratedValue
     int value;
