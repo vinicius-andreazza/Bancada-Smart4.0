@@ -1,14 +1,16 @@
-package com.smart.appsa.service;
+package com.smart.appsa.service.clp;
 
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
-import com.smart.appsa.dto.PedidoRequestDTO;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.exception.SeletorTampaException;
 import com.smart.appsa.mapper.clp.ProducaoPlcMapper;
 import com.smart.appsa.model.Pedido;
+import com.smart.appsa.service.ProducaoService;
+import com.smart.appsa.service.esp.SeletorTampaService;
 
 import lombok.RequiredArgsConstructor;
 

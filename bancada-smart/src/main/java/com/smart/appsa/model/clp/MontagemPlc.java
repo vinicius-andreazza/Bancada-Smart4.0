@@ -1,4 +1,4 @@
-package com.smart.appsa.model.plc;
+package com.smart.appsa.model.clp;
 
 import org.springframework.stereotype.Component;
 
@@ -10,5 +10,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Component
-public class ProcessoPlc extends EstacaoPlc {
+public class MontagemPlc extends EstacaoPlc {
 }

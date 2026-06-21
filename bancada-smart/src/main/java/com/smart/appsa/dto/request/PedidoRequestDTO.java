@@ -1,8 +1,9 @@
-package com.smart.appsa.dto;
+package com.smart.appsa.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.model.enums.CorTampa;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.model.enums.TipoPedido;

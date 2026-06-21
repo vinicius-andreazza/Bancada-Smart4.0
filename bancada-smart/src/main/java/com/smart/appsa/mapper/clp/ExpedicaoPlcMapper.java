@@ -1,6 +1,6 @@
 package com.smart.appsa.mapper.clp;
 
-import com.smart.appsa.model.plc.ExpedicaoPlc;
+import com.smart.appsa.model.clp.ExpedicaoPlc;
 
 public interface ExpedicaoPlcMapper {
     public static void updateData(byte[] data, ExpedicaoPlc expedicaoPlc){

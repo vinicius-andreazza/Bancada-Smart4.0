@@ -1,6 +1,6 @@
 package com.smart.appsa.mapper.clp;
 
-import com.smart.appsa.model.plc.ProcessoPlc;
+import com.smart.appsa.model.clp.ProcessoPlc;
 
 public interface ProcessoPlcMapper {
     public static void updateData(byte[] data, ProcessoPlc processoPlc){

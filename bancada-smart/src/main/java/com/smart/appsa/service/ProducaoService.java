@@ -3,8 +3,8 @@ package com.smart.appsa.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.producao.ProducaoSnapshot;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.mapper.cache.ProducaoCacheMapper;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.StatusPedido;

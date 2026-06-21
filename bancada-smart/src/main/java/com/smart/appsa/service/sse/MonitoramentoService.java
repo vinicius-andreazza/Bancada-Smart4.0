@@ -1,15 +1,15 @@
-package com.smart.appsa.service;
+package com.smart.appsa.service.sse;
 
-import com.smart.appsa.dto.PedidoResponseDTO;
 import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
+import com.smart.appsa.model.clp.EstacaoPlc;
+import com.smart.appsa.model.clp.EstoquePlc;
+import com.smart.appsa.model.clp.ExpedicaoPlc;
+import com.smart.appsa.model.clp.MontagemPlc;
+import com.smart.appsa.model.clp.ProcessoPlc;
 import com.smart.appsa.model.enums.StatusPedido;
-import com.smart.appsa.model.plc.EstacaoPlc;
-import com.smart.appsa.model.plc.EstoquePlc;
-import com.smart.appsa.model.plc.ExpedicaoPlc;
-import com.smart.appsa.model.plc.MontagemPlc;
-import com.smart.appsa.model.plc.ProcessoPlc;
+import com.smart.appsa.service.PedidoService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.smart.appsa.dto.EstoqueDTO;
 import com.smart.appsa.dto.ExpedicaoDTO;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.dto.sse.EstacaoStatus;
 import com.smart.appsa.dto.sse.SseDto;
 import com.smart.appsa.mapper.EstoqueMapper;

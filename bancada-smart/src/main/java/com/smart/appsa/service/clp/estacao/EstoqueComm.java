@@ -1,4 +1,4 @@
-package com.smart.appsa.service.clp;
+package com.smart.appsa.service.clp.estacao;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import com.smart.appsa.dto.EstoqueDTO;
 import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.mapper.clp.EstoquePlcMapper;
 import com.smart.appsa.model.Estoque;
-import com.smart.appsa.model.plc.EstoquePlc;
+import com.smart.appsa.model.clp.EstoquePlc;
 import com.smart.appsa.service.EstoqueService;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 

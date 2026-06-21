@@ -6,11 +6,12 @@ import com.smart.appsa.config.ipconfig.MontagemIp;
 import com.smart.appsa.config.ipconfig.ProcessoIp;
 import com.smart.appsa.config.ipconfig.SeletorTampaIp;
 import com.smart.appsa.dto.CommDto;
-import com.smart.appsa.service.MonitoramentoService;
-import com.smart.appsa.service.clp.EstoqueComm;
-import com.smart.appsa.service.clp.ExpedicaoComm;
-import com.smart.appsa.service.clp.MontagemComm;
-import com.smart.appsa.service.clp.ProcessoComm;
+import com.smart.appsa.service.clp.estacao.EstoqueComm;
+import com.smart.appsa.service.clp.estacao.ExpedicaoComm;
+import com.smart.appsa.service.clp.estacao.MontagemComm;
+import com.smart.appsa.service.clp.estacao.ProcessoComm;
+import com.smart.appsa.service.sse.MonitoramentoService;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

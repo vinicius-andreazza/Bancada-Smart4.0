@@ -1,6 +1,6 @@
 package com.smart.appsa.mapper.clp;
 
-import com.smart.appsa.model.plc.EstoquePlc;
+import com.smart.appsa.model.clp.EstoquePlc;
 
 public interface EstoquePlcMapper {
     public static void updateData(byte[] data, EstoquePlc estoquePlc){

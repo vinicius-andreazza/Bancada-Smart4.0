@@ -1,13 +1,13 @@
 package com.smart.appsa.controller;
 
-import com.smart.appsa.service.SmartService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smart.appsa.dto.PedidoRequestDTO;
-import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.dto.response.CountStatus;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.service.PedidoService;
+import com.smart.appsa.service.clp.SmartService;
 
 import lombok.RequiredArgsConstructor;
 

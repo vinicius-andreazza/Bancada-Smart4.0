@@ -1,4 +1,4 @@
-package com.smart.appsa.service.clp;
+package com.smart.appsa.service.clp.estacao;
 
 import com.smart.appsa.config.ipconfig.ProcessoIp;
 
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.mapper.clp.ProcessoPlcMapper;
-import com.smart.appsa.model.plc.ProcessoPlc;
+import com.smart.appsa.model.clp.ProcessoPlc;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
 @Service

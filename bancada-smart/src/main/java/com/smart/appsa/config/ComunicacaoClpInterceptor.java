@@ -5,10 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.smart.appsa.service.clp.EstoqueComm;
-import com.smart.appsa.service.clp.ExpedicaoComm;
-import com.smart.appsa.service.clp.MontagemComm;
-import com.smart.appsa.service.clp.ProcessoComm;
+import com.smart.appsa.service.clp.estacao.EstoqueComm;
+import com.smart.appsa.service.clp.estacao.ExpedicaoComm;
+import com.smart.appsa.service.clp.estacao.MontagemComm;
+import com.smart.appsa.service.clp.estacao.ProcessoComm;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

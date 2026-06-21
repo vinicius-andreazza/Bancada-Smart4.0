@@ -1,4 +1,4 @@
-package com.smart.appsa.service.clp;
+package com.smart.appsa.service.clp.estacao;
 
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.service.ExpedicaoService;
@@ -15,7 +15,7 @@ import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.mapper.clp.ExpedicaoPlcMapper;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
-import com.smart.appsa.model.plc.ExpedicaoPlc;
+import com.smart.appsa.model.clp.ExpedicaoPlc;
 
 @Service
 public class ExpedicaoComm {

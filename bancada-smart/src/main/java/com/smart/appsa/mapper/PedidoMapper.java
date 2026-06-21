@@ -1,7 +1,7 @@
 package com.smart.appsa.mapper;
 
-import com.smart.appsa.dto.PedidoRequestDTO;
-import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.model.Pedido;
  
 public class PedidoMapper {
