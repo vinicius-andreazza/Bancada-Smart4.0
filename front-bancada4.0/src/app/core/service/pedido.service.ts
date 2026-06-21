@@ -35,8 +35,8 @@ export class PedidoService {
     return this.http.get<PedidoContagens>(`${this.config.apiUrl}/api/pedidos/contagens`);
   }
 
-  postPedido(pedido: Pedido){
-    return this.http.post( `${this.config.apiUrl}/api/pedidos`, pedido);
+  postPedido(pedido: Pedido): Observable<Pedido> {
+    return this.http.post<Pedido>( `${this.config.apiUrl}/api/pedidos`, pedido);
   }
 
   postEnviarPedido(pedido: Pedido){

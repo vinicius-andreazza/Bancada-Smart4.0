@@ -1,34 +1,87 @@
-<div class="flex flex-col gap-6 rounded-xl border border-gray-700 bg-gray-900 p-6 shadow-sm" [formGroup]="form()">
+@if (editingIndex() === null) {
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div class="flex flex-col gap-6 rounded-xl border border-gray-700 bg-gray-900 p-6 shadow-sm" [formGroup]="form()">
+
     <app-input-field id="codPedido" label="Código do pedido" [control]="form().get('codPedido')!" />
 
-    <app-select-field id="status" label="Status" [control]="form().get('status')!">
-      <option value="1">Pendente</option>
-      <option value="2">Em produção</option>
-      <option value="3">Finalizado</option>
-    </app-select-field>
+    <div class="flex flex-col gap-2">
+      <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Tipo do pedido</span>
+      <app-toggle-group
+        [options]="tipoOpcoes"
+        [control]="form().get('tipoPedido')!"
+        (valueChange)="editingIndex.set(null)"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Cor da tampa</span>
+      <app-color-swatch-group [options]="corTampaOpcoes" [control]="form().get('corTampa')!" />
+    </div>
+
+    <div class="flex flex-col gap-4">
+      @for (bloco of blocos; track $index) {
+        <div class="rounded-lg border border-gray-700 bg-gray-800/60 p-4 flex flex-col gap-3">
+
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span
+                class="w-3 h-3 rounded-sm border border-white/10 shrink-0"
+                [style.background]="COR_BLOCO_HEX[bloco.get('corBloco')?.value]"
+              ></span>
+              <span class="text-sm font-semibold text-gray-200 truncate">
+                Andar {{ bloco.get('andar')?.value }}
+              </span>
+            </div>
+            <app-button [variant]="'secondary'" [size]="'sm'" [type]="'button'" (click)="editarBloco($index)">
+              <i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Editar
+            </app-button>
+          </div>
+
+          <span class="text-xs text-gray-400">
+            {{ COR_BLOCO_LABEL[bloco.get('corBloco')?.value] }}
+          </span>
+
+          <div class="flex flex-col gap-0.5">
+            @if ($any(bloco.get('laminas'))?.controls?.length > 0) {
+
+              @for (lam of $any(bloco.get('laminas'))?.controls; track $index) {
+
+                <span class="text-xs font-mono text-gray-500">
+                  {{ POSICAO_LABEL[$any(lam).get('posicaoLamina')?.value] }}
+                  · {{ COR_LAMINA_LABEL[$any(lam).get('corLamina')?.value] }}
+
+                  @if ($any(lam).get('padraoLamina')?.value !== '0') {
+                    · {{ PADRAO_LABEL[$any(lam).get('padraoLamina')?.value] }}
+                  }
+                  
+                </span>
+              }
+            } @else {
+              <span class="text-xs font-mono text-gray-600 italic">Sem lâminas</span>
+            }
+          </div>
+
+        </div>
+      }
+    </div>
+
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <app-select-field id="tipoPedido" label="Tipo do pedido" [control]="form().get('tipoPedido')!"
-      (change)="updateType(+$any($event.target).value)">
-      <option value="1">Simples</option>
-      <option value="2">Duplo</option>
-      <option value="3">Triplo</option>
-    </app-select-field>
+} @else {
 
-    <app-select-field id="corTampa" label="Cor da tampa" [control]="form().get('corTampa')!">
-      <option value="1">Preto</option>
-      <option value="2">Vermelho</option>
-      <option value="3">Azul</option>
-    </app-select-field>
+  <div class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-900 p-6 shadow-sm">
+
+    <div class="flex items-center gap-3">
+      <app-button [variant]="'ghost'" [size]="'sm'" [type]="'button'" (click)="voltarListagem()">
+        <i class="fa-solid fa-arrow-left mr-1.5" aria-hidden="true"></i>Voltar
+      </app-button>
+      <span class="text-sm font-semibold text-gray-300">
+        Editando · Andar {{ blocos[editingIndex()!]?.get('andar')?.value }}
+      </span>
+    </div>
+
+    <app-pedido-blocos [form]="blocos[editingIndex()!]" />
+
   </div>
 
-  <div class="flex flex-col gap-4" formArrayName="blocos">
-    @for (bloco of blocos; track $index) {
-      <app-pedido-blocos [form]="$any(bloco)" />
-    }
-  </div>
-
-</div>
+}
