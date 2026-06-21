@@ -22,27 +22,9 @@
             Lista de Pedidos
           </div>
 
-          <div class="flex items-center gap-1 flex-wrap">
-            <app-button [type]="'button'" [size]="'md'"
-              [variant]="filtroAtual()=='TODOS' ? 'secondary' : 'ghost'"
-              (click)="setFiltro('TODOS')">Todos</app-button>
-
-            <app-button [type]="'button'" [size]="'md'"
-              [variant]="filtroAtual()=='PENDENTE' ? 'secondary' : 'ghost'"
-              (click)="setFiltro('PENDENTE')">Pendente</app-button>
-
-            <app-button [type]="'button'" [size]="'md'"
-              [variant]="filtroAtual()=='PRODUCAO' ? 'secondary' : 'ghost'"
-              (click)="setFiltro('PRODUCAO')">Produção</app-button>
-
-            <app-button [type]="'button'" [size]="'md'"
-              [variant]="filtroAtual()=='CONCLUIDO' ? 'secondary' : 'ghost'"
-              (click)="setFiltro('CONCLUIDO')">Concluído</app-button>
-
-            <app-button [type]="'button'" [size]="'md'"
-              [variant]="filtroAtual()=='CANCELADO' ? 'secondary' : 'ghost'"
-              (click)="setFiltro('CANCELADO')">Cancelado</app-button>
-          </div>
+          <app-pedido-filtros
+            [filtroAtual]="filtroAtual()"
+            (filtroChange)="setFiltro($event)" />
 
         </div>
 

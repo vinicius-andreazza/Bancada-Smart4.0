@@ -3,5 +3,5 @@ export interface BancadaConfig {
   processoIp: string;
   montagemIp: string;
   expedicaoIp: string;
-  seletorTampasIp?: string | null; // opcional — bancada pode não ter seletor de tampas
+  seletorTampasIp?: string | null;
 }

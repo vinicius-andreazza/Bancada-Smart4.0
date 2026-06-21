@@ -18,7 +18,6 @@ describe('PedidoDetalheBlocoComponent', () => {
     const bloco = {
       id: 1,
       corBloco: CorBloco.AZUL,
-      posEstoque: 1,
       andar: 0,
       laminas: [],
     } as unknown as Bloco;

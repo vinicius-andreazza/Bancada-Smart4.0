@@ -1,8 +1,7 @@
-import { Component, signal, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Navbar } from '../../../../layout/navbar/navbar.component';
 import { Footer } from '../../../../layout/footer/footer.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { PedidoTable } from '../../components/pedido-table/pedido-table.component';
 import { Pedido } from '../../../../core/models/pedido.model';
 import { StatusPedido } from '../../../../core/models/enums/statuspedido.enum';
@@ -11,8 +10,9 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { PedidoService, PedidoFiltro } from '../../../../core/service/pedido.service';
 import { PedidoContagens } from '../../../../core/models/pedido-contagens.model';
 import { PedidoDetalheModalComponent } from "../../components/pedido-detalhe-modal/pedido-detalhe-modal.component";
-import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
+import { PedidoFiltrosComponent } from '../../components/pedido-filtros/pedido-filtros.component';
+import { flashSignal } from '../../../../shared/utils/flash-signal';
 
 const PAGE_SIZE = 10;
 
@@ -21,20 +21,19 @@ const PAGE_SIZE = 10;
   imports: [
     Navbar,
     Footer,
-    ButtonComponent,
     StatusCardPedido,
     PedidoTable,
     PaginationComponent,
     PedidoDetalheModalComponent,
-    ModalComponent,
-    ToastNotifications
+    ToastNotifications,
+    PedidoFiltrosComponent,
   ],
   templateUrl: './lista-pedidos.component.html',
 })
-export class ListaPedidos {
+export class ListaPedidos implements OnInit {
 
   private readonly pedidoService = inject(PedidoService);
-  private router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly StatusPedido = StatusPedido;
   protected readonly pageSize = PAGE_SIZE;
@@ -84,97 +83,87 @@ export class ListaPedidos {
 
   carregarPagina(): void {
     this.loading.set(true);
-    this.pedidoService.getPedidosPaginado(this.filtroAtual(), this.pageIndex(), this.pageSize).subscribe({
-      next: (page) => {
-        this.pedidos.set(page.content);
-        this.totalPages.set(page.totalPages);
-        this.totalElements.set(page.totalElements);
-        this.first.set(page.first);
-        this.last.set(page.last);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.log(err);
-        this.loading.set(false);
-      },
-    });
+    this.pedidoService.getPedidosPaginado(this.filtroAtual(), this.pageIndex(), this.pageSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (page) => {
+          this.pedidos.set(page.content);
+          this.totalPages.set(page.totalPages);
+          this.totalElements.set(page.totalElements);
+          this.first.set(page.first);
+          this.last.set(page.last);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
   carregarContagens(): void {
-    this.pedidoService.getContagens().subscribe({
-      next: (contagens) => this.contagens.set(contagens),
-      error: (err) => console.log(err),
-    });
+    this.pedidoService.getContagens()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((contagens) => this.contagens.set(contagens));
   }
 
-  onRetirar(pedido: Pedido) {
-    console.log("Retirando pedido: "+pedido.codPedido)
+  onRetirar(_pedido: Pedido): void {
+    
   }
 
-  onReiniciar(pedido: Pedido) {
-    this.pedidoService.reiniciarPedido(pedido.id).subscribe({
-      next: () => {
-        this.carregarPagina();
-        this.carregarContagens();
-        this.fecharDetalhe();
-        this.saveSuccess.set(true);
-        setTimeout(() => this.saveSuccess.set(false), 2000);
-      },
-      error: (err) => {
-        console.log(err);
-        this.saveError.set(true);
-        setTimeout(() => this.saveError.set(false), 3000);
-      },
-    });
+  onReiniciar(pedido: Pedido): void {
+    this.pedidoService.reiniciarPedido(pedido.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+          this.fecharDetalhe();
+          flashSignal(this.saveSuccess, 2000);
+        },
+        error: () => flashSignal(this.saveError, 3000),
+      });
   }
 
-  onSalvarEdicao(pedido: Pedido) {
-    this.pedidoService.patchPedido(pedido.id, pedido).subscribe({
-      next: () => {
-        this.carregarPagina();
-        this.carregarContagens();
-        this.fecharDetalhe();
-        this.saveSuccess.set(true);
-        setTimeout(() => this.saveSuccess.set(false), 2000);
-      },
-      error: (err) => {
-        console.log(err);
-        this.saveError.set(true);
-        setTimeout(() => this.saveError.set(false), 3000);
-      },
-    });
+  onSalvarEdicao(pedido: Pedido): void {
+    this.pedidoService.patchPedido(pedido.id, pedido)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+          this.fecharDetalhe();
+          flashSignal(this.saveSuccess, 2000);
+        },
+        error: () => flashSignal(this.saveError, 3000),
+      });
   }
 
-  onEnviarProducao(pedido: Pedido) {
+  onEnviarProducao(pedido: Pedido): void {
     this.pedidoProducao.set(pedido);
     this.confirmarEnvioProducao();
   }
 
-  fecharDetalhe() {
+  fecharDetalhe(): void {
     this.pedidoSelecionado.set(null);
   }
 
-  cancelarEnvioProducao() {
+  cancelarEnvioProducao(): void {
     this.pedidoProducao.set(null);
   }
 
-  confirmarEnvioProducao() {
+  confirmarEnvioProducao(): void {
     const pedido = this.pedidoProducao();
 
     if (!pedido) {
       return;
     }
 
-   this.pedidoService.postEnviarPedido(pedido).subscribe({
-    next: (pedido) =>{
-      console.log(pedido);
-      this.carregarPagina();
-      this.carregarContagens();
-    },
-    error(err) {
-      console.log(err)
-    },
-   });
+    this.pedidoService.postEnviarPedido(pedido)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+        },
+      });
 
     this.cancelarEnvioProducao();
     this.fecharDetalhe();

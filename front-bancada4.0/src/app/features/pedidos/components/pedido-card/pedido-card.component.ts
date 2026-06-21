@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormArray, FormGroup } from '@angular/forms';
 import { PedidoBlocos } from '../pedido-blocos/pedido-blocos.component';
 import { SelectFieldComponent } from "../../../../shared/components/select-field/select-field.component";
 import { InputFieldComponent } from "../../../../shared/components/input-field/input-field.component";
@@ -12,13 +12,8 @@ import { InputFieldComponent } from "../../../../shared/components/input-field/i
 export class PedidoCard {
   form = input.required<FormGroup>();
 
-  get tipo(): number {
-    return +this.form().get('tipoPedido')?.value;
-  }
-
-  get blocos() {
-    const formArray = this.form().get('blocos');
-    return formArray ? (formArray as any).controls : [];
+  get blocos(): FormGroup[] {
+    return (this.form().get('blocos') as FormArray).controls as FormGroup[];
   }
 
   updateType(newType: number): void {

@@ -6,7 +6,6 @@ import { TipoPedido } from "./enums/tipopedido.enum";
 export interface Pedido {
     id: number,
     codPedido: number,
-    clpIp: string,
     dataCriacao: string,
     status: StatusPedido,
     tipoPedido: TipoPedido,

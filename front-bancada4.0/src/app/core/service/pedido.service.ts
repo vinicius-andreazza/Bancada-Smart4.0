@@ -40,7 +40,6 @@ export class PedidoService {
   }
 
   postEnviarPedido(pedido: Pedido){
-    console.log(`${this.config.apiUrl}/api/pedidos/enviar`);
     return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido);
   }
 
@@ -48,10 +47,6 @@ export class PedidoService {
     return this.http.patch( `${this.config.apiUrl}/api/pedidos/${id}`, pedido);
   }
 
-  /**
-   * Recomeça um pedido cancelado: o backend cria um novo pedido idêntico ao
-   * informado e retorna o pedido recém-criado.
-   */
   reiniciarPedido(id: number): Observable<Pedido> {
     return this.http.post<Pedido>(`${this.config.apiUrl}/api/pedidos/${id}/reiniciar`, {});
   }

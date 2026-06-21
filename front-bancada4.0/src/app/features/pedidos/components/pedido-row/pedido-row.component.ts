@@ -8,7 +8,7 @@ import {
   TAMPA_LABEL,
   TAMPA_CSS_CLASS,
   getTotalBlocos,
-} from './pedido-labels';
+} from '../../shared/utils/pedido-labels';
 
 @Component({
   selector: 'tr[app-pedido-row]',

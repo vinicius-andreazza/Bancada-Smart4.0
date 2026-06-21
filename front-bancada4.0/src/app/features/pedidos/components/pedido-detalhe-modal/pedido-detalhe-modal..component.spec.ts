@@ -17,7 +17,6 @@ describe('PedidoDetalheModalComponent', () => {
     const pedido = {
       id: 1,
       codPedido: 1,
-      clpIp: '192.168.0.1',
       dataCriacao: '2026-01-01T00:00:00',
       dataEntrada: null,
       idExpedicao: 1,

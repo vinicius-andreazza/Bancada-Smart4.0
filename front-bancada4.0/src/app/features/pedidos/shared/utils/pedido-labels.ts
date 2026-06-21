@@ -3,10 +3,7 @@ import { StatusPedido } from '../../../../core/models/enums/statuspedido.enum';
 import { TipoPedido } from '../../../../core/models/enums/tipopedido.enum';
 import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
 
-/**
- * Rótulos e classes CSS compartilhados entre a linha da tabela (`pedido-row`) e o
- * card mobile (`pedido-card-item`), para evitar duplicação dos mapas.
- */
+
 export const STATUS_LABEL: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'Pendente',
   [StatusPedido.PRODUCAO]:  'Em Produção',
@@ -39,7 +36,6 @@ export const TAMPA_CSS_CLASS: Record<CorTampa, string> = {
   [CorTampa.AZUL]:     'color-swatch sw-azul',
 };
 
-/** Conta os blocos de um pedido, tolerando blocos como array ou objeto único. */
 export function getTotalBlocos(pedido: Pedido): number {
   const b = pedido.blocos;
   return Array.isArray(b) ? b.length : b ? 1 : 0;

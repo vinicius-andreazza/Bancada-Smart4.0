@@ -69,9 +69,6 @@ const COLOR_LABEL: Record<CorBloco, string> = {
     }
   `,
   host: {
-    // Célula fluida: a largura segue a coluna do grid (6 colunas fixas = planta).
-    // aspect-square mantém o quadrado e faz a célula encolher no mobile — a contagem
-    // de colunas NUNCA muda; só o tamanho da célula.
     'class': `
       group relative flex flex-col items-center justify-center gap-1
       w-full aspect-square min-w-0 rounded-lg border select-none

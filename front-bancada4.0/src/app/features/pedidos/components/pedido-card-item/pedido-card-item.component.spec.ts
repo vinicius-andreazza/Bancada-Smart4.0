@@ -9,7 +9,6 @@ import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
 const mockPedido: Pedido = {
   id: 1,
   codPedido: 1001,
-  clpIp: '0.0.0.0',
   dataCriacao: '2026-01-01',
   status: StatusPedido.PENDENTE,
   tipoPedido: TipoPedido.SIMPLES,

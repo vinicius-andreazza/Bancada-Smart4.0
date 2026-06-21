@@ -8,17 +8,8 @@ import { StatusPedido } from "../../../../core/models/enums/statuspedido.enum";
 import { PedidoDetalheBlocoComponent } from "./pedido-detalhe-bloco/pedido-detalhe-bloco.component";
 import { PedidoCard } from "../pedido-card/pedido-card.component";
 import { Pedido } from "../../../../core/models/pedido.model";
-import { Bloco } from "../../../../core/models/bloco.model";
-import { Lamina } from "../../../../core/models/lamina.model";
-import { CorTampa } from "../../../../core/models/enums/cortampa.enum";
-import { TipoPedido } from "../../../../core/models/enums/tipopedido.enum";
-
-const STATUS_LABEL: Record<StatusPedido, string> = {
-  [StatusPedido.PENDENTE]:  'Pendente',
-  [StatusPedido.PRODUCAO]:  'Em Produção',
-  [StatusPedido.CONCLUIDO]: 'Concluído',
-  [StatusPedido.CANCELADO]: 'Cancelado',
-};
+import { STATUS_LABEL, TIPO_LABEL, TAMPA_LABEL } from "../../shared/utils/pedido-labels";
+import { criarBlocoForm, criarBlocoVazio } from "../../shared/pedido-form.factory";
 
 const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'bg-amber-500/10 text-amber-400 border border-amber-500/20',
@@ -27,17 +18,27 @@ const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
   [StatusPedido.CANCELADO]: 'bg-red-500/10   text-red-400   border border-red-500/20',
 };
 
-const TIPO_PEDIDO_LABEL: Record<TipoPedido, string> = {
-  [TipoPedido.SIMPLES]: 'Simples',
-  [TipoPedido.DUPLO]:   'Duplo',
-  [TipoPedido.TRIPLO]:  'Triplo',
-};
+interface LaminaFormValue {
+  id?: number | null;
+  corLamina: string;
+  padraoLamina: string;
+  posicaoLamina: string;
+}
 
-const COR_TAMPA_LABEL: Record<CorTampa, string> = {
-  [CorTampa.PRETO]:    'Preto',
-  [CorTampa.VERMELHO]: 'Vermelho',
-  [CorTampa.AZUL]:     'Azul',
-};
+interface BlocoFormValue {
+  id?: number | null;
+  andar: number;
+  corBloco: string;
+  laminas: LaminaFormValue[];
+}
+
+interface EditFormValue {
+  codPedido: string;
+  status: string;
+  tipoPedido: string;
+  corTampa: string;
+  blocos: BlocoFormValue[];
+}
 
 @Component({
   selector: 'app-pedido-detalhe-modal',
@@ -68,9 +69,9 @@ export class PedidoDetalheModalComponent {
   protected readonly statusBadgeClass = computed(() => STATUS_BADGE_CLASS[this.pedido().status]);
 
   protected readonly metaInfo = computed(() => [
-    { label: 'Tipo',  value: TIPO_PEDIDO_LABEL[this.pedido().tipoPedido] },
-    { label: 'Tampa', value: COR_TAMPA_LABEL[this.pedido().corTampa]     },
-    { label: 'Data',  value: this.pedido().dataCriacao                   },
+    { label: 'Tipo',  value: TIPO_LABEL[this.pedido().tipoPedido]  },
+    { label: 'Tampa', value: TAMPA_LABEL[this.pedido().corTampa]   },
+    { label: 'Data',  value: this.pedido().dataCriacao             },
   ]);
 
   protected entrarEdicao(): void {
@@ -81,8 +82,7 @@ export class PedidoDetalheModalComponent {
       status:     this.formBuilder.control(String(pedido.status)),
       tipoPedido: this.formBuilder.control(String(pedido.tipoPedido)),
       corTampa:   this.formBuilder.control(String(pedido.corTampa)),
-      clpIp:      this.formBuilder.control(pedido.clpIp),
-      blocos:     this.formBuilder.array(pedido.blocos.map(bloco => this.criarBlocoForm(bloco))),
+      blocos:     this.formBuilder.array(pedido.blocos.map(bloco => criarBlocoForm(this.formBuilder, bloco))),
     });
 
     this.sincronizarBlocosComTipo(this.editForm);
@@ -105,19 +105,9 @@ export class PedidoDetalheModalComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(tipo => {
         const total = +tipo;
-        while (blocos.length < total) blocos.push(this.criarBlocoVazio(blocos.length + 1));
+        while (blocos.length < total) blocos.push(criarBlocoVazio(this.formBuilder, blocos.length + 1, true));
         while (blocos.length > total) blocos.removeAt(blocos.length - 1);
       });
-  }
-
-  private criarBlocoVazio(andar: number): FormGroup {
-    return this.formBuilder.group({
-      id:         this.formBuilder.control(null),
-      andar:      this.formBuilder.control(andar),
-      corBloco:   this.formBuilder.control('1'),
-      posEstoque: this.formBuilder.control(''),
-      laminas:    this.formBuilder.array([] as FormGroup[]),
-    });
   }
 
   protected confirmarEdicao(): void {
@@ -125,48 +115,28 @@ export class PedidoDetalheModalComponent {
       return;
     }
 
-    const v = this.editForm.value;
+    const v = this.editForm.value as EditFormValue;
+
+    const blocos = v.blocos.map((b) => ({
+      ...b,
+      corBloco: Number(b.corBloco),
+      laminas: b.laminas.map((l) => ({
+        ...l,
+        corLamina:     Number(l.corLamina),
+        padraoLamina:  Number(l.padraoLamina),
+        posicaoLamina: Number(l.posicaoLamina),
+      })),
+    })) as Pedido['blocos'];
 
     const payload: Pedido = {
       ...this.pedido(),
-      id:         this.pedido().id,
       codPedido:  Number(v.codPedido),
       status:     Number(v.status),
       tipoPedido: Number(v.tipoPedido),
       corTampa:   Number(v.corTampa),
-      clpIp:      v.clpIp,
-      blocos: v.blocos.map((b: any) => ({
-        ...b,
-        corBloco:   Number(b.corBloco),
-        posEstoque: Number(b.posEstoque),
-        laminas: b.laminas.map((l: any) => ({
-          ...l,
-          corLamina:     Number(l.corLamina),
-          padraoLamina:  Number(l.padraoLamina),
-          posicaoLamina: Number(l.posicaoLamina),
-        })),
-      })),
+      blocos,
     };
 
     this.salvar.emit(payload);
-  }
-
-  private criarBlocoForm(bloco: Bloco): FormGroup {
-    return this.formBuilder.group({
-      id:         this.formBuilder.control(bloco.id),
-      andar:      this.formBuilder.control(bloco.andar),
-      corBloco:   this.formBuilder.control(String(bloco.corBloco)),
-      posEstoque: this.formBuilder.control(bloco.posEstoque),
-      laminas:    this.formBuilder.array(bloco.laminas.map(lamina => this.criarLaminaForm(lamina))),
-    });
-  }
-
-  private criarLaminaForm(lamina: Lamina): FormGroup {
-    return this.formBuilder.group({
-      id:            this.formBuilder.control(lamina.id),
-      corLamina:     this.formBuilder.control(String(lamina.corLamina)),
-      padraoLamina:  this.formBuilder.control(String(lamina.padraoLamina)),
-      posicaoLamina: this.formBuilder.control(String(lamina.posicaoLamina)),
-    });
   }
 }

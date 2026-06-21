@@ -58,12 +58,6 @@ const POSICAO_LAMINA_LABEL: Record<PosicaoLamina, string> = {
 
       <div class="px-4 py-3 flex flex-col gap-3">
 
-        <div class="flex items-center gap-2 text-xs text-gray-500">
-          <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-          <span>Posição estoque:</span>
-          <span class="font-mono text-gray-300">{{ bloco().posEstoque || '—' }}</span>
-        </div>
-
         @if (bloco().laminas.length > 0) {
           <div class="flex flex-col gap-2">
             <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-600">

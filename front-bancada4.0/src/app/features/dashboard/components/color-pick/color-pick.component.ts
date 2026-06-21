@@ -15,12 +15,12 @@ export interface ColorOption {
   template: `
     <div
       class="flex items-center gap-1.5 px-3 py-2 rounded-[10px]
-             bg-[rgba(13,20,36,0.8)] border border-[#243558]"
+             bg-[rgba(13,20,36,0.8)] border border-border-mid"
       role="group"
       aria-label="Selecionar cor do bloco"
     >
 
-      <span class="font-mono text-[0.6rem] font-bold tracking-[0.15em] text-[#3d5068] mr-1 shrink-0">
+      <span class="font-mono text-[0.6rem] font-bold tracking-[0.15em] text-text-muted mr-1 shrink-0">
         COR:
       </span>
 

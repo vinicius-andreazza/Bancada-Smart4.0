@@ -8,12 +8,8 @@ import {
   TAMPA_LABEL,
   TAMPA_CSS_CLASS,
   getTotalBlocos,
-} from '../pedido-row/pedido-labels';
+} from '../../shared/utils/pedido-labels';
 
-/**
- * Versão em card de um pedido, usada na lista de pedidos em telas pequenas (`md:hidden`),
- * onde a tabela de 8 colunas não cabe. Espelha os dados/ações da `pedido-row`.
- */
 @Component({
   selector: 'app-pedido-card-item',
   imports: [ButtonComponent],

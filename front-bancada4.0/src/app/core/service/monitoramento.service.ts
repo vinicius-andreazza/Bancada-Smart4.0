@@ -30,8 +30,8 @@ export class MonitoramentoService {
         codPedidoAtual: raw.codPedidoAtual ?? null,
         inicioPedido:   raw.inicioPedido ?? null,
         estacoes:       raw.estacaoStatus ?? [],
-        estoque:        raw.estoque ?? [],        // ← ajustar nome se necessário quando backend definir
-        expedicao:      raw.expedicao ?? [],      // ← ajustar nome se necessário quando backend definir
+        estoque:        raw.estoque ?? [],       
+        expedicao:      raw.expedicao ?? [],      
       } as MonitoramentoSnapshot);
     });
 
