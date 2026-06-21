@@ -4,6 +4,8 @@ import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.dto.response.CountStatus;
 import com.smart.appsa.dto.response.PedidoResponseDTO;
+import com.smart.appsa.exception.BlocoQuantityException;
+import com.smart.appsa.exception.DuplicatedAndarException;
 import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
 import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
@@ -193,10 +195,10 @@ public class PedidoService {
 
     public void validateBlocosQuantityByType(Pedido pedido) {
         if (pedido.getBlocos().size() <= 0) {
-            throw new IllegalArgumentException("Quantidade invalida de blocos");
+            throw new BlocoQuantityException("Quantidade invalida de blocos");
         }
         if (pedido.getTipoPedido().getValue() != pedido.getBlocos().size()) {
-            throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
+            throw new BlocoQuantityException("Quantidade invalida de blocos pelo tipo de pedido");
         }
     }
 
@@ -219,7 +221,7 @@ public class PedidoService {
                 .toList();
 
         if (!andaresDuplicados.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new DuplicatedAndarException(
                     "Existem blocos com andares duplicados: " + andaresDuplicados);
         }
     }

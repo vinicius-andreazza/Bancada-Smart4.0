@@ -24,4 +24,17 @@ public class GlobalHandlerException {
     public ResponseEntity<?> handleSeletorTampaException(SeletorTampaException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+    @ExceptionHandler(BlocoQuantityException.class)
+    public ResponseEntity<?> handleBlocoQuantityException(BlocoQuantityException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+    @ExceptionHandler(DuplicatedAndarException.class)
+    public ResponseEntity<?> handleDuplicatedAndarException(DuplicatedAndarException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+    @ExceptionHandler(DuplicatedLaminaPosition.class)
+    public ResponseEntity<?> handleDuplicatedLaminaPosition(DuplicatedLaminaPosition ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
 }
