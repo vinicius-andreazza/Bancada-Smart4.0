@@ -27,6 +27,7 @@ export class PedidoRow {
   readonly tampaLabel       = TAMPA_LABEL;
   readonly tampaCssClass    = TAMPA_CSS_CLASS;
 
+  readonly dataCriacao = computed(() => this.pedido().dataCriacao = new Date(this.pedido().dataCriacao).toLocaleString("pt-BR"))
   readonly totalBlocos = computed(() => getTotalBlocos(this.pedido()));
 
   verDetalhe(): void {

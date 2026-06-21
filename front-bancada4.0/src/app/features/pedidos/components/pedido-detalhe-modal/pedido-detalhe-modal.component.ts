@@ -10,6 +10,17 @@ import { PedidoCard } from "../pedido-card/pedido-card.component";
 import { Pedido } from "../../../../core/models/pedido.model";
 import { STATUS_LABEL, TIPO_LABEL, TAMPA_LABEL } from "../../shared/utils/pedido-labels";
 import { criarBlocoForm, criarBlocoVazio } from "../../shared/pedido-form.factory";
+import { Pedido3dPreviewComponent } from "../pedido-3d-preview/pedido-3d-preview.component";
+import {
+  PedidoPreviewConfig,
+  BlocoConfig,
+  LaminaConfig,
+  CorBloco as CorBlocoViewer,
+  CorLamina as CorLaminaViewer,
+  PadraoLamina as PadraoLaminaViewer,
+  PosicaoLamina as PosicaoLaminaViewer,
+  CorTampa as CorTampaViewer,
+} from "../pedido-3d-preview/bloco-3d-viewer.component";
 
 const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'bg-amber-500/10 text-amber-400 border border-amber-500/20',
@@ -42,7 +53,7 @@ interface EditFormValue {
 
 @Component({
   selector: 'app-pedido-detalhe-modal',
-  imports: [ModalComponent, ButtonComponent, PedidoDetalheBlocoComponent, PedidoCard, ReactiveFormsModule],
+  imports: [ModalComponent, ButtonComponent, PedidoDetalheBlocoComponent, PedidoCard, ReactiveFormsModule, Pedido3dPreviewComponent],
   templateUrl: './pedido-detalhe-modal.component.html',
 })
 export class PedidoDetalheModalComponent {
@@ -73,6 +84,23 @@ export class PedidoDetalheModalComponent {
     { label: 'Tampa', value: TAMPA_LABEL[this.pedido().corTampa]   },
     { label: 'Data',  value: this.pedido().dataCriacao             },
   ]);
+
+  protected readonly pedidoPreviewConfig = computed<PedidoPreviewConfig>(() => {
+    const p = this.pedido();
+    const blocos: BlocoConfig[] = p.blocos.map(b => ({
+      andar:    b.andar,
+      corBloco: b.corBloco as unknown as CorBlocoViewer,
+      laminas:  b.laminas.map((l): LaminaConfig => ({
+        corLamina:     l.corLamina     as unknown as CorLaminaViewer,
+        padraoLamina:  l.padraoLamina  as unknown as PadraoLaminaViewer,
+        posicaoLamina: l.posicaoLamina as unknown as PosicaoLaminaViewer,
+      })),
+    }));
+    return {
+      blocos,
+      corTampa: p.corTampa as unknown as CorTampaViewer,
+    };
+  });
 
   protected entrarEdicao(): void {
     const pedido = this.pedido();

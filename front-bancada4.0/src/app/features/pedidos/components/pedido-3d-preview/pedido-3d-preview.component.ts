@@ -2,7 +2,7 @@
 import { Component, computed, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, startWith } from 'rxjs';
+import { switchMap, startWith, of } from 'rxjs';
 import {
   Bloco3dViewerComponent,
   BlocoConfig,
@@ -104,17 +104,21 @@ interface BlocoSummary {
   `,
 })
 export class Pedido3dPreviewComponent {
-  readonly form = input.required<FormGroup>();
+  readonly form         = input<FormGroup | null>(null);
+  readonly staticConfig = input<PedidoPreviewConfig | null>(null);
 
   private readonly formValue = toSignal(
     toObservable(this.form).pipe(
-      switchMap(f => f.valueChanges.pipe(startWith(f.value))),
+      switchMap(f => f ? f.valueChanges.pipe(startWith(f.value)) : of(null)),
     ),
     { initialValue: null },
   );
 
   // ── Derived pedido config consumed by the 3D viewer ─────────────────────
   readonly pedidoConfig = computed<PedidoPreviewConfig>(() => {
+    const staticCfg = this.staticConfig();
+    if (staticCfg) return staticCfg;
+
     const value = this.formValue();
     const blocosRaw = (value?.blocos ?? []) as Array<{
       andar?: number | string;

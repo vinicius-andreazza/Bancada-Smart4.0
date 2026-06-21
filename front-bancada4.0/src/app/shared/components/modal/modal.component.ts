@@ -51,7 +51,7 @@ import { Component, computed, input, output } from '@angular/core';
 export class ModalComponent {
   readonly labelledBy = input<string>('');
   readonly maxHeight  = input<string>('90vh');
-  readonly maxWidth   = input<'sm' | 'md' | 'lg' | 'xl' | '2xl'>('2xl');
+  readonly maxWidth   = input<'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'>('2xl');
   readonly hasFooter  = input<boolean>(true);
   readonly fechar     = output<void>();
 
@@ -61,6 +61,8 @@ export class ModalComponent {
     lg:  'max-w-lg',
     xl:  'max-w-xl',
     '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl',
   })[this.maxWidth()]);
 
   protected fecharSeBackdrop(event: MouseEvent): void {
