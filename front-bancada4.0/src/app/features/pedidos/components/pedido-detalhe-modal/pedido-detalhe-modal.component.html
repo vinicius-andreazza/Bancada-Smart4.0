@@ -90,6 +90,16 @@
         </app-button>
         }
 
+        @case (StatusPedido.CANCELADO) {
+        <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="fechar.emit()">
+            Fechar
+        </app-button>
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="reiniciar.emit(pedido())">
+            <i class="fa-solid fa-rotate-right mr-1.5" aria-hidden="true"></i>
+            Recomeçar pedido
+        </app-button>
+        }
+
         }
         }
     </ng-container>

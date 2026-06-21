@@ -17,12 +17,14 @@ const STATUS_LABEL: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'Pendente',
   [StatusPedido.PRODUCAO]:  'Em Produção',
   [StatusPedido.CONCLUIDO]: 'Concluído',
+  [StatusPedido.CANCELADO]: 'Cancelado',
 };
 
 const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'bg-amber-500/10 text-amber-400 border border-amber-500/20',
   [StatusPedido.PRODUCAO]:  'bg-blue-500/10  text-blue-400  border border-blue-500/20',
   [StatusPedido.CONCLUIDO]: 'bg-green-500/10 text-green-400 border border-green-500/20',
+  [StatusPedido.CANCELADO]: 'bg-red-500/10   text-red-400   border border-red-500/20',
 };
 
 const TIPO_PEDIDO_LABEL: Record<TipoPedido, string> = {
@@ -53,6 +55,7 @@ export class PedidoDetalheModalComponent {
   readonly enviarProducao = output<Pedido>();
   readonly retirar        = output<Pedido>();
   readonly salvar         = output<Pedido>();
+  readonly reiniciar      = output<Pedido>();
 
   protected readonly StatusPedido = StatusPedido;
 

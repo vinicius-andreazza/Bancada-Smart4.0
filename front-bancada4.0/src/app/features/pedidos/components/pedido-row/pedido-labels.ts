@@ -11,12 +11,14 @@ export const STATUS_LABEL: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'Pendente',
   [StatusPedido.PRODUCAO]:  'Em Produção',
   [StatusPedido.CONCLUIDO]: 'Concluído',
+  [StatusPedido.CANCELADO]: 'Cancelado',
 };
 
 export const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
   [StatusPedido.PENDENTE]:  'badge-status badge-pendente',
   [StatusPedido.PRODUCAO]:  'badge-status badge-producao',
   [StatusPedido.CONCLUIDO]: 'badge-status badge-concluido',
+  [StatusPedido.CANCELADO]: 'badge-status badge-cancelado',
 };
 
 export const TIPO_LABEL: Record<TipoPedido, string> = {
