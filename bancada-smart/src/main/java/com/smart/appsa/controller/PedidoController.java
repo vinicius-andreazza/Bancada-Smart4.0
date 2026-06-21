@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.response.CountStatus;
 import com.smart.appsa.service.PedidoService;
 
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,17 @@ public class PedidoController {
     public ResponseEntity<Page<PedidoResponseDTO>> findConcluido(
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(pedidoService.findConcluido(pageable));
+    }
+
+    @GetMapping("/cancelado")
+    public ResponseEntity<Page<PedidoResponseDTO>> findCancelado(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findCancelado(pageable));
+    }
+
+    @GetMapping("/contagens")
+    public ResponseEntity<CountStatus> countStatus() {
+        return ResponseEntity.ok(pedidoService.countStatus());
     }
 
     @PostMapping()

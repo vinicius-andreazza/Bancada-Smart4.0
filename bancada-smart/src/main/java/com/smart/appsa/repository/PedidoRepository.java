@@ -16,6 +16,9 @@ import com.smart.appsa.model.enums.TipoPedido;
 
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
+
+    Integer countByStatus(StatusPedido status);
+
     Optional<Pedido> findByCodPedido(Integer codPedido);
  
     List<Pedido> findByStatus(StatusPedido status);

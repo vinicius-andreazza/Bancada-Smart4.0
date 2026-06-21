@@ -3,6 +3,7 @@ package com.smart.appsa.service;
 import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.PedidoRequestDTO;
 import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.response.CountStatus;
 import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
 import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
@@ -54,6 +55,15 @@ public class PedidoService {
         return PedidoMapper.toResponse(pedido);
     }
 
+    public CountStatus countStatus(){
+        int total = Integer.parseInt(pedidoRepository.count()+"");
+        int pendente = pedidoRepository.countByStatus(StatusPedido.PENDENTE);
+        int producao = pedidoRepository.countByStatus(StatusPedido.PRODUCAO);
+        int concluido = pedidoRepository.countByStatus(StatusPedido.CONCLUIDO);
+        int cancelado = pedidoRepository.countByStatus(StatusPedido.CANCELADO);
+        return CountStatus.builder().total(total).pendentes(pendente).producao(producao).concluidos(concluido).cancelado(cancelado).build();
+    }
+
     public Page<PedidoResponseDTO> findAll(Pageable pageable) {
         return pedidoRepository.findAll(pageable).map(PedidoMapper::toResponse);
     }
@@ -68,6 +78,10 @@ public class PedidoService {
 
     public Page<PedidoResponseDTO> findConcluido(Pageable pageable) {
         return pedidoRepository.findByStatus(StatusPedido.CONCLUIDO, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findCancelado(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.CANCELADO, pageable).map(PedidoMapper::toResponse);
     }
 
     public PedidoResponseDTO findById(Long id) {
