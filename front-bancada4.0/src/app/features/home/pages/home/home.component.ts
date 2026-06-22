@@ -14,7 +14,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       <app-navbar [minimal]="true" [showStatus]="false" />
 
       <main class="flex flex-1 flex-col items-center justify-center gap-16 px-6 py-12">
-        <!-- Imagem à esquerda, texto à direita (empilha no mobile) -->
+        
         <div class="flex flex-col items-center gap-12 md:flex-row md:gap-28">
           <img
             src="assets/bancada/Smart40.png"
@@ -33,7 +33,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
           </div>
         </div>
 
-        <!-- Botão centralizado, logo abaixo do conteúdo -->
+        
         <app-button variant="primary" size="lg" (click)="acessar()">
           Acessar
         </app-button>
