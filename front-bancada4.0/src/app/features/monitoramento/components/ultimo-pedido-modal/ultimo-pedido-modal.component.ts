@@ -82,11 +82,18 @@ export class UltimoPedidoModalComponent {
 
   readonly fechar = output<void>();
 
-  readonly statusLabel      = computed(() => STATUS_LABEL[this.resumo()!.status]);
-  readonly statusBadgeClass = computed(() => STATUS_BADGE_CLASS[this.resumo()!.status]);
+  readonly statusLabel = computed(() => {
+    const p = this.resumo();
+    return p ? STATUS_LABEL[p.status] : '';
+  });
+  readonly statusBadgeClass = computed(() => {
+    const p = this.resumo();
+    return p ? STATUS_BADGE_CLASS[p.status] : '';
+  });
 
   readonly metaInfo = computed(() => {
-    const pedido = this.resumo()!;
+    const pedido = this.resumo();
+    if (!pedido) return [];
     return [
       { label: 'Tipo',  value: TIPO_LABEL[pedido.tipoPedido] },
       { label: 'Tampa', value: TAMPA_LABEL[pedido.corTampa]  },

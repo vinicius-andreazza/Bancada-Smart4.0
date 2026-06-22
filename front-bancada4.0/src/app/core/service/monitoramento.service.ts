@@ -1,6 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ConfigService } from './config.service';
 import { MonitoramentoSnapshot } from '../models/monitoramento.model';
+import { Estacao } from '../models/enums/estacao.enum';
+import { StatusEstacao } from '../models/enums/statusestacao.enum';
 
 export type MonitoramentoConnectionStatus = 'connecting' | 'connected' | 'error';
 
@@ -23,11 +25,16 @@ export class MonitoramentoService {
     };
 
    this.eventSource.addEventListener('monitoramento', (event: MessageEvent<string>) => {
+    console.log(event.data)
       const raw = JSON.parse(event.data);
       this.snapshot.set({
         codPedidoAtual: raw.codPedidoAtual ?? null,
-        inicioPedido:   raw.inicioPedido ?? null,
-        estacoes:       raw.estacaoStatus ?? [],
+        duracao:   raw.duracao ?? null,
+        estacoes: (raw.estacaoStatus ?? []).map((e: { estacao: string; status: string; atualizadoEm: string }) => ({
+          estacao:      e.estacao.toLowerCase() as Estacao,
+          status:       e.status.toLowerCase()  as StatusEstacao,
+          atualizadoEm: e.atualizadoEm,
+        })),
         estoque:        raw.estoque ?? [],       
         expedicao:      raw.expedicao ?? [],      
       } as MonitoramentoSnapshot);

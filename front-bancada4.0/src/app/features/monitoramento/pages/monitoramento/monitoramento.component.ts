@@ -40,7 +40,7 @@ export class Monitoramento implements OnInit, OnDestroy {
   readonly snapshot = this.monitoramentoService.snapshot;
 
   readonly codPedidoAtual = computed(() => this.snapshot()?.codPedidoAtual ?? null);
-  readonly inicioPedido   = computed(() => this.snapshot()?.inicioPedido ?? null);
+  readonly duracao   = computed(() => this.snapshot()?.duracao ?? null);
 
   readonly estoquePositions   = computed(() => this.snapshot()?.estoque   ?? []);
   readonly expedicaoPositions = computed(() => this.snapshot()?.expedicao ?? []);
