@@ -61,7 +61,6 @@ public class MonitoramentoService {
         }
 
         List<SseEmitter> removidos = new ArrayList<>();
-
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(
@@ -70,6 +69,7 @@ public class MonitoramentoService {
                             .data(constructData())
                 );
             } catch (Exception e) {
+                System.out.println("Erro: "+e.getMessage());
                 removidos.add(emitter);
             }
         }

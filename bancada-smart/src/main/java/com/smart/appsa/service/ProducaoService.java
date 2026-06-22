@@ -1,5 +1,7 @@
 package com.smart.appsa.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +15,6 @@ import com.smart.appsa.mapper.cache.ProducaoCacheMapper;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.StatusPedido;
 import com.smart.appsa.repository.PedidoRepository;
-import com.smart.appsa.repository.ProducaoCacheRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,6 @@ public class ProducaoService {
 
     private final PedidoService pedidoService;
     private final PedidoRepository pedidoRepository;
-    private final ProducaoCacheRepository cacheRepository;
     private final BlocoService blocoService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -36,6 +36,8 @@ public class ProducaoService {
 
         pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
 
+        pedido.setDataInicio(LocalDateTime.now());
+
         pedidoService.assignPosPedidoInExpedicao(pedido);
 
         pedido.getBlocos().forEach(b ->
@@ -44,17 +46,17 @@ public class ProducaoService {
         eventPublisher.publishEvent(
                 new ExpedicaoReservadaEvent(this, pedido.getPosExpedicao(), pedido.getCodPedido()));
 
-        int codPedido = pedido.getCodPedido();
+        //int codPedido = pedido.getCodPedido();
 
-        ProducaoSnapshot snapshot = ProducaoCacheMapper.constructSnapshot(pedido);
+        //ProducaoSnapshot snapshot = ProducaoCacheMapper.constructSnapshot(pedido);
 
-        cacheRepository.salvar(codPedido, snapshot);
+        //cacheRepository.salvar(codPedido, snapshot);
 
         try {
             pedido.setStatus(StatusPedido.PRODUCAO);
             pedidoRepository.save(pedido);
         } catch (RuntimeException e) {
-            cacheRepository.remover(codPedido);
+            //cacheRepository.remover(codPedido);
             throw e;
         }
 
@@ -67,18 +69,18 @@ public class ProducaoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe: " + codPedido));
 
         if (pedido.getStatus() == StatusPedido.CONCLUIDO) {
-            cacheRepository.remover(codPedido);
+            //cacheRepository.remover(codPedido);
             return;
         }
 
-        if (!cacheRepository.existe(codPedido)) {
+        /*if (!cacheRepository.existe(codPedido)) {
             System.out.println("AVISO: conclusão do pedido " + codPedido
                     + " sem snapshot no Redis (possível inconsistência). Prosseguindo.");
-        }
+        }*/
 
         pedidoService.updateToConcluido(pedido.getId());
 
-        cacheRepository.remover(codPedido);
+        //cacheRepository.remover(codPedido);
     }
 
     @Transactional
@@ -87,7 +89,7 @@ public class ProducaoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe: " + codPedido));
 
         if (pedido.getStatus() == StatusPedido.CANCELADO || pedido.getStatus() == StatusPedido.CONCLUIDO) {
-            cacheRepository.remover(codPedido);
+            //cacheRepository.remover(codPedido);
             return;
         }
 
@@ -99,7 +101,7 @@ public class ProducaoService {
         pedido.setStatus(StatusPedido.CANCELADO);
         pedidoRepository.save(pedido);
 
-        cacheRepository.remover(codPedido);
+        //cacheRepository.remover(codPedido);
     }
 
     

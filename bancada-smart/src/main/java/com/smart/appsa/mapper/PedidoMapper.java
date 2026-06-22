@@ -47,7 +47,7 @@ public class PedidoMapper {
                 .dataEntrada(pedido.getDataEntrada())
                 .dataInicio(pedido.getDataInicio())
                 .idExpedicao(pedido.getPosExpedicao())
-                .blocos(pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
+                .blocos(pedido.getBlocos() == null ? null : pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
                 .build();
     }
  

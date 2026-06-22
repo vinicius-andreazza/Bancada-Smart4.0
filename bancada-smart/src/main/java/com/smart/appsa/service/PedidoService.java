@@ -92,6 +92,7 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
 
+    @Transactional(readOnly = true)
     public PedidoResponseDTO findByCodigo(Integer codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
