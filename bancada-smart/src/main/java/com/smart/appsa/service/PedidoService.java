@@ -124,6 +124,10 @@ public class PedidoService {
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
+
+    public PedidoResponseDTO findLatestConcluido(){
+        return PedidoMapper.toResponse(pedidoRepository.findFirstByStatusOrderByDataEntradaDesc(StatusPedido.CONCLUIDO).orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
+    }
     
     @Transactional
     public PedidoResponseDTO updateToConcluido(Long id) {

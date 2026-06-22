@@ -65,6 +65,11 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.countStatus());
     }
 
+    @GetMapping("/ultimo")
+    public ResponseEntity<PedidoResponseDTO> getLatestPedidoConcluido() {
+        return ResponseEntity.ok(pedidoService.findLatestConcluido());
+    }
+
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
         System.out.println(pedidoRequestDTO);
@@ -75,7 +80,7 @@ public class PedidoController {
     public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
         System.out.println(pedidoRequestDTO);
         smartService.enviarParaProducao(pedidoRequestDTO);
-        return ResponseEntity.ok("Okkkkkkkkkkkk");
+        return ResponseEntity.ok("Pedido enviado");
     }
 
     @PutMapping("/{id}/status")
