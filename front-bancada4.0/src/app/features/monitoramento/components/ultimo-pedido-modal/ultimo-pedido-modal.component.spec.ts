@@ -1,9 +1,18 @@
+import { Component, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UltimoPedidoModalComponent } from './ultimo-pedido-modal.component';
-import { UltimoPedidoResumo } from '../../../../core/models/monitoramento.model';
-import { Estacao } from '../../../../core/models/enums/estacao.enum';
-import { StatusEstacao } from '../../../../core/models/enums/statusestacao.enum';
+import { Pedido3dPreviewComponent } from '../../../pedidos/components/pedido-3d-preview/pedido-3d-preview.component';
+import { Pedido } from '../../../../core/models/pedido.model';
+import { StatusPedido } from '../../../../core/models/enums/statuspedido.enum';
+import { TipoPedido } from '../../../../core/models/enums/tipopedido.enum';
+import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
+
+// Stub the 3D preview: the real one boots three.js/WebGL, which is unavailable in jsdom.
+@Component({ selector: 'app-pedido-3d-preview', template: '' })
+class Pedido3dPreviewStubComponent {
+  readonly staticConfig = input<unknown>(null);
+}
 
 describe('UltimoPedidoModalComponent', () => {
   let component: UltimoPedidoModalComponent;
@@ -12,7 +21,12 @@ describe('UltimoPedidoModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UltimoPedidoModalComponent],
-    }).compileComponents();
+    })
+      .overrideComponent(UltimoPedidoModalComponent, {
+        remove: { imports: [Pedido3dPreviewComponent] },
+        add: { imports: [Pedido3dPreviewStubComponent] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(UltimoPedidoModalComponent);
     component = fixture.componentInstance;
@@ -28,31 +42,30 @@ describe('UltimoPedidoModalComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Carregando');
   });
 
-  it('shows empty state when there is no resumo', () => {
+  it('shows empty state when there is no pedido', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Nenhum pedido concluído encontrado');
   });
 
-  it('shows the resumo data when provided', () => {
-    const resumo: UltimoPedidoResumo = {
-      codPedido: 123,
-      tempoTotalSegundos: 3725,
-      horarioInicio: '2026-06-11T08:00:00.000Z',
-      horarioFim: '2026-06-11T09:02:05.000Z',
-      statusFinalEstacoes: [
-        { estacao: Estacao.ESTOQUE, status: StatusEstacao.FINALIZADO, atualizadoEm: '2026-06-11T09:00:00.000Z' },
-        { estacao: Estacao.PROCESSO, status: StatusEstacao.FINALIZADO, atualizadoEm: '2026-06-11T09:00:00.000Z' },
-        { estacao: Estacao.MONTAGEM, status: StatusEstacao.FINALIZADO, atualizadoEm: '2026-06-11T09:01:00.000Z' },
-        { estacao: Estacao.EXPEDICAO, status: StatusEstacao.FINALIZADO, atualizadoEm: '2026-06-11T09:02:00.000Z' },
-      ],
+  it('shows the pedido data when provided', () => {
+    const pedido: Pedido = {
+      id: 123,
+      codPedido: 456,
+      dataCriacao: '2026-06-11T08:00:00.000Z',
+      status: StatusPedido.CONCLUIDO,
+      tipoPedido: TipoPedido.SIMPLES,
+      corTampa: CorTampa.PRETO,
+      dataEntrada: null,
+      idExpedicao: 0,
+      blocos: [],
     };
 
-    fixture.componentRef.setInput('resumo', resumo);
+    fixture.componentRef.setInput('resumo', pedido);
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('#123');
-    expect(el.textContent).toContain('01:02:05');
-    expect(el.querySelectorAll('app-estacao-status-badge').length).toBe(4);
+    expect(el.textContent).toContain('Concluído');
+    expect(el.querySelector('app-pedido-3d-preview')).toBeTruthy();
   });
 });

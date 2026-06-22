@@ -56,7 +56,7 @@ interface BlocoSummary {
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-cubes text-sky-400 text-sm" aria-hidden="true"></i>
         <span class="font-mono text-xs font-semibold tracking-[0.12em] uppercase text-gray-300">
-          Pré-visualização do pedido
+          Visualização do pedido
         </span>
         <span class="ml-auto font-mono text-[0.6rem] text-gray-600">
           {{ blocosSummary().length }} {{ blocosSummary().length === 1 ? 'bloco' : 'blocos' }}

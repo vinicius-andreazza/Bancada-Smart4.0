@@ -16,11 +16,3 @@ export interface MonitoramentoSnapshot {
   estoque: Estoque[];
   expedicao: Expedicao[];
 }
-
-export interface UltimoPedidoResumo {
-  codPedido: number;
-  tempoTotalSegundos: number;
-  horarioInicio: string;
-  horarioFim: string;
-  statusFinalEstacoes: EstacaoStatus[];
-}

@@ -50,4 +50,8 @@ export class PedidoService {
   reiniciarPedido(id: number): Observable<Pedido> {
     return this.http.post<Pedido>(`${this.config.apiUrl}/api/pedidos/${id}/reiniciar`, {});
   }
+
+  getUltimoPedido(): Observable<Pedido> {
+    return this.http.get<Pedido>(`${this.config.apiUrl}/api/pedidos/ultimo`);
+  }
 }

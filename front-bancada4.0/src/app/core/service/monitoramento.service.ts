@@ -1,7 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { ConfigService } from './config.service';
-import { MonitoramentoSnapshot, UltimoPedidoResumo } from '../models/monitoramento.model';
+import { MonitoramentoSnapshot } from '../models/monitoramento.model';
 
 export type MonitoramentoConnectionStatus = 'connecting' | 'connected' | 'error';
 
@@ -9,7 +8,6 @@ export type MonitoramentoConnectionStatus = 'connecting' | 'connected' | 'error'
   providedIn: 'root',
 })
 export class MonitoramentoService {
-  private readonly http = inject(HttpClient);
   private readonly config = inject(ConfigService);
 
   private eventSource?: EventSource;
@@ -43,9 +41,5 @@ export class MonitoramentoService {
   disconnect(): void {
     this.eventSource?.close();
     this.eventSource = undefined;
-  }
-
-  getUltimoPedidoResumo() {
-    return this.http.get<UltimoPedidoResumo>(`${this.config.apiUrl}/api/smart/ultimo-pedido`);
   }
 }
