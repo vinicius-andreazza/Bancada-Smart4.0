@@ -1,21 +1,21 @@
 package com.smart.appsa.service.clp.estacao;
 
-import com.smart.appsa.config.ipconfig.ExpedicaoIp;
-import com.smart.appsa.service.ExpedicaoService;
-import com.smart.appsa.service.PedidoService;
-import com.smart.appsa.service.ProducaoService;
-import com.smart.appsa.service.clp.poller.PlcPoller;
-
-import java.util.List;
-
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.config.ipconfig.ExpedicaoIp;
+import com.smart.appsa.event.ExpedicaoLiberadaEvent;
+import com.smart.appsa.event.ExpedicaoReservadaEvent;
 import com.smart.appsa.mapper.clp.ExpedicaoPlcMapper;
-import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.clp.ExpedicaoPlc;
+import com.smart.appsa.service.ExpedicaoService;
+import com.smart.appsa.service.PedidoService;
+import com.smart.appsa.service.ProducaoService;
+import com.smart.appsa.service.clp.poller.PlcPoller;
 
 @Service
 public class ExpedicaoComm {
@@ -77,8 +77,6 @@ public class ExpedicaoComm {
         validarFinalizacaoOP();
         validarCancelamento();
         concluirPedido();
-
-        atualizarExpedicao();
 
     }
 
@@ -231,18 +229,38 @@ public class ExpedicaoComm {
         }
     }
 
-    private void atualizarExpedicao(){
-
-        List<Expedicao> expedicao = expedicaoService.findAllExpedicao();
-        expedicao.forEach(e -> {
+    @Async("plcExpedicaoWriteExecutor")
+    @EventListener
+    public void onExpedicaoReservada(ExpedicaoReservadaEvent event) {
+        PlcConnector connector = getConnector();
+        if (connector == null || !connector.isConnected()) {
+            System.out.println("AVISO: CLP expedicao desconectado, reserva pos "
+                    + event.getPosicao() + " pedido " + event.getCodPedido() + " descartada");
+            return;
+        }
+        synchronized (connector) {
             try {
-                if(e.getPedido()!=null){
-                    getConnector().writeInt(DB_EXPEDICAO, 6+((e.getPosicao()-1)*2), e.getPedido().getCodPedido());
-                }
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                connector.writeInt(DB_EXPEDICAO, 6 + (event.getPosicao() - 1) * 2, event.getCodPedido());
+            } catch (Exception e) {
+                System.out.println("ERRO: write reserva expedicao posicao " + event.getPosicao());
+                e.printStackTrace();
             }
-        });
+        }
+    }
+
+    @Async("plcExpedicaoWriteExecutor")
+    @EventListener
+    public void onExpedicaoLiberada(ExpedicaoLiberadaEvent event) {
+        PlcConnector connector = getConnector();
+        if (connector == null || !connector.isConnected()) return;
+        synchronized (connector) {
+            try {
+                connector.writeInt(DB_EXPEDICAO, 6 + (event.getPosicao() - 1) * 2, 0);
+            } catch (Exception e) {
+                System.out.println("ERRO: write liberacao expedicao posicao " + event.getPosicao());
+                e.printStackTrace();
+            }
+        }
     }
 
     private void updateStatusConcluido(){

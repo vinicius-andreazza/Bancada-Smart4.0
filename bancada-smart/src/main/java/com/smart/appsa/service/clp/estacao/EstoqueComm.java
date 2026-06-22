@@ -1,16 +1,15 @@
 package com.smart.appsa.service.clp.estacao;
 
-import java.util.List;
-
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.dto.EstoqueDTO;
-import com.smart.appsa.mapper.EstoqueMapper;
+import com.smart.appsa.event.EstoqueAtualizadoEvent;
 import com.smart.appsa.mapper.clp.EstoquePlcMapper;
-import com.smart.appsa.model.Estoque;
 import com.smart.appsa.model.clp.EstoquePlc;
 import com.smart.appsa.service.EstoqueService;
 import com.smart.appsa.service.clp.poller.PlcPoller;
@@ -64,8 +63,6 @@ public class EstoqueComm {
         validarAdicao();
         validarIniciarGuardar();
         retornarPosicao();
-
-        atualizarEstoque();
     }
 
     private void validarIniciarGuardar() {
@@ -120,7 +117,7 @@ public class EstoqueComm {
             try {
 
                 getConnector().writeByte(DB_ESTOQUE, offsetPosicao, (byte) 0);
-                estoqueService.put(estoquePlc.getPosicaoEstoque(), EstoqueDTO.builder().cor(0).build());
+                estoqueService.releasePosition(estoquePlc.getPosicaoEstoque());;
 
             } catch (Exception e) {
                 System.out.println("ERRO: Na tentativa de remover do Estoque");
@@ -141,7 +138,7 @@ public class EstoqueComm {
 
             try {
                 getConnector().writeByte(DB_ESTOQUE, offset, (byte) estoquePlc.getCorGuardarEstoque());
-                estoqueService.put(estoquePlc.getPosicaoEstoque(), EstoqueDTO.builder().cor(estoquePlc.getCorGuardarEstoque()).build());
+                estoqueService.addPosition(estoquePlc.getPosicaoEstoque(), estoquePlc.getCorGuardarEstoque());
 
             } catch (Exception e) {
                 System.out.println("ERRO: Na tentativa de adicionar no Estoque");
@@ -216,16 +213,19 @@ public class EstoqueComm {
         }
     }
 
-    private void atualizarEstoque(){
-        List<Estoque> estoque = estoqueService.findAll().stream().map(EstoqueMapper::toEntity).toList();
-
-        estoque.forEach(e -> {
+    @Async("plcEstoqueWriteExecutor")
+    @EventListener
+    public void onEstoqueAtualizado(EstoqueAtualizadoEvent event) {
+        PlcConnector connector = getConnector();
+        if (connector == null || !connector.isConnected()) return;
+        synchronized (connector) {
             try {
-                getConnector().writeByte(DB_ESTOQUE, (67+e.getPosicao()), e.getCor().byteValue());
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                connector.writeByte(DB_ESTOQUE, 67 + event.getPosicao(), (byte) event.getCor());
+            } catch (Exception e) {
+                System.out.println("ERRO: write estoque posicao " + event.getPosicao());
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     private void updateStatusConcluido(){

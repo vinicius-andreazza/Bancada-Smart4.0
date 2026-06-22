@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.EstoqueDTO;
+import com.smart.appsa.event.EstoqueAtualizadoEvent;
 import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.model.Estoque;
 import com.smart.appsa.repository.EstoqueRepository;
@@ -20,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class EstoqueService {
 
     private final EstoqueRepository estoqueRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<EstoqueDTO> findAll() {
         return estoqueRepository.findAll().stream().map(EstoqueMapper::toDto).toList();
@@ -43,13 +47,33 @@ public class EstoqueService {
     }
 
     @Transactional
+    public void releasePosition(Integer position) {
+        Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Posição não existe: " + position));
+
+        estoqueExistente.setCor(0);
+    }
+
+    @Transactional
+    public void addPosition(Integer position, Integer cor){
+        Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Posição não existe: " + position));
+
+        estoqueExistente.setCor(cor);
+    }
+
+    @Transactional
     public EstoqueDTO put(Integer position, EstoqueDTO estoqueAtualizado) {
         Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Posição não existe: " + position));
 
         estoqueExistente.setCor(estoqueAtualizado.cor());
-        
+
+        eventPublisher.publishEvent(new EstoqueAtualizadoEvent(this, position, estoqueAtualizado.cor()));
+
         return EstoqueMapper.toDto(estoqueRepository.save(estoqueExistente));
     }
 
@@ -59,6 +83,8 @@ public class EstoqueService {
         List<Estoque> estoques = validateList(listaEstoqueAtualizar);
 
         updateList(estoques, listaEstoqueAtualizar);
+        
+        estoques.forEach(e -> eventPublisher.publishEvent(new EstoqueAtualizadoEvent(this, e.getPosicao(), e.getCor())));
 
         return estoqueRepository.saveAll(estoques).stream().map(EstoqueMapper::toDto).toList();
     }

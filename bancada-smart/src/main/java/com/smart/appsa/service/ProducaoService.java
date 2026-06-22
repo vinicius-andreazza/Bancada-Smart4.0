@@ -1,10 +1,14 @@
 package com.smart.appsa.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.producao.ProducaoSnapshot;
 import com.smart.appsa.dto.request.PedidoRequestDTO;
+import com.smart.appsa.event.EstoqueAtualizadoEvent;
+import com.smart.appsa.event.ExpedicaoLiberadaEvent;
+import com.smart.appsa.event.ExpedicaoReservadaEvent;
 import com.smart.appsa.mapper.cache.ProducaoCacheMapper;
 import com.smart.appsa.model.Pedido;
 import com.smart.appsa.model.enums.StatusPedido;
@@ -23,6 +27,7 @@ public class ProducaoService {
     private final PedidoRepository pedidoRepository;
     private final ProducaoCacheRepository cacheRepository;
     private final BlocoService blocoService;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     public Pedido iniciarProducao(PedidoRequestDTO pedidoRequest) {
@@ -32,6 +37,12 @@ public class ProducaoService {
         pedido.getBlocos().forEach(b -> blocoService.assignEstoquePosition(b));
 
         pedidoService.assignPosPedidoInExpedicao(pedido);
+
+        pedido.getBlocos().forEach(b ->
+                eventPublisher.publishEvent(new EstoqueAtualizadoEvent(this, b.getPosEstoque(), 0)));
+
+        eventPublisher.publishEvent(
+                new ExpedicaoReservadaEvent(this, pedido.getPosExpedicao(), pedido.getCodPedido()));
 
         int codPedido = pedido.getCodPedido();
 
@@ -78,6 +89,10 @@ public class ProducaoService {
         if (pedido.getStatus() == StatusPedido.CANCELADO || pedido.getStatus() == StatusPedido.CONCLUIDO) {
             cacheRepository.remover(codPedido);
             return;
+        }
+
+        if (pedido.getPosExpedicao() != null) {
+            eventPublisher.publishEvent(new ExpedicaoLiberadaEvent(this, pedido.getPosExpedicao()));
         }
 
         System.out.println("Cancelando/falhando produção do pedido " + codPedido + ". Motivo: " + motivo);
