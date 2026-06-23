@@ -1,5 +1,7 @@
 package com.smart.appsa.service.clp.estacao;
 
+import java.util.List;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -7,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
+import com.smart.appsa.dto.EstoqueDTO;
+import com.smart.appsa.dto.ExpedicaoDTO;
 import com.smart.appsa.event.ExpedicaoLiberadaEvent;
 import com.smart.appsa.event.ExpedicaoReservadaEvent;
 import com.smart.appsa.mapper.clp.ExpedicaoPlcMapper;
@@ -40,8 +44,8 @@ public class ExpedicaoComm {
     private static final int OFFSET_POSICAO_GUARDAR = 4;
 
     public ExpedicaoComm(PlcConnectionService plcConnectionService,
-                         ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService,
-                         ProducaoService producaoService, ExpedicaoIp expedicaoIp) {
+            ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService,
+            ProducaoService producaoService, ExpedicaoIp expedicaoIp) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.expedicaoPlc = expedicaoPlc;
@@ -59,11 +63,16 @@ public class ExpedicaoComm {
                 e.printStackTrace();
             }
         });
+        atualizarExpedicao();
     }
 
-    public void disconnect() { poller.stop(); }
-    public boolean isConnected() { return poller.isConnected(); }
+    public void disconnect() {
+        poller.stop();
+    }
 
+    public boolean isConnected() {
+        return poller.isConnected();
+    }
 
     private void handleData(byte[] data) {
 
@@ -85,19 +94,21 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, false);
             } catch (Exception e) {
-                System.out.println("ERRO: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para FALSE");
+                System.out.println(
+                        "ERRO: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para FALSE");
             }
         }
 
         validarRecebido();
     }
 
-    private void validarRecebido(){
+    private void validarRecebido() {
         if (expedicaoPlc.isStartOP() && !expedicaoPlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {
-                System.out.println("ERRO [startOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
+                System.out.println(
+                        "ERRO [startOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
             }
         }
 
@@ -105,7 +116,8 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {
-                System.out.println("ERRO [finishOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
+                System.out.println(
+                        "ERRO [finishOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
             }
         }
     }
@@ -114,9 +126,10 @@ public class ExpedicaoComm {
         if (!expedicaoPlc.isPedirPosicao()) {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 1, false);
-                
-            }catch(Exception e){
-                System.out.println("ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para FALSE");
+
+            } catch (Exception e) {
+                System.out.println(
+                        "ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para FALSE");
             }
             return;
         }
@@ -132,7 +145,8 @@ public class ExpedicaoComm {
         try {
             getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 1, true);
         } catch (Exception e) {
-            System.out.println("ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para TRUE");
+            System.out.println(
+                    "ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para TRUE");
         }
     }
 
@@ -141,7 +155,8 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, false);
             } catch (Exception e) {
-                System.out.println("ERRO: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para FALSE");
+                System.out.println(
+                        "ERRO: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para FALSE");
             }
         }
     }
@@ -154,7 +169,8 @@ public class ExpedicaoComm {
         try {
             getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, true);
         } catch (Exception e) {
-            System.out.println("ERRO [Adicionar Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
+            System.out.println(
+                    "ERRO [Adicionar Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
         }
 
         int posicaoGuardar = expedicaoPlc.getPosicaoGuardar();
@@ -168,7 +184,8 @@ public class ExpedicaoComm {
         try {
             getConnector().writeInt(DB_EXPEDICAO, offset, expedicaoPlc.getOpGuardado());
 
-            expedicaoService.assignPedidoByPosition(getPedidoByCod(expedicaoPlc.getOpGuardado()).getId(), posicaoGuardar);
+            expedicaoService.assignPedidoByPosition(getPedidoByCod(expedicaoPlc.getOpGuardado()).getId(),
+                    posicaoGuardar);
 
         } catch (Exception e) {
             System.out.println("ERRO: Na tentativa de adicionar na Expedição");
@@ -182,9 +199,11 @@ public class ExpedicaoComm {
         }
 
         try {
-            getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, true); // coloca recebidoExpedicao em TRUE
+            getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, true); // coloca recebidoExpedicao
+                                                                                            // em TRUE
         } catch (Exception e) {
-            System.out.println("ERRO [Remover Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
+            System.out.println(
+                    "ERRO [Remover Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
         }
 
         int posicaoRemovida = expedicaoPlc.getPosicaoRemovido();
@@ -197,7 +216,7 @@ public class ExpedicaoComm {
 
         try {
             getConnector().writeInt(DB_EXPEDICAO, offset, 0);
-            expedicaoService.releasePosicao(Long.parseLong(posicaoRemovida+""));
+            expedicaoService.releasePosicao(Long.parseLong(posicaoRemovida + ""));
         } catch (Exception e) {
             System.out.println("ERRO: Na tentativa de remover da Expedição");
             e.printStackTrace();
@@ -213,16 +232,17 @@ public class ExpedicaoComm {
         }
     }
 
-    private void concluirPedido(){
-        if(((expedicaoPlc.isFinishOP() || !expedicaoPlc.isRecebidoOP()) && (expedicaoPlc.getOpGuardado()>0 && expedicaoPlc.getOpGuardado() != opAntiga))){
+    private void concluirPedido() {
+        if (((expedicaoPlc.isFinishOP() || !expedicaoPlc.isRecebidoOP())
+                && (expedicaoPlc.getOpGuardado() > 0 && expedicaoPlc.getOpGuardado() != opAntiga))) {
             opAntiga = expedicaoPlc.getOpGuardado();
             producaoService.concluirProducao(expedicaoPlc.getOpGuardado());
         }
     }
 
-    private void validarCancelamento(){
-        if(expedicaoPlc.isCancelOP() && expedicaoPlc.getOpGuardado() > 0
-                && expedicaoPlc.getOpGuardado() != opCancelada){
+    private void validarCancelamento() {
+        if (expedicaoPlc.isCancelOP() && expedicaoPlc.getOpGuardado() > 0
+                && expedicaoPlc.getOpGuardado() != opCancelada) {
             opCancelada = expedicaoPlc.getOpGuardado();
             producaoService.cancelarOuFalharProducao(expedicaoPlc.getOpGuardado(),
                     "cancelamento sinalizado pelo CLP de expedição (CancelOP)");
@@ -252,7 +272,8 @@ public class ExpedicaoComm {
     @EventListener
     public void onExpedicaoLiberada(ExpedicaoLiberadaEvent event) {
         PlcConnector connector = getConnector();
-        if (connector == null || !connector.isConnected()) return;
+        if (connector == null || !connector.isConnected())
+            return;
         synchronized (connector) {
             try {
                 connector.writeInt(DB_EXPEDICAO, 6 + (event.getPosicao() - 1) * 2, 0);
@@ -263,7 +284,19 @@ public class ExpedicaoComm {
         }
     }
 
-    private void updateStatusConcluido(){
+    private void atualizarExpedicao() {
+        PlcConnector connector = getConnector();
+        List<ExpedicaoDTO> listaExpedicao = expedicaoService.findAll();
+        listaExpedicao.forEach(e -> {
+            try {
+                connector.writeInt(DB_EXPEDICAO, 6 + (e.posicao() - 1) * 2, e.pedido().codPedido().intValue());
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+
+    private void updateStatusConcluido() {
         expedicaoPlc.setConcluidoOP(true);
     }
 
@@ -271,7 +304,7 @@ public class ExpedicaoComm {
         return expedicaoService.findFirstAvailable().getPosicao();
     }
 
-    private Pedido getPedidoByCod(int codigo){
+    private Pedido getPedidoByCod(int codigo) {
         return pedidoService.findPedidoByCodigo(codigo);
     }
 
