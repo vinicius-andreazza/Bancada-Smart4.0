@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.exception.DuplicatedLaminaPosition;
 import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
@@ -73,7 +74,7 @@ public class LaminaService {
         boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
                 .anyMatch(l -> l.getPosicaoLamina().equals(lamina.getPosicaoLamina()));
         if (posicaoOcupada) {
-            throw new IllegalArgumentException(
+            throw new DuplicatedLaminaPosition(
                     "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");
         }
     }

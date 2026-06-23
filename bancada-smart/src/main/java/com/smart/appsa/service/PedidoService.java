@@ -1,8 +1,11 @@
 package com.smart.appsa.service;
 
 import com.smart.appsa.dto.BlocoDTO;
-import com.smart.appsa.dto.PedidoRequestDTO;
-import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
+import com.smart.appsa.dto.response.CountStatus;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
+import com.smart.appsa.exception.BlocoQuantityException;
+import com.smart.appsa.exception.DuplicatedAndarException;
 import com.smart.appsa.exception.PedidoIsAlreadyConcluidoException;
 import com.smart.appsa.mapper.BlocoMapper;
 import com.smart.appsa.mapper.PedidoMapper;
@@ -18,6 +21,8 @@ import com.smart.appsa.repository.PedidoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,8 +49,6 @@ public class PedidoService {
 
         pedidoRepository.save(pedido);
 
-        //assignPosPedidoInExpedicao(pedido);
-
         updateBlocoReferencePedido(pedido);
 
         List<Bloco> blocosCriados = createBlocos(pedido.getBlocos());
@@ -54,11 +57,33 @@ public class PedidoService {
         return PedidoMapper.toResponse(pedido);
     }
 
-    public List<PedidoResponseDTO> findAll() {
-        return pedidoRepository.findAll()
-                .stream()
-                .map(PedidoMapper::toResponse)
-                .toList();
+    public CountStatus countStatus(){
+        int total = Integer.parseInt(pedidoRepository.count()+"");
+        int pendente = pedidoRepository.countByStatus(StatusPedido.PENDENTE);
+        int producao = pedidoRepository.countByStatus(StatusPedido.PRODUCAO);
+        int concluido = pedidoRepository.countByStatus(StatusPedido.CONCLUIDO);
+        int cancelado = pedidoRepository.countByStatus(StatusPedido.CANCELADO);
+        return CountStatus.builder().total(total).pendentes(pendente).producao(producao).concluidos(concluido).cancelado(cancelado).build();
+    }
+
+    public Page<PedidoResponseDTO> findAll(Pageable pageable) {
+        return pedidoRepository.findAll(pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findPendente(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.PENDENTE, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findProducao(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.PRODUCAO, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findConcluido(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.CONCLUIDO, pageable).map(PedidoMapper::toResponse);
+    }
+
+    public Page<PedidoResponseDTO> findCancelado(Pageable pageable) {
+        return pedidoRepository.findByStatus(StatusPedido.CANCELADO, pageable).map(PedidoMapper::toResponse);
     }
 
     public PedidoResponseDTO findById(Long id) {
@@ -67,6 +92,7 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
 
+    @Transactional(readOnly = true)
     public PedidoResponseDTO findByCodigo(Integer codPedido) {
         return PedidoMapper.toResponse(
                 pedidoRepository.findByCodPedido(codPedido)
@@ -99,6 +125,10 @@ public class PedidoService {
                 .map(PedidoMapper::toResponse)
                 .toList();
     }
+
+    public PedidoResponseDTO findLatestConcluido(){
+        return PedidoMapper.toResponse(pedidoRepository.findFirstByStatusOrderByDataEntradaDesc(StatusPedido.CONCLUIDO).orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
+    }
     
     @Transactional
     public PedidoResponseDTO updateToConcluido(Long id) {
@@ -106,12 +136,12 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         if (pedidoExistente.getStatus() == StatusPedido.CONCLUIDO) {
-            //throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
-            System.out.println("Pedido concluido");
+            throw new PedidoIsAlreadyConcluidoException("Pedido já está concluido");
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
         pedidoExistente.setDataEntrada(LocalDateTime.now());
-        //assignPosPedidoInExpedicao(pedidoExistente);
+        expedicaoService.assignPedido(pedidoExistente.getId());
+        assignPosPedidoInExpedicao(pedidoExistente);
 
         pedidoRepository.save(pedidoExistente);
 
@@ -170,10 +200,10 @@ public class PedidoService {
 
     public void validateBlocosQuantityByType(Pedido pedido) {
         if (pedido.getBlocos().size() <= 0) {
-            throw new IllegalArgumentException("Quantidade invalida de blocos");
+            throw new BlocoQuantityException("Quantidade invalida de blocos");
         }
         if (pedido.getTipoPedido().getValue() != pedido.getBlocos().size()) {
-            throw new IllegalArgumentException("Quantidade invalida de blocos pelo tipo de pedido");
+            throw new BlocoQuantityException("Quantidade invalida de blocos pelo tipo de pedido");
         }
     }
 
@@ -196,7 +226,7 @@ public class PedidoService {
                 .toList();
 
         if (!andaresDuplicados.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new DuplicatedAndarException(
                     "Existem blocos com andares duplicados: " + andaresDuplicados);
         }
     }
@@ -206,7 +236,7 @@ public class PedidoService {
     }
 
     public void assignPosPedidoInExpedicao(Pedido pedido) {
-        Expedicao expedicao = expedicaoService.assignPedido(pedido.getId());
+        Expedicao expedicao = expedicaoService.findFirstAvailable();
 
         pedido.setPosExpedicao(expedicao.getPosicao());
     }

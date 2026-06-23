@@ -31,7 +31,7 @@ import lombok.Setter;
 @Table(name = "pedido", check = {
     @CheckConstraint(
         name = "vl_status_pedido",
-        constraint = "vl_status IN (1, 2, 3)"
+        constraint = "vl_status IN (1, 2, 3, 4)"
     ),
     @CheckConstraint(
         name = "tp_pedido",
@@ -63,6 +63,9 @@ public class Pedido {
 
     @Column(name = "vl_tampa", nullable = false)
     private CorTampa corTampa;
+
+    @Column(name = "dt_inicio", nullable = true)
+    private LocalDateTime dataInicio;
 
     @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;

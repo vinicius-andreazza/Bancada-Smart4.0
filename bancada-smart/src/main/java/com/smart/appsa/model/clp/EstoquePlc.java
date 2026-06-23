@@ -1,4 +1,4 @@
-package com.smart.appsa.model.plc;
+package com.smart.appsa.model.clp;
 
 import org.springframework.stereotype.Component;
 

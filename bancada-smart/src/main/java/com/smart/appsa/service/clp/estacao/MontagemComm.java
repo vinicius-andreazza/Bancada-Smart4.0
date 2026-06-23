@@ -1,50 +1,48 @@
-package com.smart.appsa.service.clp;
+package com.smart.appsa.service.clp.estacao;
 
 import com.smart.appsa.config.ipconfig.MontagemIp;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.mapper.clp.MontagemPlcMapper;
-import com.smart.appsa.model.plc.MontagemPlc;
-import com.smart.appsa.service.clp.reader.PlcReader;
+import com.smart.appsa.model.clp.MontagemPlc;
+import com.smart.appsa.service.clp.poller.PlcPoller;
 
 @Service
 public class MontagemComm {
     
     private final MontagemIp montagemIp;
 
-    private PlcReader plcReader;
+    private final PlcPoller poller;
 
     private final PlcConnectionService plcConnectionService;
 
     private final MontagemPlc montagemPlc;
-
-    private final ExecutorService processoPool = Executors.newSingleThreadExecutor();
 
     private static final int DELAY = 600;
     private static final int DB_MONTAGEM = 57;
     private static final int OFFSET_RECEBIDO_OP = 0;
 
     public MontagemComm(PlcConnectionService plcConnectionService, MontagemPlc montagemPlc, MontagemIp montagemIp) {
+        this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.montagemPlc = montagemPlc;
         this.montagemIp = montagemIp;
     }
 
     public void startComm() {
-        this.plcReader = new PlcReader(plcConnectionService.getConnection(montagemIp.getIp()), "Montagem", DB_MONTAGEM, 0, 8,
-                data -> handleData(data), DELAY);
-        processoPool.execute(plcReader);
+        poller.start(montagemIp.getIp(), DELAY, () -> {
+            try {
+                handleData(getConnector().readBlock(DB_MONTAGEM, 0, 8));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    public boolean isConnected() {
-        return plcReader != null && 
-           plcConnectionService.getConnection(montagemIp.getIp()).isConnected();
-    }
+    public void disconnect() { poller.stop(); }
+    public boolean isConnected() { return poller.isConnected(); }
 
     private void handleData(byte[] data) {
 
@@ -79,6 +77,7 @@ public class MontagemComm {
 
     private void validarFinalizacaoDaOperacao() {
         if (montagemPlc.isFinishOP() && !montagemPlc.isRecebidoOP()) {
+            updateStatusConcluido();
             try {
                 getConnector().writeBit(DB_MONTAGEM, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
@@ -86,6 +85,10 @@ public class MontagemComm {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateStatusConcluido(){
+        montagemPlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {

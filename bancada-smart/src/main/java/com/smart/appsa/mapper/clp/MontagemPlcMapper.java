@@ -1,6 +1,6 @@
 package com.smart.appsa.mapper.clp;
 
-import com.smart.appsa.model.plc.MontagemPlc;
+import com.smart.appsa.model.clp.MontagemPlc;
 
 public interface MontagemPlcMapper {
     public static void updateData(byte[] data, MontagemPlc montagemPlc){

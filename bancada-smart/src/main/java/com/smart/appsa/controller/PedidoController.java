@@ -1,24 +1,27 @@
 package com.smart.appsa.controller;
 
-import com.smart.appsa.service.SmartService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smart.appsa.dto.PedidoRequestDTO;
-import com.smart.appsa.dto.PedidoResponseDTO;
+import com.smart.appsa.dto.request.PedidoRequestDTO;
+import com.smart.appsa.dto.response.CountStatus;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.service.PedidoService;
+import com.smart.appsa.service.clp.SmartService;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -28,26 +31,61 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @GetMapping("")
-    public ResponseEntity<List<PedidoResponseDTO>> findAll() {
-        return ResponseEntity.ok(pedidoService.findAll());
+    public ResponseEntity<Page<PedidoResponseDTO>> findAll(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findAll(pageable));
+    }
+
+    @GetMapping("/pendente")
+    public ResponseEntity<Page<PedidoResponseDTO>> findPendente(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findPendente(pageable));
+    }
+
+    @GetMapping("/producao")
+    public ResponseEntity<Page<PedidoResponseDTO>> findProducao(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findProducao(pageable));
+    }
+
+    @GetMapping("/concluido")
+    public ResponseEntity<Page<PedidoResponseDTO>> findConcluido(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findConcluido(pageable));
+    }
+
+    @GetMapping("/cancelado")
+    public ResponseEntity<Page<PedidoResponseDTO>> findCancelado(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(pedidoService.findCancelado(pageable));
+    }
+
+    @GetMapping("/contagens")
+    public ResponseEntity<CountStatus> countStatus() {
+        return ResponseEntity.ok(pedidoService.countStatus());
+    }
+
+    @GetMapping("/ultimo")
+    public ResponseEntity<PedidoResponseDTO> getLatestPedidoConcluido() {
+        return ResponseEntity.ok(pedidoService.findLatestConcluido());
     }
 
     @PostMapping()
-    public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO){
+    public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
         System.out.println(pedidoRequestDTO);
         return ResponseEntity.status(201).body(pedidoService.create(pedidoRequestDTO));
     }
 
     @PostMapping("/enviar")
-    public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO){
+    public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
         System.out.println(pedidoRequestDTO);
         smartService.enviarParaProducao(pedidoRequestDTO);
-        return ResponseEntity.ok("Okkkkkkkkkkkk");
+        return ResponseEntity.ok("Pedido enviado");
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<PedidoResponseDTO> updateToConcluido(@PathVariable Long id){
+    public ResponseEntity<PedidoResponseDTO> updateToConcluido(@PathVariable Long id) {
         return ResponseEntity.ok(pedidoService.updateToConcluido(id));
     }
-    
+
 }
