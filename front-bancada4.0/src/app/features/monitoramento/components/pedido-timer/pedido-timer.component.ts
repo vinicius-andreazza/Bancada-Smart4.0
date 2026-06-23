@@ -27,24 +27,33 @@ import { Component, computed, input, OnDestroy, OnInit, signal } from '@angular/
   `,
 })
 export class PedidoTimerComponent implements OnInit, OnDestroy {
-  readonly codPedido    = input<number | null>(null);
-  readonly inicioPedido = input<string | null>(null);
+  readonly codPedido = input<number | null>(null);
+       readonly duracao   = input<string | null>(null);
+
+       readonly codigoLabel  = computed(() => {
+         const codigo = this.codPedido();
+         return codigo !== null ? `#${codigo}` : '—';
+       });
+
+       readonly elapsedLabel = computed(() => {
+         const duracao = this.duracao();
+         if (!duracao) return '--:--:--';
+         return this.parseDuracao(duracao);
+       });
+
+       private parseDuracao(d: string): string {
+         const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
+         if (!m) return '--:--:--';
+         const h   = parseInt(m[1] ?? '0', 10);
+         const min = parseInt(m[2] ?? '0', 10);
+         const sec = Math.floor(parseFloat(m[3] ?? '0'));
+         const pad = (n: number) => n.toString().padStart(2, '0');
+         return `${pad(h)}:${pad(min)}:${pad(sec)}`;
+       }
+
 
   private readonly now = signal(Date.now());
   private intervalId?: ReturnType<typeof setInterval>;
-
-  readonly codigoLabel = computed(() => {
-    const codigo = this.codPedido();
-    return codigo !== null ? `#${codigo}` : '—';
-  });
-
-  readonly elapsedLabel = computed(() => {
-    const inicio = this.inicioPedido();
-    if (!inicio) return '--:--:--';
-
-    const elapsedMs = Math.max(0, this.now() - new Date(inicio).getTime());
-    return this.formatDuration(elapsedMs);
-  });
 
   ngOnInit(): void {
     this.intervalId = setInterval(() => {
@@ -57,14 +66,5 @@ export class PedidoTimerComponent implements OnInit, OnDestroy {
       clearInterval(this.intervalId);
     }
   }
-
-  private formatDuration(elapsedMs: number): string {
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const pad = (value: number) => value.toString().padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  }
+  
 }

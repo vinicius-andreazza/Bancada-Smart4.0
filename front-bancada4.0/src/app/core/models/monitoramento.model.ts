@@ -11,16 +11,8 @@ export interface EstacaoStatus {
 
 export interface MonitoramentoSnapshot {
   codPedidoAtual: number | null;
-  inicioPedido: string | null;
+  duracao: string | null;
   estacoes: EstacaoStatus[];
   estoque: Estoque[];
   expedicao: Expedicao[];
-}
-
-export interface UltimoPedidoResumo {
-  codPedido: number;
-  tempoTotalSegundos: number;
-  horarioInicio: string;
-  horarioFim: string;
-  statusFinalEstacoes: EstacaoStatus[];
 }

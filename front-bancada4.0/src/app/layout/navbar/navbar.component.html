@@ -63,9 +63,11 @@
     }
 
     <!-- Status badge (oculto no mobile quando o menu está aberto) -->
-    <div class="shrink-0" [class.max-md:hidden]="menuOpen()">
-      <app-status-badge [status]="systemStatus()" />
-    </div>
+    @if (showStatus()) {
+      <div class="shrink-0" [class.max-md:hidden]="menuOpen()">
+        <app-status-badge [status]="systemStatus()" />
+      </div>
+    }
 
     <!-- Botão hambúrguer (vira X quando aberto; empurrado p/ direita quando o logo some) -->
     @if (!minimal()) {

@@ -22,12 +22,18 @@ export class Navbar {
   private readonly conexao = inject(ConexaoService);
 
   readonly minimal = input(false);
+  readonly showStatus = input(true);
 
   readonly systemStatus = computed<'online' | 'offline'>(() =>
     this.conexao.isConnected() ? 'online' : 'offline',
   );
 
   readonly navItems: NavItem[] = [
+    {
+      label: 'Home',
+      route: '/home',
+      ariaLabel: 'Ir para a Home',
+    },
     {
       label: 'Dashboard',
       route: '/dashboard',

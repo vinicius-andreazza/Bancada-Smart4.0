@@ -4,12 +4,14 @@ import { signal } from '@angular/core';
 
 import { Monitoramento } from './monitoramento.component';
 import { MonitoramentoService } from '../../../../core/service/monitoramento.service';
-import { UltimoPedidoResumo } from '../../../../core/models/monitoramento.model';
+import { PedidoService } from '../../../../core/service/pedido.service';
+import { Pedido } from '../../../../core/models/pedido.model';
 
 describe('Monitoramento', () => {
   let component: Monitoramento;
   let fixture: ComponentFixture<Monitoramento>;
   let monitoramentoServiceMock: Partial<MonitoramentoService>;
+  let pedidoServiceMock: Partial<PedidoService>;
 
   beforeEach(async () => {
     monitoramentoServiceMock = {
@@ -17,12 +19,18 @@ describe('Monitoramento', () => {
       connectionStatus: signal('error'),
       connect: () => {},
       disconnect: () => {},
-      getUltimoPedidoResumo: () => of({} as UltimoPedidoResumo),
+    };
+
+    pedidoServiceMock = {
+      getUltimoPedido: () => of({ blocos: [] } as unknown as Pedido),
     };
 
     await TestBed.configureTestingModule({
       imports: [Monitoramento],
-      providers: [{ provide: MonitoramentoService, useValue: monitoramentoServiceMock }],
+      providers: [
+        { provide: MonitoramentoService, useValue: monitoramentoServiceMock },
+        { provide: PedidoService, useValue: pedidoServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Monitoramento);

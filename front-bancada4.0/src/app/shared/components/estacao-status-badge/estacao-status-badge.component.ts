@@ -73,7 +73,7 @@ export class EstacaoStatusBadgeComponent {
   readonly status = input<StatusEstacao>(StatusEstacao.START);
   readonly label  = input('');
 
-  readonly cfg           = computed(() => STATUS_ESTACAO_CONFIG[this.status()]);
+  readonly cfg           = computed(() => STATUS_ESTACAO_CONFIG[this.status()] ?? STATUS_ESTACAO_CONFIG[StatusEstacao.START]);
   readonly resolvedLabel = computed(() => this.label() || this.cfg().defaultLabel);
   readonly ariaLabel     = computed(() => `Status da estação: ${this.resolvedLabel().toLowerCase()}`);
 }

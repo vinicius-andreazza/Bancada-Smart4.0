@@ -3,6 +3,13 @@ import { conexaoGuard } from './core/guard/conexao.guard';
 
 export const routes: Routes = [
   {
+    path: 'home',
+    loadChildren: () =>
+      import('./features/home/home.routes')
+        .then(m => m.HOME_ROUTES)
+  },
+
+  {
     path: 'configuracao',
     loadChildren: () =>
       import('./features/configuracao/configuracao.routes')
@@ -43,7 +50,7 @@ export const routes: Routes = [
 
   {
     path: '',
-    redirectTo: 'configuracao',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
 
@@ -61,7 +68,7 @@ export const routes: Routes = [
   
   {
     path: '**',
-    redirectTo: 'configuracao'
+    redirectTo: 'home'
   },
   
 ];

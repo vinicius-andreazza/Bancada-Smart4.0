@@ -28,7 +28,7 @@ export class ConexaoService {
         : null,
     };
 
-    return this.http.post(`${this.config.apiUrl}/api/configuracao`, body).pipe(
+    return this.http.post(`${this.config.apiUrl}/api/smart/start`, body).pipe(
       tap(() => {
         this.bancadaConfig.set(bancada);
         this.salvarStorage(bancada);

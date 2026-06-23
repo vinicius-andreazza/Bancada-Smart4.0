@@ -1,23 +1,27 @@
 import { Component, computed, input, output } from '@angular/core';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
-import { EstacaoStatusBadgeComponent } from '../../../../shared/components/estacao-status-badge/estacao-status-badge.component';
-import { UltimoPedidoResumo } from '../../../../core/models/monitoramento.model';
-import { Estacao } from '../../../../core/models/enums/estacao.enum';
-
-const ESTACAO_LABEL: Record<Estacao, string> = {
-  [Estacao.ESTOQUE]: 'Estoque',
-  [Estacao.PROCESSO]: 'Processo',
-  [Estacao.MONTAGEM]: 'Montagem',
-  [Estacao.EXPEDICAO]: 'Expedição',
-};
+import { Pedido } from '../../../../core/models/pedido.model';
+import { PedidoDetalheBlocoComponent } from '../../../pedidos/components/pedido-detalhe-modal/pedido-detalhe-bloco/pedido-detalhe-bloco.component';
+import { Pedido3dPreviewComponent } from '../../../pedidos/components/pedido-3d-preview/pedido-3d-preview.component';
+import { STATUS_LABEL, STATUS_BADGE_CLASS, TIPO_LABEL, TAMPA_LABEL } from '../../../pedidos/shared/utils/pedido-labels';
+import {
+  PedidoPreviewConfig,
+  BlocoConfig,
+  LaminaConfig,
+  CorBloco as CorBlocoViewer,
+  CorLamina as CorLaminaViewer,
+  PadraoLamina as PadraoLaminaViewer,
+  PosicaoLamina as PosicaoLaminaViewer,
+  CorTampa as CorTampaViewer,
+} from '../../../pedidos/components/pedido-3d-preview/bloco-3d-viewer.component';
 
 @Component({
   selector: 'app-ultimo-pedido-modal',
-  imports: [ModalComponent, EstacaoStatusBadgeComponent],
+  imports: [ModalComponent, PedidoDetalheBlocoComponent, Pedido3dPreviewComponent],
   template: `
     <app-modal
       [labelledBy]="'ultimo-pedido-titulo'"
-      maxWidth="lg"
+      maxWidth="4xl"
       [hasFooter]="false"
       (fechar)="fechar.emit()"
     >
@@ -25,61 +29,46 @@ const ESTACAO_LABEL: Record<Estacao, string> = {
         Último Pedido Concluído
       </h2>
 
-      <div slot="body" class="p-6">
+      <div slot="body">
         @if (loading()) {
-          <p class="text-text-secondary text-sm">Carregando...</p>
+          <p class="text-text-secondary text-sm p-6">Carregando...</p>
         } @else if (error() || !resumo()) {
-          <p class="text-text-secondary text-sm">Nenhum pedido concluído encontrado.</p>
+          <p class="text-text-secondary text-sm p-6">Nenhum pedido concluído encontrado.</p>
         } @else {
-          <div class="flex flex-col gap-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase">
-                  Pedido
-                </div>
-                <div class="font-heading text-base font-bold text-text-primary">
-                  #{{ resumo()!.codPedido }}
-                </div>
-              </div>
-              <div>
-                <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase">
-                  Tempo total
-                </div>
-                <div class="font-mono-tech text-base font-bold text-text-accent">
-                  {{ tempoTotalFormatado() }}
-                </div>
-              </div>
-              <div>
-                <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase">
-                  Início
-                </div>
-                <div class="font-mono text-sm text-text-primary">
-                  {{ horarioInicioFormatado() }}
-                </div>
-              </div>
-              <div>
-                <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase">
-                  Fim
-                </div>
-                <div class="font-mono text-sm text-text-primary">
-                  {{ horarioFimFormatado() }}
-                </div>
-              </div>
-            </div>
+          <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] items-start">
 
-            <div>
-              <div class="text-[0.7rem] text-text-secondary font-mono tracking-[0.06em] uppercase mb-2">
-                Status final das estações
+            <div class="flex flex-col min-w-0 border-r border-gray-800">
+              <div class="flex items-center gap-2.5 px-6 py-3 border-b border-gray-800">
+                <span class="text-base font-semibold text-gray-100">Pedido #{{ resumo()!.id }}</span>
+                <span [class]="statusBadgeClass() + ' text-xs font-medium px-2 py-0.5 rounded-full'">
+                  {{ statusLabel() }}
+                </span>
+                <span class="ml-auto text-xs font-mono text-gray-500">{{ resumo()!.codPedido }}</span>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                @for (estacaoStatus of resumo()!.statusFinalEstacoes; track estacaoStatus.estacao) {
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="text-sm text-text-primary">{{ ESTACAO_LABEL[estacaoStatus.estacao] }}</span>
-                    <app-estacao-status-badge [status]="estacaoStatus.status" />
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-800 border-b border-gray-800">
+                @for (meta of metaInfo(); track meta.label) {
+                  <div class="flex flex-col gap-0.5 px-5 py-3 bg-gray-950">
+                    <span class="text-xs text-gray-600 uppercase tracking-widest font-mono">{{ meta.label }}</span>
+                    <span class="text-sm text-gray-200">{{ meta.value }}</span>
                   </div>
                 }
               </div>
+
+              <div class="px-6 py-4 flex flex-col gap-3">
+                <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-600">
+                  Blocos ({{ resumo()!.blocos.length }})
+                </span>
+                @for (bloco of resumo()!.blocos; track bloco.andar) {
+                  <app-pedido-detalhe-bloco [bloco]="bloco" />
+                }
+              </div>
             </div>
+
+            <div class="px-4 py-4 sticky top-4">
+              <app-pedido-3d-preview [staticConfig]="pedidoPreviewConfig()" />
+            </div>
+
           </div>
         }
       </div>
@@ -87,34 +76,48 @@ const ESTACAO_LABEL: Record<Estacao, string> = {
   `,
 })
 export class UltimoPedidoModalComponent {
-  readonly resumo  = input<UltimoPedidoResumo | null>(null);
+  readonly resumo  = input<Pedido | null>(null);
   readonly loading = input(false);
   readonly error   = input(false);
 
   readonly fechar = output<void>();
 
-  protected readonly ESTACAO_LABEL = ESTACAO_LABEL;
-
-  readonly tempoTotalFormatado = computed(() => {
-    const resumo = this.resumo();
-    if (!resumo) return '--:--:--';
-    return this.formatDuration(resumo.tempoTotalSegundos);
+  readonly statusLabel = computed(() => {
+    const p = this.resumo();
+    return p ? STATUS_LABEL[p.status] : '';
+  });
+  readonly statusBadgeClass = computed(() => {
+    const p = this.resumo();
+    return p ? STATUS_BADGE_CLASS[p.status] : '';
   });
 
-  readonly horarioInicioFormatado = computed(() => this.formatDateTime(this.resumo()?.horarioInicio));
-  readonly horarioFimFormatado    = computed(() => this.formatDateTime(this.resumo()?.horarioFim));
+  readonly metaInfo = computed(() => {
+    const pedido = this.resumo();
+    if (!pedido) return [];
+    return [
+      { label: 'Tipo',  value: TIPO_LABEL[pedido.tipoPedido] },
+      { label: 'Tampa', value: TAMPA_LABEL[pedido.corTampa]  },
+      { label: 'Data',  value: pedido.dataCriacao            },
+    ];
+  });
 
-  private formatDuration(totalSeconds: number): string {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = Math.floor(totalSeconds % 60);
+  readonly pedidoPreviewConfig = computed<PedidoPreviewConfig>(() => {
+    const pedido = this.resumo();
+    if (!pedido) return { blocos: [], corTampa: null };
 
-    const pad = (value: number) => value.toString().padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  }
+    const blocos: BlocoConfig[] = pedido.blocos.map(b => ({
+      andar:    b.andar,
+      corBloco: b.corBloco as unknown as CorBlocoViewer,
+      laminas:  b.laminas.map((l): LaminaConfig => ({
+        corLamina:     l.corLamina     as unknown as CorLaminaViewer,
+        padraoLamina:  l.padraoLamina  as unknown as PadraoLaminaViewer,
+        posicaoLamina: l.posicaoLamina as unknown as PosicaoLaminaViewer,
+      })),
+    }));
 
-  private formatDateTime(value: string | undefined): string {
-    if (!value) return '—';
-    return new Date(value).toLocaleString('pt-BR');
-  }
+    return {
+      blocos,
+      corTampa: pedido.corTampa as unknown as CorTampaViewer,
+    };
+  });
 }
