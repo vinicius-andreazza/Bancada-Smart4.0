@@ -9,18 +9,5 @@ services:
       - redis-data:/data
     restart: unless-stopped
 
-  mysql:
-    image: mysql:8
-    container_name: bancada-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-12345}
-      MYSQL_DATABASE: ${DB_NAME:-bancadasmart}
-    ports:
-      - "${DB_PORT:-3306}:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    restart: unless-stopped
-
 volumes:
   redis-data:
-  mysql-data:

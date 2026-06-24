@@ -7,10 +7,11 @@ import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.dto.response.CountStatus;
 import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.service.PedidoService;
-import com.smart.appsa.service.clp.SmartService;
+import com.smart.appsa.service.ProducaoService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 @RequestMapping("/api/pedidos")
 public class PedidoController {
-    private final SmartService smartService;
+    private final ProducaoService producaoService;
     private final PedidoService pedidoService;
 
     @GetMapping("")
@@ -70,6 +71,11 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.findLatestConcluido());
     }
 
+    @GetMapping("/emProducao")
+    public ResponseEntity<List<PedidoResponseDTO>> getPedidosInProducao() {
+        return ResponseEntity.ok(producaoService.findPedidosInProducao());
+    }
+
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
         System.out.println(pedidoRequestDTO);
@@ -78,9 +84,8 @@ public class PedidoController {
 
     @PostMapping("/enviar")
     public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
-        System.out.println(pedidoRequestDTO);
-        smartService.enviarParaProducao(pedidoRequestDTO);
-        return ResponseEntity.ok("Pedido enviado");
+        producaoService.adicionarPedido(pedidoRequestDTO);
+        return ResponseEntity.ok("Pedido adicionado à fila de produção");
     }
 
     @PutMapping("/{id}/status")

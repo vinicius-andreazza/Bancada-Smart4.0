@@ -289,7 +289,9 @@ public class ExpedicaoComm {
         List<ExpedicaoDTO> listaExpedicao = expedicaoService.findAll();
         listaExpedicao.forEach(e -> {
             try {
-                connector.writeInt(DB_EXPEDICAO, 6 + (e.posicao() - 1) * 2, e.pedido().codPedido().intValue());
+                if(e.pedido()!=null){
+                    connector.writeInt(DB_EXPEDICAO, 6 + (e.posicao() - 1) * 2, e.pedido().codPedido().intValue());
+                }
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
