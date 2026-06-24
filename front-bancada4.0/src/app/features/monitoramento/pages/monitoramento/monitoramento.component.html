@@ -34,17 +34,20 @@
     <div class="mt-4 bg-bg-card border border-border-subtle rounded-smart p-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
 
-        <div class="flex justify-center">
+        <div class="flex flex-col gap-4">
           <app-estoque-panel-clp [positions]="estoquePositions()"></app-estoque-panel-clp>
+          <app-expedicao-panel-clp [positions]="expedicaoPositions()"></app-expedicao-panel-clp>
         </div>
 
         <div class="w-full">
           <app-bancada-overview [estacoes]="estacoes()"></app-bancada-overview>
         </div>
 
-        <div class="flex justify-center">
-          <app-expedicao-panel-clp [positions]="expedicaoPositions()"></app-expedicao-panel-clp>
-        </div>
+        <app-pedidos-producao-panel
+          [pedidos]="pedidosProducao()"
+          [carregando]="pedidosProducaoCarregando()"
+          [erro]="pedidosProducaoErro()"
+        ></app-pedidos-producao-panel>
 
       </div>
     </div>

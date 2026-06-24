@@ -51,6 +51,10 @@ export class PedidoService {
     return this.http.post<Pedido>(`${this.config.apiUrl}/api/pedidos/${id}/reiniciar`, {});
   }
 
+  getPedidosEmProducao(){
+    return this.http.get<Pedido[]>(`${this.config.apiUrl}/api/pedidos/emProducao`);
+  }
+
   getUltimoPedido(): Observable<Pedido> {
     return this.http.get<Pedido>(`${this.config.apiUrl}/api/pedidos/ultimo`);
   }
