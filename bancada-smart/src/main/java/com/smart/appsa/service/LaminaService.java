@@ -61,10 +61,9 @@ public class LaminaService {
         lamina.setCorLamina(dto.corLamina());
         lamina.setPosicaoLamina(dto.posicaoLamina());
         lamina.setPadraoLamina(dto.padraoLamina());
-        
-
 
         laminaRepository.save(lamina);
+        
         return LaminaMapper.toDto(lamina);
     }
 
@@ -72,20 +71,23 @@ public class LaminaService {
     public LaminaDTO patch(LaminaDTO dto) {
         Lamina lamina = laminaRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Lamina não existe"));
 
-        validateLamina(lamina);
+        
 
         if (dto.corLamina() != null) {
             lamina.setCorLamina(dto.corLamina());
         }
         if (dto.posicaoLamina() != null) {
+
+            validatePositionLamina(dto, lamina.getBloco());
+
             lamina.setPosicaoLamina(dto.posicaoLamina());
         }
         if (dto.padraoLamina() != null) {
             lamina.setPadraoLamina(dto.padraoLamina());
         }
-        
 
         laminaRepository.save(lamina);
+
         return LaminaMapper.toDto(lamina);
     }
 
@@ -114,6 +116,15 @@ public class LaminaService {
         if (posicaoOcupada) {
             throw new DuplicatedLaminaPosition(
                     "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");
+        }
+    }
+
+    private void validatePositionLamina(LaminaDTO lamina, Bloco bloco){
+        boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
+                .anyMatch(l -> l.getPosicaoLamina().equals(lamina.posicaoLamina()));
+        if (posicaoOcupada) {
+            throw new DuplicatedLaminaPosition(
+                    "Já existe uma lâmina na posição " + lamina.posicaoLamina() + " para este bloco.");
         }
     }
 }

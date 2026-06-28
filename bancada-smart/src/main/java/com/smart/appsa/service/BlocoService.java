@@ -46,7 +46,7 @@ public class BlocoService {
 
         updateLaminasInBloco(bloco);
 
-        createLaminas(bloco.getLaminas(), bloco);
+        createLaminas(bloco);
 
         return BlocoMapper.toDto(bloco);
     }
@@ -91,7 +91,9 @@ public class BlocoService {
 
     @Transactional
     public BlocoDTO patch(BlocoDTO dto) {
-        validateDTO(dto);
+        if (dto.laminas().size() > 3) {
+            throw new IllegalArgumentException("Número inválido de laminas");
+        }
 
         Bloco bloco = blocoRepository.findById(dto.id())
                 .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
@@ -121,15 +123,15 @@ public class BlocoService {
         blocoRepository.delete(findEntityById(id));
     }
 
-    private List<Lamina> createLaminas(List<Lamina> laminas, Bloco bloco) {
+    private void createLaminas(Bloco bloco) {
+        List<Lamina> laminas = bloco.getLaminas();
+
         if (laminas == null || laminas.isEmpty()) {
-            return List.of();
+            return;
         }
 
-        List<LaminaDTO> laminasDTO = laminas.stream().map(LaminaMapper::toDto).map(l -> laminaService.create(l, bloco))
+        laminas.stream().map(LaminaMapper::toDto).map(l -> laminaService.create(l, bloco))
                 .toList();
-
-        return laminasDTO.stream().map(b -> LaminaMapper.toEntity(b)).toList();
     }
 
     private Bloco findEntityById(Long id) {
@@ -162,8 +164,11 @@ public class BlocoService {
     @Transactional
     public void assignEstoquePosition(Bloco bloco) {
         Estoque pos = estoqueService.findFirstByCor(bloco.getCorBloco().getValue());
+
         bloco.setPosEstoque(pos.getPosicao());
         pos.setCor(0);
+        
         estoqueService.put(pos.getPosicao(), EstoqueMapper.toDto(pos));
+
     }
 }
