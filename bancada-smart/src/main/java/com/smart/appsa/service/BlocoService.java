@@ -40,7 +40,6 @@ public class BlocoService {
 
         bloco.setPedido(pedido);
 
-        //assignEstoquePosition(bloco);
         bloco.setPosEstoque(null);
 
         blocoRepository.save(bloco);
@@ -71,6 +70,50 @@ public class BlocoService {
                 .stream()
                 .map(BlocoMapper::toDto)
                 .toList();
+    }
+
+     @Transactional
+    public BlocoDTO put(BlocoDTO dto) {
+        validateDTO(dto);
+
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
+
+        bloco.setCorBloco(dto.corBloco());
+        bloco.setPosEstoque(dto.posEstoque());
+        bloco.setPedido(dto.pedido());
+        bloco.setAndar(dto.andar());
+        dto.laminas().forEach(l -> laminaService.put(l));
+
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
+    }
+
+    @Transactional
+    public BlocoDTO patch(BlocoDTO dto) {
+        validateDTO(dto);
+
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
+
+        if (dto.corBloco() != null) {
+            bloco.setCorBloco(dto.corBloco());
+        }
+        if (dto.posEstoque() != null) {
+            bloco.setPosEstoque(dto.posEstoque());
+        }
+        if (dto.pedido() != null) {
+            bloco.setPedido(dto.pedido());
+        }
+        if (dto.andar() != null) {
+            bloco.setAndar(dto.andar());
+        }
+        if (!dto.laminas().isEmpty()) {
+            dto.laminas().forEach(l -> laminaService.patch(l));
+        }
+
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
     }
 
     @Transactional

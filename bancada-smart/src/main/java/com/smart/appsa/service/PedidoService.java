@@ -152,12 +152,14 @@ public class PedidoService {
     public PedidoResponseDTO put(Long id, PedidoRequestDTO dto) {
         Pedido pedidoExistente = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+        validatePedido(PedidoMapper.toEntity(dto), dto);
 
         pedidoExistente.setCodPedido(dto.codPedido());
         pedidoExistente.setStatus(dto.status());
         pedidoExistente.setTipoPedido(dto.tipoPedido());
         pedidoExistente.setCorTampa(dto.corTampa());
         pedidoExistente.setDataEntrada(dto.dataEntrada());
+        dto.blocos().forEach(b->blocoService.put(b));
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
@@ -166,6 +168,8 @@ public class PedidoService {
     public PedidoResponseDTO patch(Long id, PedidoRequestDTO dto) {
         Pedido pedidoExistente = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+
+        validateUpdate(dto);
 
         if (dto.codPedido() != null) {
             pedidoExistente.setCodPedido(dto.codPedido());
@@ -182,9 +186,13 @@ public class PedidoService {
         if (dto.dataEntrada() != null) {
             pedidoExistente.setDataEntrada(dto.dataEntrada());
         }
+        if(!dto.blocos().isEmpty()){
+            dto.blocos().forEach(b -> blocoService.patch(b));
+        }
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
     }
+
 
     @Transactional
     public void delete(Long id) {
@@ -245,5 +253,14 @@ public class PedidoService {
         validateCorTampa(dto.corTampa());
         validateBlocosQuantityByType(pedido);
         validateDuplicatedFloors(pedido.getBlocos());
+    }
+
+    private void validateUpdate(PedidoRequestDTO dto){
+        if(dto.blocos().isEmpty()){
+            return;
+        }
+        if (dto.tipoPedido().getValue() != dto.blocos().size()) {
+            throw new BlocoQuantityException("Quantidade invalida de blocos pelo tipo de pedido");
+        }
     }
 }
