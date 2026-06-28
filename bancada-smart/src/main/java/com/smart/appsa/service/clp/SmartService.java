@@ -13,9 +13,11 @@ import com.smart.appsa.service.ProducaoService;
 import com.smart.appsa.service.esp.SeletorTampaService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SmartService {
 
     private final SeletorTampaService seletorTampaService;
@@ -39,13 +41,14 @@ public class SmartService {
         } catch (RuntimeException e) {
             producaoService.cancelarOuFalharProducao(pedido.getCodPedido(),
                     "falha no envio à bancada: " + e.getMessage());
+            
             throw e;
         }
     }
     
     public void printHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
-        System.out.println("--- BLOCO DE BYTES (HEXADECIMAL) ---");
+        log.info("--- BLOCO DE BYTES (HEXADECIMAL) ---");
 
         for (int i = 0; i < bytes.length; i++) {
             sb.append(String.format("%02X ", bytes[i]));
@@ -55,8 +58,8 @@ public class SmartService {
             }
         }
 
-        System.out.println(sb.toString());
-        System.out.println("------------------------------------");
+        log.info(sb.toString());
+        log.info("------------------------------------");
     }
 
     private void writeDataInPlc(Pedido pedido, byte[] buffer) {
@@ -68,7 +71,7 @@ public class SmartService {
 
         try {
             connector.writeBlock(9, 2, 60, buffer);
-            System.out.println("Dados enviados para o CLP: " + estoqueIp.getIp());
+            log.info("Dados enviados para o CLP: {}", estoqueIp.getIp());
 
             seletorTampaService.updateTampa(pedido.getCorTampa().getValue());
 
@@ -93,12 +96,12 @@ public class SmartService {
 
             resetFlags(ipClp);
 
-            System.out.println("SETAR FLAG INICIAR PEDIDO");
+            log.info("SETAR FLAG INICIAR PEDIDO");
             plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("TRUE"));
 
             Thread.sleep(800);
 
-            System.out.println("RESETAR FLAG INICIAR PEDIDO");
+            log.info("RESETAR FLAG INICIAR PEDIDO");
             plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
 
         } catch (Exception ex) {

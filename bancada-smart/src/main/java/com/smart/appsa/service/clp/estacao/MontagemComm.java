@@ -9,9 +9,12 @@ import com.smart.appsa.mapper.clp.MontagemPlcMapper;
 import com.smart.appsa.model.clp.MontagemPlc;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class MontagemComm {
-    
+
     private final MontagemIp montagemIp;
 
     private final PlcPoller poller;
@@ -36,13 +39,18 @@ public class MontagemComm {
             try {
                 handleData(getConnector().readBlock(DB_MONTAGEM, 0, 8));
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Erro na leitura da montagem: {}", montagemIp.getIp(), e);
             }
         });
     }
 
-    public void disconnect() { poller.stop(); }
-    public boolean isConnected() { return poller.isConnected(); }
+    public void disconnect() {
+        poller.stop();
+    }
+
+    public boolean isConnected() {
+        return poller.isConnected();
+    }
 
     private void handleData(byte[] data) {
 
@@ -59,18 +67,25 @@ public class MontagemComm {
             try {
                 getConnector().writeBit(DB_MONTAGEM, OFFSET_RECEBIDO_OP, 0, false); // coloca RecebidoOPPro em FALSE
             } catch (Exception ex) {
+                log.error(
+                        "Atualização da Flag RecebidoOPMontagem [{}:{}.0] para FALSE",
+                        DB_MONTAGEM,
+                        OFFSET_RECEBIDO_OP,
+                        ex);
             }
         }
     }
 
     private void validarInicioDaOperacao() {
-        if (montagemPlc.isStartOP() && !montagemPlc.isRecebidoOP())
-        {
+        if (montagemPlc.isStartOP() && !montagemPlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_MONTAGEM, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
-
-                e.printStackTrace();
+                log.error(
+                        "[startOp]: Atualização da Flag RecebidoOPMontagem [{}:{}.0] para TRUE",
+                        DB_MONTAGEM,
+                        OFFSET_RECEBIDO_OP,
+                        e);
             }
         }
     }
@@ -81,19 +96,21 @@ public class MontagemComm {
             try {
                 getConnector().writeBit(DB_MONTAGEM, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
-
-                e.printStackTrace();
+                log.error(
+                        "[finishOp]: Atualização da Flag RecebidoOPMontagem [{}:{}.0] para TRUE",
+                        DB_MONTAGEM,
+                        OFFSET_RECEBIDO_OP,
+                        e);
             }
         }
     }
 
-    private void updateStatusConcluido(){
+    private void updateStatusConcluido() {
         montagemPlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {
         return plcConnectionService.getConnection(montagemIp.getIp());
     }
-
 
 }

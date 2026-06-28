@@ -72,13 +72,11 @@ public class PedidoController {
 
     @PostMapping()
     public ResponseEntity<PedidoResponseDTO> create(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
-        System.out.println(pedidoRequestDTO);
         return ResponseEntity.status(201).body(pedidoService.create(pedidoRequestDTO));
     }
 
     @PostMapping("/enviar")
     public ResponseEntity<String> sendPedido(@RequestBody PedidoRequestDTO pedidoRequestDTO) {
-        System.out.println(pedidoRequestDTO);
         smartService.enviarParaProducao(pedidoRequestDTO);
         return ResponseEntity.ok("Pedido enviado");
     }

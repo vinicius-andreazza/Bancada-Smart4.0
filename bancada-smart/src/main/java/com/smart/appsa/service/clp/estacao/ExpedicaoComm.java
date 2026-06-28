@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
-import com.smart.appsa.dto.EstoqueDTO;
 import com.smart.appsa.dto.ExpedicaoDTO;
 import com.smart.appsa.event.ExpedicaoLiberadaEvent;
 import com.smart.appsa.event.ExpedicaoReservadaEvent;
@@ -21,7 +20,10 @@ import com.smart.appsa.service.PedidoService;
 import com.smart.appsa.service.ProducaoService;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ExpedicaoComm {
     private final ExpedicaoIp expedicaoIp;
     private final ExpedicaoService expedicaoService;
@@ -60,7 +62,7 @@ public class ExpedicaoComm {
             try {
                 handleData(getConnector().readBlock(DB_EXPEDICAO, 0, 46));
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Erro na leitura da expedição: {}", expedicaoIp.getIp(), e);
             }
         });
         atualizarExpedicao();
@@ -94,8 +96,11 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, false);
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para FALSE");
+                log.error(
+                        "Atualização da Flag RecebidoOPExpedicao [{}:{}.0] para FALSE",
+                        DB_EXPEDICAO,
+                        OFFSET_STATUS_OP,
+                        e);
             }
         }
 
@@ -107,8 +112,11 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [startOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
+                log.error(
+                        "[startOp]: Atualização da Flag RecebidoOPExpedicao [{}:{}.0] para TRUE",
+                        DB_EXPEDICAO,
+                        OFFSET_STATUS_OP,
+                        e);
             }
         }
 
@@ -116,8 +124,11 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_STATUS_OP, 0, true);
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [finishOP]: Atualização da Flag RecebidoOPExp [DB_EXPEDICAO:OFFSET_STATUS_OP.0] para TRUE");
+                log.error(
+                        "[finishOp]: Atualização da Flag RecebidoOPExpedicao [{}:{}.0] para TRUE",
+                        DB_EXPEDICAO,
+                        OFFSET_STATUS_OP,
+                        e);
             }
         }
     }
@@ -128,8 +139,11 @@ public class ExpedicaoComm {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 1, false);
 
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para FALSE");
+                log.error(
+                        "Atualização da Flag IniciarGuardarExpedicao [{}:{}.1] para FALSE",
+                        DB_EXPEDICAO,
+                        OFFSET_GERENCIAMENTO_EXPEDICAO,
+                        e);
             }
             return;
         }
@@ -139,14 +153,21 @@ public class ExpedicaoComm {
         try {
             getConnector().writeInt(DB_EXPEDICAO, OFFSET_POSICAO_GUARDAR, posicaoExpedicaoSolicitada);
         } catch (Exception e) {
-            System.out.println("ERRO: Atualização da PosicaoGuardarExpedicao [DB_EXPEDICAO:OFFSET_POSICAO_GUARDAR]");
+            log.error(
+                    "Atualização da PosicaoGuardarExpedicao [{}:{}]",
+                    DB_EXPEDICAO,
+                    OFFSET_POSICAO_GUARDAR,
+                    e);
         }
 
         try {
             getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 1, true);
         } catch (Exception e) {
-            System.out.println(
-                    "ERRO [Pedir Posição]: Atualização da Flag IniciarGuardar [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.1] para TRUE");
+            log.error(
+                    "Atualização da Flag IniciarGuardarExpedicao [{}:{}.1] para TRUE",
+                    DB_EXPEDICAO,
+                    OFFSET_GERENCIAMENTO_EXPEDICAO,
+                    e);
         }
     }
 
@@ -155,8 +176,11 @@ public class ExpedicaoComm {
             try {
                 getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, false);
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para FALSE");
+                log.error(
+                        "Atualização da Flag RecebidoExpedicao [{}:{}.0] para FALSE",
+                        DB_EXPEDICAO,
+                        OFFSET_GERENCIAMENTO_EXPEDICAO,
+                        e);
             }
         }
     }
@@ -169,8 +193,11 @@ public class ExpedicaoComm {
         try {
             getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, true);
         } catch (Exception e) {
-            System.out.println(
-                    "ERRO [Adicionar Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
+            log.error(
+                    "Atualização da Flag RecebidoExpedicao [{}:{}.0] para TRUE",
+                    DB_EXPEDICAO,
+                    OFFSET_GERENCIAMENTO_EXPEDICAO,
+                    e);
         }
 
         int posicaoGuardar = expedicaoPlc.getPosicaoGuardar();
@@ -179,7 +206,7 @@ public class ExpedicaoComm {
         }
 
         int offset = 6 + (posicaoGuardar - 1) * 2;
-        System.out.println("Guardando Operacao em posicaoGuardarExp: " + posicaoGuardar);
+        log.info("Guardando operação na posição {}", posicaoGuardar);
 
         try {
             getConnector().writeInt(DB_EXPEDICAO, offset, expedicaoPlc.getOpGuardado());
@@ -188,8 +215,10 @@ public class ExpedicaoComm {
                     posicaoGuardar);
 
         } catch (Exception e) {
-            System.out.println("ERRO: Na tentativa de adicionar na Expedição");
-            e.printStackTrace();
+            log.error(
+                    "Tentativa de adicionar pedido na posição {}",
+                    posicaoGuardar,
+                    e);
         }
     }
 
@@ -202,8 +231,11 @@ public class ExpedicaoComm {
             getConnector().writeBit(DB_EXPEDICAO, OFFSET_GERENCIAMENTO_EXPEDICAO, 0, true); // coloca recebidoExpedicao
                                                                                             // em TRUE
         } catch (Exception e) {
-            System.out.println(
-                    "ERRO [Remover Expedição]: Atualização da Flag RecebidoExpedicao [DB_EXPEDICAO:OFFSET_GERENCIAMENTO_EXPEDICAO.0] para TRUE");
+            log.error(
+                    "Atualização da Flag RecebidoExpedicao [{}:{}.0] para TRUE",
+                    DB_EXPEDICAO,
+                    OFFSET_GERENCIAMENTO_EXPEDICAO,
+                    e);
         }
 
         int posicaoRemovida = expedicaoPlc.getPosicaoRemovido();
@@ -212,14 +244,16 @@ public class ExpedicaoComm {
         }
 
         int offset = 6 + (posicaoRemovida - 1) * 2;
-        System.out.println("Removendo Operacao de posicaoRemovidoExpedicao: " + posicaoRemovida);
+        log.info("Removendo operação da posição {}", posicaoRemovida);
 
         try {
             getConnector().writeInt(DB_EXPEDICAO, offset, 0);
             expedicaoService.releasePosicao(Long.parseLong(posicaoRemovida + ""));
         } catch (Exception e) {
-            System.out.println("ERRO: Na tentativa de remover da Expedição");
-            e.printStackTrace();
+            log.error(
+                    "Tentativa de remover pedido da posição {}",
+                    posicaoRemovida,
+                    e);
         }
     }
 
@@ -228,7 +262,7 @@ public class ExpedicaoComm {
                 && !expedicaoPlc.isOcupado()
                 && expedicaoPlc.isFinishOP()) {
             updateStatusConcluido();
-            System.out.println("Operação OP:" + expedicaoPlc.getOpGuardado() + " Finalizada.");
+            log.info("Operação {} finalizada.", expedicaoPlc.getOpGuardado());
         }
     }
 
@@ -254,16 +288,20 @@ public class ExpedicaoComm {
     public void onExpedicaoReservada(ExpedicaoReservadaEvent event) {
         PlcConnector connector = getConnector();
         if (connector == null || !connector.isConnected()) {
-            System.out.println("AVISO: CLP expedicao desconectado, reserva pos "
-                    + event.getPosicao() + " pedido " + event.getCodPedido() + " descartada");
+            log.warn(
+                    "CLP de expedição desconectado. Reserva da posição {} para o pedido {} descartada.",
+                    event.getPosicao(),
+                    event.getCodPedido());
             return;
         }
         synchronized (connector) {
             try {
                 connector.writeInt(DB_EXPEDICAO, 6 + (event.getPosicao() - 1) * 2, event.getCodPedido());
             } catch (Exception e) {
-                System.out.println("ERRO: write reserva expedicao posicao " + event.getPosicao());
-                e.printStackTrace();
+                log.error(
+                        "Reserva da expedição na posição {}",
+                        event.getPosicao(),
+                        e);
             }
         }
     }
@@ -278,8 +316,10 @@ public class ExpedicaoComm {
             try {
                 connector.writeInt(DB_EXPEDICAO, 6 + (event.getPosicao() - 1) * 2, 0);
             } catch (Exception e) {
-                System.out.println("ERRO: write liberacao expedicao posicao " + event.getPosicao());
-                e.printStackTrace();
+                log.error(
+                        "Liberação da expedição na posição {}",
+                        event.getPosicao(),
+                        e);
             }
         }
     }
@@ -291,7 +331,10 @@ public class ExpedicaoComm {
             try {
                 connector.writeInt(DB_EXPEDICAO, 6 + (e.posicao() - 1) * 2, e.pedido().codPedido().intValue());
             } catch (Exception e1) {
-                e1.printStackTrace();
+                log.error(
+                        "Atualizar expedição na posição {}",
+                        e.posicao(),
+                        e1);
             }
         });
     }

@@ -17,7 +17,10 @@ import com.smart.appsa.model.clp.EstoquePlc;
 import com.smart.appsa.service.EstoqueService;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class EstoqueComm {
 
     private final EstoqueIp estoqueIp;
@@ -50,7 +53,7 @@ public class EstoqueComm {
             try {
                 handleData(getConnector().readBlock(DB_ESTOQUE, 0, 110));
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Erro na leitura do estoque: {}", estoqueIp.getIp(), e);
             }
         });
         atualizarEstoque();
@@ -83,8 +86,8 @@ public class EstoqueComm {
                                                                                              // em FALSE
 
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag IniciarGuardarEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.1] para FALSE");
+                log.error(
+                        "Atualização da Flag IniciarGuardarEstoque [{}:{}.1] para FALSE", DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, e);
             }
 
         }
@@ -100,19 +103,19 @@ public class EstoqueComm {
                 try {
                     getConnector().writeInt(DB_ESTOQUE, OFFSET_POSICAO_GUARDAR, posEstoqueLivre);
                 } catch (Exception e) {
-                    System.out.println(
-                            "ERRO: Atualização da PosicaoGuardarEstoque [DBDB_ESTOQUE:OFFSET_POSICAO_GUARDAR]");
+                    log.error(
+                            "Atualização da PosicaoGuardarEstoque [{}:{}]", DB_ESTOQUE, OFFSET_POSICAO_GUARDAR, e);
                 }
 
                 try {
                     getConnector().writeBit(DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, 1, true); // coloca IniciarGuardar
                                                                                                 // em TRUE
                 } catch (Exception e) {
-                    System.out.println(
-                            "ERRO: Atualização da Flag IniciarGuardarEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.1]");
+                    log.error(
+                            "Atualização da Flag IniciarGuardarEstoque [{}:{}.1]", DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, e);
                 }
             } else {
-                System.out.println("ERRO: Nao existe posição livre.");
+                log.error("Nao existe posição livre.");
             }
         }
     }
@@ -122,8 +125,8 @@ public class EstoqueComm {
             try {
                 getConnector().writeBit(DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, 0, true);
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag RecebidoEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.0] para TRUE");
+                log.error(
+                        "Atualização da Flag RecebidoEstoque [{}:{}.0] para TRUE", DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, e);
             }
 
             byte offsetPosicao = (byte) (68 + (estoquePlc.getPosicaoEstoque() - 1));
@@ -132,11 +135,10 @@ public class EstoqueComm {
 
                 getConnector().writeByte(DB_ESTOQUE, offsetPosicao, (byte) 0);
                 estoqueService.releasePosition(estoquePlc.getPosicaoEstoque());
-                ;
+                
 
             } catch (Exception e) {
-                System.out.println("ERRO: Na tentativa de remover do Estoque");
-                e.printStackTrace();
+                log.error("Tentativa de remoção da posição {}",offsetPosicao,e);
             }
         }
     }
@@ -147,8 +149,8 @@ public class EstoqueComm {
                 getConnector().writeBit(DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, 0, true); // coloca RecebidoEstoque em
                                                                                             // TRUE
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag RecebidoEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.0] para TRUE");
+                log.error(
+                        "Atualização da Flag RecebidoEstoque [{}_{}.0] para TRUE", DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, e);
             }
 
             byte offset = (byte) (68 + (estoquePlc.getPosicaoEstoque() - 1));
@@ -158,8 +160,7 @@ public class EstoqueComm {
                 estoqueService.addPosition(estoquePlc.getPosicaoEstoque(), estoquePlc.getCorGuardarEstoque());
 
             } catch (Exception e) {
-                System.out.println("ERRO: Na tentativa de adicionar no Estoque");
-                e.printStackTrace();
+                log.error("Tentativa de adição na posição {}", estoquePlc.getPosicaoEstoque(), e);
             }
         }
     }
@@ -170,8 +171,8 @@ public class EstoqueComm {
             try {
                 getConnector().writeBit(DB_ESTOQUE, OFFSET_INICIAR_PEDIDO, 0, false); // coloca IniciarPedido em FALSE
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [iniciarPedido == true & ocupadoEst == true]: Atualização da Flag IniciarPedido [DBDB_ESTOQUE:OFFSET_INICIAR_PEDIDO.0] para FALSE");
+                log.error(
+                        "[iniciarPedido == true & ocupadoEst == true]: Atualização da Flag IniciarPedido [{}:{}.0] para FALSE", DB_ESTOQUE, OFFSET_INICIAR_PEDIDO, e);
             }
         }
 
@@ -189,7 +190,7 @@ public class EstoqueComm {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, false);
             } catch (Exception e) {
-                System.out.println("ERRO: Atualização da Flag RecebidoOPEstoque [DBDB_ESTOQUE:0.0] para FALSE");
+                log.error("Atualização da Flag RecebidoOPEstoque [{}:0.0] para FALSE", DB_ESTOQUE, e);
             }
         }
     }
@@ -200,8 +201,8 @@ public class EstoqueComm {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, true); // coloca RecebidoOPEst em TRUE
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [startOp]: Atualização da Flag RecebidoOPEstoque [DBDB_ESTOQUE:0.0] para TRUE");
+                log.error(
+                        "[startOp]: Atualização da Flag RecebidoOPEstoque [{}:0.0] para TRUE", DB_ESTOQUE, e);
             }
         }
     }
@@ -213,8 +214,8 @@ public class EstoqueComm {
             try {
                 getConnector().writeBit(DB_ESTOQUE, 0, 0, true); // coloca RecebidoOPEst em TRUE
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO [finishOp]: Atualização da Flag RecebidoOPEstoque [DBDB_ESTOQUE:0.0] para TRUE");
+                log.error(
+                        "[finishOp]: Atualização da Flag RecebidoOPEstoque [{}:0.0] para TRUE", DB_ESTOQUE, e);
             }
         }
     }
@@ -226,8 +227,8 @@ public class EstoqueComm {
                 getConnector().writeBit(DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, 0, false); // coloca RecebidoEstoque
                                                                                              // em FALSE
             } catch (Exception e) {
-                System.out.println(
-                        "ERRO: Atualização da Flag RecebidoEstoque [DBDB_ESTOQUE:OFFSET_GERENCIAMENTO_ESTOQUE.0] para FALSE");
+                log.error(
+                        "Atualização da Flag RecebidoEstoque [{}:{}.0] para FALSE", DB_ESTOQUE, OFFSET_GERENCIAMENTO_ESTOQUE, e);
             }
         }
     }
@@ -242,8 +243,7 @@ public class EstoqueComm {
             try {
                 connector.writeByte(DB_ESTOQUE, 67 + event.getPosicao(), (byte) event.getCor());
             } catch (Exception e) {
-                System.out.println("ERRO: write estoque posicao " + event.getPosicao());
-                e.printStackTrace();
+                log.error("write estoque posicao {}", event.getPosicao(), e);
             }
         }
     }
@@ -254,8 +254,8 @@ public class EstoqueComm {
         listaEstoque.forEach(e -> {
             try {
                 connector.writeByte(DB_ESTOQUE, 67 + e.posicao(), (byte) e.cor().intValue());
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            } catch (Exception ex) {
+                log.error("Atualizar estoque na posição {}", e.posicao(), ex);
             }
         });
     }
