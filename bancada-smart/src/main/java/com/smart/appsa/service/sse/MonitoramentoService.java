@@ -102,6 +102,9 @@ public class MonitoramentoService {
     }
 
     private String calculateDuracao(){
+        if(pedidoService.existsByCodigo(estoquePlc.getNumeroPedido())){
+            return "";
+        }
         PedidoResponseDTO pedido = pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
         if(pedido.status().equals(StatusPedido.CONCLUIDO)){
             return Duration.between(pedido.dataInicio(), pedido.dataEntrada()).toString();

@@ -130,6 +130,10 @@ public class PedidoService {
     public PedidoResponseDTO findLatestConcluido(){
         return PedidoMapper.toResponse(pedidoRepository.findFirstByStatusOrderByDataEntradaDesc(StatusPedido.CONCLUIDO).orElseThrow(() -> new EntityNotFoundException("Pedido não existe")));
     }
+
+    public boolean existsByCodigo(int codPedido){
+        return pedidoRepository.existsByCodPedido(codPedido);
+    }
     
     @Transactional
     public PedidoResponseDTO updateToConcluido(Long id) {
