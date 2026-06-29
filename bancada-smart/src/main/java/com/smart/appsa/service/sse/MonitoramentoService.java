@@ -104,7 +104,6 @@ public class MonitoramentoService {
     private String calculateDuracao(){
         PedidoResponseDTO pedido = pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
         if(pedido.status().equals(StatusPedido.CONCLUIDO)){
-            resetStatusEstacao();
             return Duration.between(pedido.dataInicio(), pedido.dataEntrada()).toString();
         }
         return Duration.between(pedido.dataInicio(), LocalDateTime.now()).toString();
@@ -133,10 +132,4 @@ public class MonitoramentoService {
         return Pedido.builder().codPedido(codPedido).build();
     }
 
-    private void resetStatusEstacao(){
-        estoquePlc.setConcluidoOP(false);
-        montagemPlc.setConcluidoOP(false);
-        processoPlc.setConcluidoOP(false);
-        expedicaoPlc.setConcluidoOP(false);
-    }
 }

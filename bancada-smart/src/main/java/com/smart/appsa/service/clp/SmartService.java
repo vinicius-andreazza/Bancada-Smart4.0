@@ -1,11 +1,13 @@
 package com.smart.appsa.service.clp;
 
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 import com.smart.appsa.clpcomm.PlcConnector;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
-import com.smart.appsa.dto.request.PedidoRequestDTO;
+import com.smart.appsa.event.IniciarPedidoEvent;
 import com.smart.appsa.exception.SeletorTampaException;
 import com.smart.appsa.mapper.clp.ProducaoPlcMapper;
 import com.smart.appsa.model.Pedido;
@@ -29,8 +31,14 @@ public class SmartService {
     private final EstoqueIp estoqueIp;
 
 
-    public void enviarParaProducao(PedidoRequestDTO pedidoRequest) {
-        Pedido pedido = producaoService.iniciarProducao(pedidoRequest);
+    @Async("plcIniciarPedido")
+    @EventListener
+    public void enviarParaProducao(IniciarPedidoEvent pedidoEvent) {
+        Pedido pedido = producaoService.iniciarProducao();
+
+        if(pedido==null){
+            return;
+        }
 
         byte[] buffer = ProducaoPlcMapper.mapToBytes(pedido);
 

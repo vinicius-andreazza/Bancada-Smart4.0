@@ -30,4 +30,14 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean("plcIniciarPedido")
+    public Executor plcIniciarPedido() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setThreadNamePrefix("plc-iniciar-pedido-");
+        executor.initialize();
+        return executor;
+    }
 }

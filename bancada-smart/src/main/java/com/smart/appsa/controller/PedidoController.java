@@ -7,16 +7,18 @@ import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.dto.response.CountStatus;
 import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.service.PedidoService;
-import com.smart.appsa.service.clp.SmartService;
+import com.smart.appsa.service.ProducaoService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 @RequestMapping("/api/pedidos")
 public class PedidoController {
-    private final SmartService smartService;
+    private final ProducaoService producaoService;
     private final PedidoService pedidoService;
 
     @GetMapping("")
@@ -60,6 +62,11 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.findCancelado(pageable));
     }
 
+    @GetMapping("/fila")
+    public ResponseEntity<List<PedidoResponseDTO>> findFila() {
+        return ResponseEntity.ok(producaoService.findPedidosInProducao());
+    }
+
     @GetMapping("/contagens")
     public ResponseEntity<CountStatus> countStatus() {
         return ResponseEntity.ok(pedidoService.countStatus());
@@ -68,6 +75,11 @@ public class PedidoController {
     @GetMapping("/ultimo")
     public ResponseEntity<PedidoResponseDTO> getLatestPedidoConcluido() {
         return ResponseEntity.ok(pedidoService.findLatestConcluido());
+    }
+
+    @GetMapping("/emProducao")
+    public ResponseEntity<List<PedidoResponseDTO>> getPedidosInProducao() {
+        return ResponseEntity.ok(producaoService.findPedidosInProducao());
     }
 
     @PostMapping()
@@ -84,6 +96,11 @@ public class PedidoController {
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponseDTO> updateToConcluido(@PathVariable Long id) {
         return ResponseEntity.ok(pedidoService.updateToConcluido(id));
+    }
+
+    @DeleteMapping("/{id}/fila")
+    public ResponseEntity<PedidoResponseDTO> removeDaFila(@PathVariable Long id) {
+        return ResponseEntity.ok(pedidoService.removeDaFila(id));
     }
 
 }

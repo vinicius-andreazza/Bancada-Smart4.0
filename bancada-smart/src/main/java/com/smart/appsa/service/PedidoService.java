@@ -38,6 +38,7 @@ public class PedidoService {
     private final ExpedicaoService expedicaoService;
     private final PedidoRepository pedidoRepository;
     private final BlocoService blocoService;
+    private final FilaProducao filaProducao;
 
     @Transactional
     public PedidoResponseDTO create(PedidoRequestDTO dto) {
@@ -146,6 +147,15 @@ public class PedidoService {
         pedidoRepository.save(pedidoExistente);
 
         return PedidoMapper.toResponse(pedidoExistente);
+    }
+
+    public PedidoResponseDTO removeDaFila(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+        if (!filaProducao.remover(pedido.getCodPedido())) {
+            throw new IllegalStateException("Pedido não está na fila");
+        }
+        return PedidoMapper.toResponse(pedido);
     }
 
     @Transactional
