@@ -15,9 +15,11 @@ import com.smart.appsa.config.ipconfig.SeletorTampaIp;
 import com.smart.appsa.exception.SeletorTampaException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SeletorTampaService {
     private final SeletorTampaIp seletorTampaIp;
 
@@ -25,7 +27,7 @@ public class SeletorTampaService {
         if (seletorTampaIp.getEndpointApi() == null) {
             return;
         }
-        System.out.println("\n\nSELETOR DE TAMPAS INSTALADO NA BANCADA\n\n");
+        log.info("\n\nSELETOR DE TAMPAS INSTALADO NA BANCADA\n\n");
         try {
             HttpHeaders headers = new HttpHeaders();
             setHeaders(headers);
@@ -38,7 +40,6 @@ public class SeletorTampaService {
             verifyResponse(body);
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new SeletorTampaException("Erro seletor de tampa");
         }
     }
@@ -59,7 +60,7 @@ public class SeletorTampaService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
         ResponseEntity<String> rawResponse = apiSeletorTampa.postForEntity(url, request, String.class);
-        System.out.println("Resposta Bruta do ESP32: " + rawResponse.getBody());
+        log.info("Resposta Bruta do ESP32: " + rawResponse.getBody());
 
         ResponseEntity<Map> response = apiSeletorTampa.postForEntity(url, request, Map.class);
 

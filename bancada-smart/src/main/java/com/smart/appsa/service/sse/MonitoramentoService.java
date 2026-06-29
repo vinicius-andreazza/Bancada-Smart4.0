@@ -30,9 +30,11 @@ import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.mapper.ExpedicaoMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MonitoramentoService {
     
     private final PedidoService pedidoService;
@@ -69,7 +71,7 @@ public class MonitoramentoService {
                             .data(constructData())
                 );
             } catch (Exception e) {
-                System.out.println("Erro: "+e.getMessage());
+                log.error("Erro no envio do sse: {}",e.getMessage(), e);
                 removidos.add(emitter);
             }
         }

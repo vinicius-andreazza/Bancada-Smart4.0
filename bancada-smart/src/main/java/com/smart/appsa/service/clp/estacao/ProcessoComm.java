@@ -10,7 +10,10 @@ import com.smart.appsa.mapper.clp.ProcessoPlcMapper;
 import com.smart.appsa.model.clp.ProcessoPlc;
 import com.smart.appsa.service.clp.poller.PlcPoller;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ProcessoComm {
 
     private final ProcessoIp processoIp;
@@ -20,7 +23,6 @@ public class ProcessoComm {
     private final PlcConnectionService plcConnectionService;
 
     private final ProcessoPlc processoPlc;
-
 
     private static final int DELAY = 600;
     private static final int DB_PROCESSO = 2;
@@ -38,13 +40,18 @@ public class ProcessoComm {
             try {
                 handleData(getConnector().readBlock(DB_PROCESSO, 0, 8));
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Erro na leitura do processo: {}", processoIp.getIp(), e);
             }
         });
     }
 
-    public void disconnect() { poller.stop(); }
-    public boolean isConnected() { return poller.isConnected(); }
+    public void disconnect() {
+        poller.stop();
+    }
+
+    public boolean isConnected() {
+        return poller.isConnected();
+    }
 
     private void handleData(byte[] data) {
 
@@ -60,18 +67,25 @@ public class ProcessoComm {
             try {
                 getConnector().writeBit(DB_PROCESSO, OFFSET_RECEBIDO_OP, 0, false); // coloca RecebidoOPPro em FALSE
             } catch (Exception ex) {
+                log.error(
+                        "Atualização da Flag RecebidoOPProcesso [{}:{}.0] para FALSE",
+                        DB_PROCESSO,
+                        OFFSET_RECEBIDO_OP,
+                        ex);
             }
         }
     }
 
     private void validarInicioDaOperacao() {
-        if (processoPlc.isStartOP() && !processoPlc.isRecebidoOP())
-        {
+        if (processoPlc.isStartOP() && !processoPlc.isRecebidoOP()) {
             try {
                 getConnector().writeBit(DB_PROCESSO, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
-
-                e.printStackTrace();
+                log.error(
+                        "[startOp]: Atualização da Flag RecebidoOPProcesso [{}:{}.0] para TRUE",
+                        DB_PROCESSO,
+                        OFFSET_RECEBIDO_OP,
+                        e);
             }
         }
     }
@@ -82,19 +96,21 @@ public class ProcessoComm {
             try {
                 getConnector().writeBit(DB_PROCESSO, OFFSET_RECEBIDO_OP, 0, true); // coloca RecebidoOPPro em TRUE
             } catch (Exception e) {
-
-                e.printStackTrace();
+                log.error(
+                        "[finishOp]: Atualização da Flag RecebidoOPProcesso [{}:{}.0] para TRUE",
+                        DB_PROCESSO,
+                        OFFSET_RECEBIDO_OP,
+                        e);
             }
         }
     }
 
-    private void updateStatusConcluido(){
+    private void updateStatusConcluido() {
         processoPlc.setConcluidoOP(true);
     }
 
     private PlcConnector getConnector() {
         return plcConnectionService.getConnection(processoIp.getIp());
     }
-
 
 }

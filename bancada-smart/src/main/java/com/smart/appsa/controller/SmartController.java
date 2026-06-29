@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/smart")
+@Slf4j
 public class SmartController {
 
     private final ExpedicaoIp expedicaoIp;
@@ -66,7 +68,7 @@ public class SmartController {
 
     @GetMapping(value = "/readAll", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter readAll() {
-        System.out.println("SSE aberto");
+        log.info("SSE aberto");
         return monitoramentoService.conectar();
     }
 

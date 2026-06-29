@@ -40,14 +40,13 @@ public class BlocoService {
 
         bloco.setPedido(pedido);
 
-        //assignEstoquePosition(bloco);
         bloco.setPosEstoque(null);
 
         blocoRepository.save(bloco);
 
         updateLaminasInBloco(bloco);
 
-        createLaminas(bloco.getLaminas(), bloco);
+        createLaminas(bloco);
 
         return BlocoMapper.toDto(bloco);
     }
@@ -73,20 +72,66 @@ public class BlocoService {
                 .toList();
     }
 
+     @Transactional
+    public BlocoDTO put(BlocoDTO dto) {
+        validateDTO(dto);
+
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
+
+        bloco.setCorBloco(dto.corBloco());
+        bloco.setPosEstoque(dto.posEstoque());
+        bloco.setPedido(dto.pedido());
+        bloco.setAndar(dto.andar());
+        dto.laminas().forEach(l -> laminaService.put(l));
+
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
+    }
+
+    @Transactional
+    public BlocoDTO patch(BlocoDTO dto) {
+        if (dto.laminas().size() > 3) {
+            throw new IllegalArgumentException("Número inválido de laminas");
+        }
+
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
+
+        if (dto.corBloco() != null) {
+            bloco.setCorBloco(dto.corBloco());
+        }
+        if (dto.posEstoque() != null) {
+            bloco.setPosEstoque(dto.posEstoque());
+        }
+        if (dto.pedido() != null) {
+            bloco.setPedido(dto.pedido());
+        }
+        if (dto.andar() != null) {
+            bloco.setAndar(dto.andar());
+        }
+        if (!dto.laminas().isEmpty()) {
+            dto.laminas().forEach(l -> laminaService.patch(l));
+        }
+
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
+    }
+
     @Transactional
     public void delete(Long id) {
         blocoRepository.delete(findEntityById(id));
     }
 
-    private List<Lamina> createLaminas(List<Lamina> laminas, Bloco bloco) {
+    private void createLaminas(Bloco bloco) {
+        List<Lamina> laminas = bloco.getLaminas();
+
         if (laminas == null || laminas.isEmpty()) {
-            return List.of();
+            return;
         }
 
-        List<LaminaDTO> laminasDTO = laminas.stream().map(LaminaMapper::toDto).map(l -> laminaService.create(l, bloco))
+        laminas.stream().map(LaminaMapper::toDto).map(l -> laminaService.create(l, bloco))
                 .toList();
-
-        return laminasDTO.stream().map(b -> LaminaMapper.toEntity(b)).toList();
     }
 
     private Bloco findEntityById(Long id) {
@@ -119,8 +164,11 @@ public class BlocoService {
     @Transactional
     public void assignEstoquePosition(Bloco bloco) {
         Estoque pos = estoqueService.findFirstByCor(bloco.getCorBloco().getValue());
+
         bloco.setPosEstoque(pos.getPosicao());
         pos.setCor(0);
+        
         estoqueService.put(pos.getPosicao(), EstoqueMapper.toDto(pos));
+
     }
 }
