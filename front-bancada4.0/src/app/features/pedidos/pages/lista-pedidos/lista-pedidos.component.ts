@@ -123,6 +123,7 @@ export class ListaPedidos implements OnInit {
   }
 
   onSalvarEdicao(pedido: Pedido): void {
+    console.log(pedido)
     this.pedidoService.patchPedido(pedido.id, pedido)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

@@ -61,6 +61,7 @@ export class Monitoramento implements OnInit, OnDestroy {
   readonly pedidosProducao           = signal<Pedido[]>([]);
   readonly pedidosProducaoCarregando = signal(false);
   readonly pedidosProducaoErro       = signal(false);
+  readonly removendoId               = signal<number | null>(null);
 
   constructor() {
     effect(() => {
@@ -97,6 +98,17 @@ export class Monitoramento implements OnInit, OnDestroy {
 
   fecharUltimoPedido(): void {
     this.ultimoPedidoModalOpen.set(false);
+  }
+
+  removerDaFila(id: number): void {
+    this.removendoId.set(id);
+    this.pedidoService.removerDaFila(id).subscribe({
+      next: () => {
+        this.removendoId.set(null);
+        this.carregarPedidosProducao();
+      },
+      error: () => this.removendoId.set(null),
+    });
   }
 
   private carregarPedidosProducao(): void {

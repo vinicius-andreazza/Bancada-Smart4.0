@@ -47,6 +47,8 @@
           [pedidos]="pedidosProducao()"
           [carregando]="pedidosProducaoCarregando()"
           [erro]="pedidosProducaoErro()"
+          [removendoId]="removendoId()"
+          (remover)="removerDaFila($event)"
         ></app-pedidos-producao-panel>
 
       </div>

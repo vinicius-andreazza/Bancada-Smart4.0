@@ -44,7 +44,7 @@ export class PedidoService {
   }
 
   patchPedido(id: number, pedido: Pedido){
-    return this.http.patch( `${this.config.apiUrl}/api/pedidos/${id}`, pedido);
+    return this.http.patch<Pedido>( `${this.config.apiUrl}/api/pedidos/${id}`, pedido);
   }
 
   reiniciarPedido(id: number): Observable<Pedido> {
@@ -53,6 +53,10 @@ export class PedidoService {
 
   getPedidosEmProducao(){
     return this.http.get<Pedido[]>(`${this.config.apiUrl}/api/pedidos/emProducao`);
+  }
+
+  removerDaFila(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.config.apiUrl}/api/pedidos/${id}/fila`);
   }
 
   getUltimoPedido(): Observable<Pedido> {
