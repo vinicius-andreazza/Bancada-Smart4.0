@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './footer.component.html'
 })
 export class Footer {
-  readonly currentDate = computed(() => ' 2026');
+  readonly currentDate = computed(() => new Date().getFullYear());
 
   readonly footerStyles = computed(() => ({
     background: 'var(--color-bg-surface, #0c1018)',

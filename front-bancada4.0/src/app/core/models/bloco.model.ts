@@ -5,7 +5,6 @@ import { Lamina } from "./lamina.model";
 export interface Bloco {
     id: number,
     corBloco: CorBloco,
-    posEstoque: number,
     andar: AndarBloco,
     laminas: Lamina[]
 }

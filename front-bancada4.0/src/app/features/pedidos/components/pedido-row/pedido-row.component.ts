@@ -1,9 +1,14 @@
 import { Component, input, output, computed } from '@angular/core';
 import { Pedido } from '../../../../core/models/pedido.model';
-import { StatusPedido } from '../../../../core/models/enums/statuspedido.enum';
-import { TipoPedido } from '../../../../core/models/enums/tipopedido.enum';
-import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import {
+  STATUS_LABEL,
+  STATUS_BADGE_CLASS,
+  TIPO_LABEL,
+  TAMPA_LABEL,
+  TAMPA_CSS_CLASS,
+  getTotalBlocos,
+} from '../../shared/utils/pedido-labels';
 
 @Component({
   selector: 'tr[app-pedido-row]',
@@ -16,40 +21,14 @@ export class PedidoRow {
   readonly onVerDetalhe = output<Pedido>();
   readonly onExcluir    = output<number>();
 
-  readonly statusLabel: Record<StatusPedido, string> = {
-    [StatusPedido.PENDENTE]:  'Pendente',
-    [StatusPedido.PRODUCAO]:  'Em Produção',
-    [StatusPedido.CONCLUIDO]: 'Concluído',
-  };
+  readonly statusLabel      = STATUS_LABEL;
+  readonly statusBadgeClass = STATUS_BADGE_CLASS;
+  readonly tipoLabel        = TIPO_LABEL;
+  readonly tampaLabel       = TAMPA_LABEL;
+  readonly tampaCssClass    = TAMPA_CSS_CLASS;
 
-  readonly statusBadgeClass: Record<StatusPedido, string> = {
-    [StatusPedido.PENDENTE]:  'badge-status badge-pendente',
-    [StatusPedido.PRODUCAO]:  'badge-status badge-producao',
-    [StatusPedido.CONCLUIDO]: 'badge-status badge-concluido',
-  };
-
-  readonly tipoLabel: Record<TipoPedido, string> = {
-    [TipoPedido.SIMPLES]: 'Simples',
-    [TipoPedido.DUPLO]:   'Duplo',
-    [TipoPedido.TRIPLO]:  'Triplo',
-  };
-
-  readonly tampaLabel: Record<CorTampa, string> = {
-    [CorTampa.PRETO]:    'Preto',
-    [CorTampa.VERMELHO]: 'Vermelho',
-    [CorTampa.AZUL]:     'Azul',
-  };
-
-  readonly tampaCssClass: Record<CorTampa, string> = {
-    [CorTampa.PRETO]:    'color-swatch sw-preto',
-    [CorTampa.VERMELHO]: 'color-swatch sw-vermelho',
-    [CorTampa.AZUL]:     'color-swatch sw-azul',
-  };
-
-  readonly totalBlocos = computed(() => {
-    const b = this.pedido().blocos;
-    return Array.isArray(b) ? b.length : b ? 1 : 0;
-  });
+  readonly dataCriacao = computed(() => this.pedido().dataCriacao)
+  readonly totalBlocos = computed(() => getTotalBlocos(this.pedido()));
 
   verDetalhe(): void {
     this.onVerDetalhe.emit(this.pedido());

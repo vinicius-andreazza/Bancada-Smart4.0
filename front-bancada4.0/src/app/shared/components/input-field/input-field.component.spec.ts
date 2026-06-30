@@ -1,22 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormControl } from '@angular/forms';
 
-import { InputField } from './input-field.component';
+import { InputFieldComponent } from './input-field.component';
 
-describe('InputField', () => {
-  let component: InputField;
-  let fixture: ComponentFixture<InputField>;
+describe('InputFieldComponent', () => {
+  let component: InputFieldComponent;
+  let fixture: ComponentFixture<InputFieldComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InputField],
+      imports: [InputFieldComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InputField);
+    fixture = TestBed.createComponent(InputFieldComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.componentRef.setInput('id', 'campo');
+    fixture.componentRef.setInput('label', 'Campo');
+    fixture.componentRef.setInput('control', new FormControl(''));
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('renders the label', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Campo');
   });
 });

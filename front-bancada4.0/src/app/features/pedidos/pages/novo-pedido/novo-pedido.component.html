@@ -2,47 +2,84 @@
 
   <app-navbar />
 
-  <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
 
-    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+    <h1 class="text-xl sm:text-2xl font-semibold text-gray-100">
       Novo pedido
     </h1>
 
     <div>
       @if (saveSuccess()) {
-        <app-toast-notifications [text]="'Pedido criado com sucesso!'" [variant]="'success'"></app-toast-notifications>
+        <app-toast-notifications [text]="'Pedido criado com sucesso!'" [variant]="'success'" />
       }
       @if (saveError()) {
-        <app-toast-notifications [text]="'Houve um erro na criação do pedido'" [variant]="'error'"></app-toast-notifications>
-      }
-      @if (isSaving()) {
-        <app-toast-notifications [text]="'Pedido enviado...'" [variant]="'info'"></app-toast-notifications>
+        <app-toast-notifications [text]="'Houve um erro na operação'" [variant]="'error'" />
       }
     </div>
 
-    <form id="pedidoForm" [formGroup]="pedidoForm" (ngSubmit)="enviarPedido()" class="flex flex-col gap-6">
+    <form id="pedidoForm" [formGroup]="pedidoForm" class="flex flex-col gap-6">
 
-      <app-pedido-card [form]="pedidoForm" />
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+        <div class="min-w-0">
+          <app-pedido-card [form]="pedidoForm" />
+        </div>
+        <app-pedido-3d-preview [form]="pedidoForm" />
+      </div>
 
       <div class="flex items-center gap-3">
-        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="gerarJson()">
-          Gerar JSON
-        </app-button>
-        <app-button [variant]="'primary'" [size]="'md'" [type]="'submit'" >
-          Enviar pedido
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="abrirConfirmacao()">
+          <i class="fa-solid fa-box-open mr-1.5" aria-hidden="true"></i>
+          Criar pedido
         </app-button>
       </div>
 
     </form>
 
-    @if (jsonOutput()) {
-      <pre class="rounded-lg border border-gray-200 dark:border-gray-700
-                  bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200
-                  text-sm p-4 overflow-x-auto">{{ jsonOutput() }}</pre>
-    }
-
   </main>
 
   <app-footer />
+
+  @if (showConfirmModal()) {
+    <app-modal labelledBy="modal-confirmar" maxWidth="xl" (fechar)="fecharConfirmModal()">
+      <div slot="header">
+        <h2 id="modal-confirmar" class="text-base font-semibold text-gray-100">Confirmar pedido</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Revise a visualização abaixo antes de salvar.</p>
+      </div>
+      <div slot="body" class="px-6 py-4">
+        <app-pedido-3d-preview [form]="pedidoForm" />
+      </div>
+      <ng-container slot="footer">
+        <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="fecharConfirmModal()">
+          Cancelar
+        </app-button>
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" [loading]="isSaving()" (click)="confirmarPedido()">
+          <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>
+          Confirmar pedido
+        </app-button>
+      </ng-container>
+    </app-modal>
+  }
+
+  @if (showProducaoModal()) {
+    <app-modal labelledBy="modal-producao" maxWidth="sm" (fechar)="salvarApenas()">
+      <div slot="header">
+        <h2 id="modal-producao" class="text-base font-semibold text-gray-100">Enviar para produção?</h2>
+      </div>
+      <div slot="body" class="px-6 py-5">
+        <p class="text-sm text-gray-300">
+          Pedido criado com sucesso. Deseja enviá-lo para produção agora?
+        </p>
+      </div>
+      <ng-container slot="footer">
+        <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="salvarApenas()">
+          Salvar apenas
+        </app-button>
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" [loading]="isSendingToProducao()" (click)="enviarParaProducao()">
+          <i class="fa-solid fa-gears mr-1.5" aria-hidden="true"></i>
+          Enviar para produção
+        </app-button>
+      </ng-container>
+    </app-modal>
+  }
 
 </div>

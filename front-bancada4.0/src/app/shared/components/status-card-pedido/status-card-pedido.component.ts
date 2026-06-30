@@ -8,6 +8,7 @@ const ICON_CLASS: Record<StatusCardType, string> = {
   [StatusPedido.PENDENTE]: 'fa-solid fa-clock',
   [StatusPedido.PRODUCAO]: 'fa-solid fa-gears',
   [StatusPedido.CONCLUIDO]:'fa-solid fa-check',
+  [StatusPedido.CANCELADO]:'fa-solid fa-ban',
 };
 
 const ICON_COLOR_CLASS: Record<StatusCardType, string> = {
@@ -15,6 +16,7 @@ const ICON_COLOR_CLASS: Record<StatusCardType, string> = {
   [StatusPedido.PENDENTE]: 'bg-amber-500/15 text-amber-400',
   [StatusPedido.PRODUCAO]: 'bg-blue-500/15 text-blue-400',
   [StatusPedido.CONCLUIDO]:'bg-emerald-500/15 text-emerald-400',
+  [StatusPedido.CANCELADO]:'bg-red-500/15 text-red-400',
 };
 
 const LABEL: Record<StatusCardType, string> = {
@@ -22,6 +24,7 @@ const LABEL: Record<StatusCardType, string> = {
   [StatusPedido.PENDENTE]: 'Pendente',
   [StatusPedido.PRODUCAO]: 'Em Produção',
   [StatusPedido.CONCLUIDO]:'Concluído',
+  [StatusPedido.CANCELADO]:'Cancelado',
 };
 
 @Component({

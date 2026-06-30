@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { Estoque } from '../models/estoque.model';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { EstoqueService } from './estoque.service';
 
-describe('Estoque', () => {
-  let service: Estoque;
+describe('EstoqueService', () => {
+  let service: EstoqueService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Estoque);
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(EstoqueService);
   });
 
   it('should be created', () => {

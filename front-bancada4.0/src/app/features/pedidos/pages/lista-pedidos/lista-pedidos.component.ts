@@ -1,78 +1,76 @@
-import { Component, signal, computed, inject } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Navbar } from '../../../../layout/navbar/navbar.component';
 import { Footer } from '../../../../layout/footer/footer.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { InputFieldComponent } from '../../../../shared/components/input-field/input-field.component';
 import { PedidoTable } from '../../components/pedido-table/pedido-table.component';
 import { Pedido } from '../../../../core/models/pedido.model';
 import { StatusPedido } from '../../../../core/models/enums/statuspedido.enum';
 import { StatusCardPedido } from '../../../../shared/components/status-card-pedido/status-card-pedido.component';
-import { PedidoService } from '../../../../core/service/pedido.service';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { PedidoService, PedidoFiltro } from '../../../../core/service/pedido.service';
+import { PedidoContagens } from '../../../../core/models/pedido-contagens.model';
 import { PedidoDetalheModalComponent } from "../../components/pedido-detalhe-modal/pedido-detalhe-modal.component";
-import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
+import { PedidoFiltrosComponent } from '../../components/pedido-filtros/pedido-filtros.component';
+import { flashSignal } from '../../../../shared/utils/flash-signal';
 
-type Filtro = 'TODOS' | 'PENDENTE' | 'PRODUCAO' | 'CONCLUIDO';
+const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-lista-pedidos',
   imports: [
-    ReactiveFormsModule,
     Navbar,
     Footer,
-    ButtonComponent,
-    InputFieldComponent,
     StatusCardPedido,
     PedidoTable,
+    PaginationComponent,
     PedidoDetalheModalComponent,
-    ModalComponent
+    ToastNotifications,
+    PedidoFiltrosComponent,
   ],
   templateUrl: './lista-pedidos.component.html',
 })
-export class ListaPedidos {
+export class ListaPedidos implements OnInit {
 
   private readonly pedidoService = inject(PedidoService);
-  private router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly StatusPedido = StatusPedido;
+  protected readonly pageSize = PAGE_SIZE;
 
   readonly pedidos = signal<Pedido[]>([]);
-  readonly filtroAtual = signal<Filtro>('TODOS');
+  readonly filtroAtual = signal<PedidoFiltro>('TODOS');
   readonly pedidoExcluir = signal<number | null>(null);
 
-  readonly buscaControl = new FormControl('');
+  readonly pageIndex = signal(0);
+  readonly totalPages = signal(0);
+  readonly totalElements = signal(0);
+  readonly first = signal(true);
+  readonly last = signal(true);
+  readonly loading = signal(false);
+
+  readonly contagens = signal<PedidoContagens | null>(null);
 
   readonly pedidoSelecionado = signal<Pedido | null>(null);
-
   readonly pedidoProducao = signal<Pedido | null>(null);
 
-  readonly ipClpControl = new FormControl('');
-
-  readonly pedidosFiltrados = computed(() => {
-    const filtro = this.filtroAtual();
-    const busca = this.buscaControl.value;
-
-    return this.pedidos()
-      .filter(p => {
-        if (filtro === 'PENDENTE') return p.status === StatusPedido.PENDENTE;
-        if (filtro === 'PRODUCAO') return p.status === StatusPedido.PRODUCAO;
-        if (filtro === 'CONCLUIDO') return p.status === StatusPedido.CONCLUIDO;
-        return true;
-      })
-  });
-
-  readonly totalPedidos = computed(() => this.pedidos().length);
-  readonly qtdPendentes = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PENDENTE).length);
-  readonly qtdProducao = computed(() => this.pedidos().filter(p => p.status === StatusPedido.PRODUCAO).length);
-  readonly qtdConcluidos = computed(() => this.pedidos().filter(p => p.status === StatusPedido.CONCLUIDO).length);
+  readonly saveSuccess = signal(false);
+  readonly saveError = signal(false);
 
   ngOnInit(): void {
-    this.getPedidos();
+    this.carregarPagina();
+    this.carregarContagens();
   }
 
-  setFiltro(filtro: Filtro): void {
+  setFiltro(filtro: PedidoFiltro): void {
     this.filtroAtual.set(filtro);
+    this.pageIndex.set(0);
+    this.carregarPagina();
+  }
+
+  irParaPagina(index: number): void {
+    this.pageIndex.set(index);
+    this.carregarPagina();
   }
 
   abrirDetalhe(pedido: Pedido): void {
@@ -83,59 +81,90 @@ export class ListaPedidos {
     this.pedidoExcluir.set(id);
   }
 
-  getPedidos() {
-    this.pedidoService.getPedido().subscribe({
-      next: (pedido: Pedido[]) => {
-        this.pedidos.set(pedido);
-      },
-      error(err) {
-        console.log(err)
-      },
-    })
+  carregarPagina(): void {
+    this.loading.set(true);
+    this.pedidoService.getPedidosPaginado(this.filtroAtual(), this.pageIndex(), this.pageSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (page) => {
+          this.pedidos.set(page.content);
+          this.totalPages.set(page.totalPages);
+          this.totalElements.set(page.totalElements);
+          this.first.set(page.first);
+          this.last.set(page.last);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
-  onRetirar(pedido: Pedido) {
-    console.log("Retirando pedido: "+pedido.codPedido)
+  carregarContagens(): void {
+    this.pedidoService.getContagens()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((contagens) => this.contagens.set(contagens));
   }
 
-  onEnviarProducao(pedido: Pedido) {
-    this.ipClpControl.setValue('');
-  this.pedidoProducao.set(pedido);
+  onRetirar(_pedido: Pedido): void {
+    
   }
 
-  fecharDetalhe() {
+  onReiniciar(pedido: Pedido): void {
+    this.pedidoService.reiniciarPedido(pedido.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+          this.fecharDetalhe();
+          flashSignal(this.saveSuccess, 2000);
+        },
+        error: () => flashSignal(this.saveError, 3000),
+      });
+  }
+
+  onSalvarEdicao(pedido: Pedido): void {
+    console.log(pedido)
+    this.pedidoService.patchPedido(pedido.id, pedido)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+          this.fecharDetalhe();
+          flashSignal(this.saveSuccess, 2000);
+        },
+        error: () => flashSignal(this.saveError, 3000),
+      });
+  }
+
+  onEnviarProducao(pedido: Pedido): void {
+    this.pedidoProducao.set(pedido);
+    this.confirmarEnvioProducao();
+  }
+
+  fecharDetalhe(): void {
     this.pedidoSelecionado.set(null);
   }
 
-  cancelarEnvioProducao() {
-    console.log("Cancelouu");
+  cancelarEnvioProducao(): void {
     this.pedidoProducao.set(null);
-    this.ipClpControl.setValue('');
   }
-  
-  confirmarEnvioProducao() {
-    console.log("Enviou");
+
+  confirmarEnvioProducao(): void {
     const pedido = this.pedidoProducao();
-    const ip = this.ipClpControl.value?.trim();
-  
-    if (!pedido || !ip) {
+
+    if (!pedido) {
       return;
     }
-  
-    console.log(
-      `Enviando pedido ${pedido.codPedido} para o CLP ${ip}`
-    );
-  
-    pedido.clpIp = ip;
 
-   this.pedidoService.postEnviarPedido(pedido).subscribe({
-    next: (pedido) =>{
-      console.log(pedido);
-    },
-    error(err) {
-      console.log(err)
-    },
-   });
+    this.pedidoService.postEnviarPedido(pedido)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+        },
+      });
 
     this.cancelarEnvioProducao();
     this.fecharDetalhe();

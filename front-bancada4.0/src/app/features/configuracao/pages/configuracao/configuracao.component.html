@@ -1,0 +1,85 @@
+<div class="flex min-h-screen flex-col bg-bg-base">
+  <app-navbar [minimal]="true" />
+
+  <main class="flex flex-1 items-center justify-center px-4 py-10">
+    <div
+      class="w-full max-w-3xl flex flex-col gap-8 rounded-2xl border border-border-subtle
+             bg-bg-card p-6 sm:p-10 shadow-card"
+    >
+      <header class="flex flex-col items-center gap-4 text-center">
+        <img
+          src="assets/bancada/Smart40.png"
+          alt="Bancada Smart 4.0"
+          class="w-full max-w-md h-auto select-none"
+        />
+        <div class="flex flex-col items-center gap-3">
+          <h1 class="font-heading text-xl sm:text-2xl font-semibold tracking-wide text-text-primary">
+            Configuração da Bancada Smart 4.0
+          </h1>
+          <p class="max-w-xl text-sm text-text-secondary">
+            Informe o endereço IP de cada estação para conectar ao sistema. O seletor de tampas é
+            opcional — preencha apenas se a bancada possuir.
+          </p>
+        </div>
+      </header>
+
+    @if (conexaoErro()) {
+      <app-toast-notifications
+        text="Não foi possível conectar. Verifique os IPs e se o sistema está disponível."
+        variant="error"
+      />
+    }
+
+    <form [formGroup]="form" (ngSubmit)="conectar()" class="flex flex-col gap-6" novalidate>
+      <fieldset class="flex flex-col gap-4">
+        <legend class="mb-1 font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
+          Estações
+        </legend>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <app-input-field id="estoqueIp" label="IP — Estoque" [control]="form.controls.estoqueIp" />
+          <app-input-field id="processoIp" label="IP — Processo" [control]="form.controls.processoIp" />
+          <app-input-field id="montagemIp" label="IP — Montagem" [control]="form.controls.montagemIp" />
+          <app-input-field id="expedicaoIp" label="IP — Expedição" [control]="form.controls.expedicaoIp" />
+        </div>
+      </fieldset>
+
+      <fieldset class="flex flex-col gap-4">
+        <legend class="mb-1 font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
+          Seletor de tampas <span class="normal-case text-text-muted">(opcional)</span>
+        </legend>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <app-input-field
+            id="seletorTampasIp"
+            label="IP — Seletor de tampas"
+            [control]="form.controls.seletorTampasIp"
+          />
+        </div>
+      </fieldset>
+
+      <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <app-button
+          type="button"
+          variant="ghost"
+          size="lg"
+          (click)="entrarModoTeste()"
+        >
+          <i class="fa-solid fa-flask" aria-hidden="true"></i>
+          Modo de testes (ignorar validação)
+        </app-button>
+
+        <app-button
+          type="submit"
+          variant="primary"
+          size="lg"
+          [loading]="isConnecting()"
+          [disabled]="form.invalid"
+        >
+          Conectar
+        </app-button>
+      </div>
+    </form>
+    </div>
+  </main>
+
+  <app-footer />
+</div>

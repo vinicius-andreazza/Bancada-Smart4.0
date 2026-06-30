@@ -39,7 +39,7 @@ import { Component, computed, input, output } from '@angular/core';
         </div>
 
         @if (hasFooter()) {
-          <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-800 flex-shrink-0">
+          <div class="flex flex-wrap items-center justify-end gap-2 px-6 py-4 border-t border-gray-800 flex-shrink-0">
             <ng-content select="[slot=footer]" />
           </div>
         }
@@ -51,7 +51,7 @@ import { Component, computed, input, output } from '@angular/core';
 export class ModalComponent {
   readonly labelledBy = input<string>('');
   readonly maxHeight  = input<string>('90vh');
-  readonly maxWidth   = input<'sm' | 'md' | 'lg' | 'xl' | '2xl'>('2xl');
+  readonly maxWidth   = input<'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'>('2xl');
   readonly hasFooter  = input<boolean>(true);
   readonly fechar     = output<void>();
 
@@ -61,6 +61,8 @@ export class ModalComponent {
     lg:  'max-w-lg',
     xl:  'max-w-xl',
     '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl',
   })[this.maxWidth()]);
 
   protected fecharSeBackdrop(event: MouseEvent): void {

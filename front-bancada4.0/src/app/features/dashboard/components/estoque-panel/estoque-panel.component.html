@@ -1,5 +1,5 @@
 <div
-  class="rounded-xl border bg-gray-900 transition-all duration-300"
+  class="rounded-xl border bg-gray-900 transition-all duration-300 w-full max-w-[680px] mx-auto"
   [class]="editMode()
     ? 'border-blue-500/40 shadow-[0_0_0_1px_rgba(59,130,246,0.15),0_0_24px_rgba(59,130,246,0.08)]'
     : 'border-gray-800'"
@@ -85,7 +85,7 @@
 
   <div class="p-5">
     <div
-      class="grid grid-cols-6  gap-2"
+      class="grid grid-cols-6 gap-1.5 sm:gap-2"
       role="grid"
       [attr.aria-label]="editMode() ? 'Grade de estoque em modo edição' : 'Grade de estoque'"
     >

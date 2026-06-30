@@ -1,83 +1,122 @@
-import { Component, signal, effect, inject } from '@angular/core';
+import { Component, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { Navbar } from '../../../../layout/navbar/navbar.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { Footer } from '../../../../layout/footer/footer.component';
 import { PedidoCard } from '../../components/pedido-card/pedido-card.component';
 import { PedidoService } from '../../../../core/service/pedido.service';
+import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
+import { Pedido3dPreviewComponent } from '../../components/pedido-3d-preview/pedido-3d-preview.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { criarBlocoVazio } from '../../shared/pedido-form.factory';
+import { flashSignal } from '../../../../shared/utils/flash-signal';
 import { Pedido } from '../../../../core/models/pedido.model';
-import { ToastNotifications } from "../../../../shared/components/toast-notifications/toast-notifications.component";
 
 @Component({
   selector: 'app-novo-pedido',
-  imports: [ReactiveFormsModule, Navbar, ButtonComponent, Footer, PedidoCard, ToastNotifications],
+  imports: [
+    ReactiveFormsModule,
+    Navbar,
+    ButtonComponent,
+    Footer,
+    PedidoCard,
+    ToastNotifications,
+    Pedido3dPreviewComponent,
+    ModalComponent,
+  ],
   templateUrl: './novo-pedido.component.html',
 })
 export class NovoPedido {
-  private formBuilder = inject(FormBuilder);
-
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly pedidoService = inject(PedidoService);
 
-  readonly saveSuccess = signal(false);
-  readonly saveError = signal(false);
-  readonly isSaving = signal(false);
+  readonly saveSuccess          = signal(false);
+  readonly saveError            = signal(false);
+  readonly isSaving             = signal(false);
+  readonly showConfirmModal     = signal(false);
+  readonly showProducaoModal    = signal(false);
+  readonly isSendingToProducao  = signal(false);
+  readonly savedPedido          = signal<Pedido | null>(null);
 
-  jsonOutput = signal('');
-
-  pedidoForm: FormGroup = this.formBuilder.group({
-    codPedido:  new FormControl('OP-000'),
+  readonly pedidoForm: FormGroup = this.formBuilder.group({
+    codPedido:  new FormControl('000'),
     status:     new FormControl('1'),
     tipoPedido: new FormControl('1'),
     corTampa:   new FormControl('1'),
-    clpIp:      new FormControl('10.74.241.11'),
-    blocos:     this.formBuilder.array([this.criarBloco(1)]),
+    blocos:     this.formBuilder.array([criarBlocoVazio(this.formBuilder, 1)]),
   });
 
   constructor() {
-    effect(() => {
-      const tipo = +this.pedidoForm.get('tipoPedido')?.value;
-      const blocos = this.pedidoForm.get('blocos') as FormArray;
-
-      while (blocos.length < tipo) blocos.push(this.criarBloco(blocos.length + 1));
-      while (blocos.length > tipo) blocos.removeAt(blocos.length - 1);
-    });
-
-    this.pedidoForm.get('tipoPedido')?.valueChanges.subscribe(tipo => {
-      const blocos = this.pedidoForm.get('blocos') as FormArray;
-      while (blocos.length < +tipo) blocos.push(this.criarBloco(blocos.length + 1));
-      while (blocos.length > +tipo) blocos.removeAt(blocos.length - 1);
-    });
+    this.pedidoForm.get('tipoPedido')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((tipo) => {
+        const blocos = this.pedidoForm.get('blocos') as FormArray;
+        const total = +tipo;
+        while (blocos.length < total) blocos.push(criarBlocoVazio(this.formBuilder, blocos.length + 1));
+        while (blocos.length > total) blocos.removeAt(blocos.length - 1);
+      });
   }
 
-  private criarBloco(andar: number): FormGroup {
-    return this.formBuilder.group({
-      andar: new FormControl(andar),
-      corBloco:   new FormControl('1'),
-      posEstoque: new FormControl(''),
-      laminas:    this.formBuilder.array([]),
-    });
+  abrirConfirmacao(): void {
+    this.showConfirmModal.set(true);
   }
 
-  gerarJson(): void {
-    this.jsonOutput.set(JSON.stringify(this.pedidoForm.value, null, 2));
+  fecharConfirmModal(): void {
+    this.showConfirmModal.set(false);
   }
 
-  enviarPedido(): void {
-    this.isSaving.set(true)
-    this.saveSuccess.set(false)
-    this.saveError.set(false)
+  confirmarPedido(): void {
+    this.isSaving.set(true);
+    this.saveError.set(false);
+
     this.pedidoService.postPedido(this.pedidoForm.value).subscribe({
-  
-      next:()=>{
-        this.isSaving.set(false)
-        this.saveSuccess.set(true)
-        setTimeout(() => this.saveSuccess.set(false), 2000);
+      next: (pedido) => {
+        this.isSaving.set(false);
+        this.savedPedido.set(pedido);
+        this.showConfirmModal.set(false);
+        this.showProducaoModal.set(true);
       },
-      error: () =>{
-        this.isSaving.set(false)
-        this.saveError.set(true)
-        setTimeout(() => this.saveError.set(false), 3000);
-      }
+      error: () => {
+        this.isSaving.set(false);
+        flashSignal(this.saveError, 3000);
+      },
     });
+  }
+
+  enviarParaProducao(): void {
+    const pedido = this.savedPedido();
+    if (!pedido) return;
+
+    this.isSendingToProducao.set(true);
+    this.saveError.set(false);
+
+    this.pedidoService.postEnviarPedido(pedido).subscribe({
+      next: () => {
+        this.isSendingToProducao.set(false);
+        this.showProducaoModal.set(false);
+        this.resetarFormulario();
+        flashSignal(this.saveSuccess, 2500);
+      },
+      error: () => {
+        this.isSendingToProducao.set(false);
+        flashSignal(this.saveError, 3000);
+      },
+    });
+  }
+
+  salvarApenas(): void {
+    this.showProducaoModal.set(false);
+    this.resetarFormulario();
+    flashSignal(this.saveSuccess, 2500);
+  }
+
+  private resetarFormulario(): void {
+    const blocos = this.pedidoForm.get('blocos') as FormArray;
+    while (blocos.length > 0) blocos.removeAt(0);
+    blocos.push(criarBlocoVazio(this.formBuilder, 1));
+    this.pedidoForm.patchValue({ codPedido: '000', status: '1', tipoPedido: '1', corTampa: '1' });
+    this.savedPedido.set(null);
   }
 }

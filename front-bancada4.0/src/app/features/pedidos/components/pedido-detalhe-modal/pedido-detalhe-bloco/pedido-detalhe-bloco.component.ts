@@ -12,6 +12,13 @@ const COR_BLOCO_LABEL: Record<CorBloco, string> = {
   [CorBloco.AZUL]:     'Azul',
 };
 
+const COR_BLOCO_HEX: Record<CorBloco, string> = {
+  [CorBloco.VAZIO]:    '#8b97a8',
+  [CorBloco.PRETO]:    '#1c1c1c',
+  [CorBloco.VERMELHO]: '#c41e1e',
+  [CorBloco.AZUL]:     '#1a4dcc',
+};
+
 const COR_LAMINA_LABEL: Record<CorLamina, string> = {
   [CorLamina.VERMELHO]: 'Vermelho',
   [CorLamina.AZUL]:     'Azul',
@@ -49,20 +56,18 @@ const POSICAO_LAMINA_LABEL: Record<PosicaoLamina, string> = {
   template: `
     <div class="rounded-lg border border-gray-800 bg-gray-900/50 overflow-hidden">
 
-      <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 bg-gray-900">
+      <div class="flex items-center gap-3 px-4 py-2.5 border-b border-gray-800 bg-gray-900">
+        <span
+          class="w-4 h-4 rounded-sm border border-gray-700 flex-shrink-0"
+          [style.background]="corBlocoHex()"
+        ></span>
         <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">
           Andar {{ bloco().andar }}
         </span>
-        <span class="text-xs text-gray-400">{{ corBlocoLabel() }}</span>
+        <span class="text-xs text-gray-400 ml-1">{{ corBlocoLabel() }}</span>
       </div>
 
       <div class="px-4 py-3 flex flex-col gap-3">
-
-        <div class="flex items-center gap-2 text-xs text-gray-500">
-          <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-          <span>Posição estoque:</span>
-          <span class="font-mono text-gray-300">{{ bloco().posEstoque || '—' }}</span>
-        </div>
 
         @if (bloco().laminas.length > 0) {
           <div class="flex flex-col gap-2">
@@ -71,16 +76,20 @@ const POSICAO_LAMINA_LABEL: Record<PosicaoLamina, string> = {
             </span>
             <div class="flex flex-col gap-1.5">
               @for (lamina of bloco().laminas; track $index) {
-                <div class="flex items-center gap-3 rounded-md bg-gray-800/50 px-3 py-2 text-xs text-gray-400">
+                <div class="flex items-center gap-2.5 rounded-md bg-gray-800/50 px-3 py-2 text-xs text-gray-400">
                   <span
-                    class="w-2 h-2 rounded-full flex-shrink-0"
+                    class="w-3 h-3 rounded-sm border border-gray-700 flex-shrink-0"
                     [style.background]="corHex(lamina.corLamina)"
                   ></span>
-                  <span class="text-gray-300">{{ corLabel(lamina.corLamina) }}</span>
-                  <span class="text-gray-600">·</span>
-                  <span>{{ padraoLabel(lamina.padraoLamina) }}</span>
-                  <span class="text-gray-600">·</span>
-                  <span>{{ posicaoLabel(lamina.posicaoLamina) }}</span>
+                  <span class="text-gray-300 font-medium">{{ corLabel(lamina.corLamina) }}</span>
+                  @if (lamina.padraoLamina !== 0) {
+                    <span class="inline-flex items-center gap-1 bg-gray-700/70 text-gray-300 text-[0.6rem] font-mono px-1.5 py-0.5 rounded tracking-wide">
+                      {{ padraoLabel(lamina.padraoLamina) }}
+                    </span>
+                  }
+                  <span class="ml-auto font-mono text-[0.6rem] text-gray-500 uppercase tracking-wider">
+                    {{ posicaoLabel(lamina.posicaoLamina) }}
+                  </span>
                 </div>
               }
             </div>
@@ -97,9 +106,10 @@ export class PedidoDetalheBlocoComponent {
   readonly bloco = input.required<Bloco>();
 
   protected readonly corBlocoLabel = computed(() => COR_BLOCO_LABEL[this.bloco().corBloco]);
+  protected readonly corBlocoHex   = computed(() => COR_BLOCO_HEX[this.bloco().corBloco]);
 
-  protected corHex(cor: CorLamina):      string { return COR_LAMINA_HEX[cor]; }
-  protected corLabel(cor: CorLamina):    string { return COR_LAMINA_LABEL[cor]; }
+  protected corHex(cor: CorLamina):       string { return COR_LAMINA_HEX[cor]; }
+  protected corLabel(cor: CorLamina):     string { return COR_LAMINA_LABEL[cor]; }
   protected padraoLabel(v: PadraoLamina): string { return PADRAO_LAMINA_LABEL[v]; }
   protected posicaoLabel(v: PosicaoLamina): string { return POSICAO_LAMINA_LABEL[v]; }
 }

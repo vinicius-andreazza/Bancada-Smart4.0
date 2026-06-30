@@ -21,7 +21,7 @@ const COLOR_LABEL: Record<CorBloco, string> = {
   imports: [],
   template: `
     <span
-      class="text-[0.6rem] font-mono font-bold leading-none opacity-60"
+      class="text-[0.6rem] sm:text-[0.7rem] font-mono font-bold leading-none opacity-60"
       aria-hidden="true"
     >
       {{ pos().posicao }}
@@ -38,7 +38,7 @@ const COLOR_LABEL: Record<CorBloco, string> = {
     }
 
     <div
-      class="text-[0.5rem] font-mono font-semibold tracking-widest uppercase leading-none opacity-70"
+      class="text-[0.55rem] sm:text-[0.65rem] font-mono font-semibold tracking-wide uppercase leading-none opacity-70 max-w-full truncate text-center"
       aria-hidden="true"
     >
       {{ colorLabel() }}
@@ -69,10 +69,9 @@ const COLOR_LABEL: Record<CorBloco, string> = {
     }
   `,
   host: {
-    // Tamanho fixo igual ao original: width/height explícitos
     'class': `
       group relative flex flex-col items-center justify-center gap-1
-      w-[115px] h-[115px] rounded-lg border select-none
+      w-full aspect-square min-w-0 rounded-lg border select-none
       transition-all duration-150
     `,
     '[class]': 'hostClasses()',

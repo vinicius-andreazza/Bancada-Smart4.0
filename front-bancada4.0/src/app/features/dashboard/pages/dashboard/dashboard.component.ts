@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RefreshTimer } from "../../components/refresh-timer/refresh-timer.component";
 import { EstoquePanel } from "../../components/estoque-panel/estoque-panel.component";
 import { ExpedicaoPanel } from "../../components/expedicao-panel/expedicao-panel.component";
@@ -10,18 +11,20 @@ import { ExpedicaoService } from '../../../../core/service/expedicao.service';
 import { Navbar } from '../../../../layout/navbar/navbar.component'
 import { Footer } from "../../../../layout/footer/footer.component";
 import { CorBloco } from '../../../../core/models/enums/corbloco.enum';
-import { catchError, forkJoin, of } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { ToastNotifications } from "../../../../shared/components/toast-notifications/toast-notifications.component";
+import { flashSignal } from '../../../../shared/utils/flash-signal';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, CellDetailModel, Navbar, Footer, ToastNotifications],
+  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, Navbar, Footer, ToastNotifications],
   templateUrl: './dashboard.component.html',
 })
-export class Dashboard {
+export class Dashboard implements OnInit, OnDestroy {
   private readonly estoqueService = inject(EstoqueService);
   private readonly expedicaoService = inject(ExpedicaoService);
- 
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly estoquePositions = signal<Estoque[]>([]);
   readonly expedicaoPositions = signal<Expedicao[]>([]);
   readonly refreshCountdown = signal(15);
@@ -34,10 +37,10 @@ export class Dashboard {
   readonly editMode = signal(false);
   readonly selectedColor = signal<CorBloco>(CorBloco.AZUL);
   readonly pendingChanges = signal<Map<number, EstoqueEditChange>>(new Map());
- 
+
   readonly hasChanges = computed(() => this.pendingChanges().size > 0);
-  readonly changeCount = computed(() => this.pendingChanges().size)
-  
+  readonly changeCount = computed(() => this.pendingChanges().size);
+
   readonly cellColorMap = computed(() => {
     const map = new Map<number, CorBloco>();
     for (const estoque of this.estoquePositions()) {
@@ -46,101 +49,70 @@ export class Dashboard {
     return map;
   });
 
-  private refreshInterval: any;
-  
+  private refreshInterval?: ReturnType<typeof setInterval>;
+
   ngOnInit(): void {
     this.refreshAll();
 
     this.refreshInterval = setInterval(() => {
-
-      const current =
-        this.refreshCountdown();
-
-      if (current <= 1) {
-
+      if (this.refreshCountdown() <= 1) {
         this.refreshCountdown.set(15);
-
         this.refreshAll();
-
         return;
       }
-
-      this.refreshCountdown.update(
-        value => value - 1
-      );
-
+      this.refreshCountdown.update((value) => value - 1);
     }, 1000);
   }
 
-  constructor() {
-    this.refreshAll();
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
-  refreshAll() {
+  refreshAll(): void {
     this.refreshEstoque();
     this.refreshExpedicao();
   }
 
-  refreshEstoque() {
-     this.estoqueService
-    .getEstoque()
-    .subscribe({
-      
-      next: (estoque: Estoque[]) => {
-        console.log(estoque);
-        this.estoquePositions.set(estoque);
-      },
-
-      error: (error: any) => {
-        console.error(error);
-      }
-
-    });
+  refreshEstoque(): void {
+    this.estoqueService
+      .getEstoque()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((estoque) => this.estoquePositions.set(estoque));
   }
-  refreshExpedicao() {
+
+  refreshExpedicao(): void {
     this.expedicaoService
-    .getExpedicao()
-    .subscribe({
-
-      next: (expedicao: Expedicao[]) => {
-        this.expedicaoPositions.set(expedicao);
-      }
-
-    });
+      .getExpedicao()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((expedicao) => this.expedicaoPositions.set(expedicao));
   }
 
-  openCellDetail(
-    position: Estoque
-  ) {
+  openCellDetail(position: Estoque): void {
     this.selectedPosition.set(position);
-
-    this.modalOpen.set(true);
-  }
-
-  closeCellModal() {
-    this.modalOpen.set(false);
   }
 
   enterEditMode(): void {
     this.editMode.set(true);
     this.pendingChanges.set(new Map());
   }
- 
+
   exitEditMode(): void {
     this.editMode.set(false);
     this.pendingChanges.set(new Map());
   }
- 
+
   selectColor(cor: CorBloco): void {
     this.selectedColor.set(cor);
   }
- 
+
   applyColorToCell(estoque: Estoque): void {
     if (!this.editMode()) return;
- 
+
     const newCor = this.selectedColor();
     const changes = new Map(this.pendingChanges());
- 
+
     const existing = changes.get(estoque.posicao);
     if (existing) {
       if (existing.originalCor === newCor) {
@@ -155,46 +127,42 @@ export class Dashboard {
         newCor,
       });
     }
- 
+
     this.pendingChanges.set(changes);
   }
- 
+
   getEffectiveColor(estoque: Estoque): CorBloco {
     const change = this.pendingChanges().get(estoque.posicao);
     return change ? change.newCor : estoque.cor;
   }
 
   onSaveEstoque(): void {
-    const changes = this.pendingChanges()
+    const changes = this.pendingChanges();
     if (changes.size === 0) return;
- 
+
     this.isSaving.set(true);
     this.saveSuccess.set(false);
     this.saveError.set(false);
- 
+
     const estoqueList = this.estoquePositions();
     const requests = this.estoqueService.saveChanges(estoqueList, changes);
- 
+
     forkJoin(requests).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.saveSuccess.set(true);
         this.exitEditMode();
- 
         this.refreshEstoque();
- 
-        setTimeout(() => this.saveSuccess.set(false), 3000);
+        flashSignal(this.saveSuccess, 3000);
       },
       error: () => {
         this.isSaving.set(false);
-        this.saveError.set(true);
-        setTimeout(() => this.saveError.set(false), 4000);
+        flashSignal(this.saveError, 4000);
       },
     });
   }
- 
+
   onDiscardEstoque(): void {
-    this.discardChanges(); 
+    this.discardChanges();
     this.refreshEstoque();
   }
 
@@ -202,12 +170,4 @@ export class Dashboard {
     this.pendingChanges.set(new Map());
     this.editMode.set(false);
   }
-
-  ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
-
 }

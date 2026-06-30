@@ -25,9 +25,7 @@ export class EstoqueService {
     const requests = Array.from(changes.values()).map((change) => {
       const item = estoqueList.find((e) => e.posicao === change.posicao);
       if (!item) return null;
-      const id =item.posicao;
-      console.log(id);
-      return this.http.put(`${this.config.apiUrl}/api/estoque/${id}`, {
+      return this.http.put(`${this.config.apiUrl}/api/estoque/${item.posicao}`, {
         cor: change.newCor,
       });
     }).filter(Boolean);
