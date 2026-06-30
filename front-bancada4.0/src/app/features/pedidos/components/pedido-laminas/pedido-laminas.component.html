@@ -1,0 +1,42 @@
+<div class="flex flex-col gap-3 rounded-lg border border-gray-800 bg-gray-950/50 p-3" [formGroup]="form()">
+
+  <div class="flex items-start gap-6 flex-wrap">
+
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[0.6rem] font-mono font-semibold tracking-widest uppercase text-gray-600">Cor</span>
+      <app-color-swatch-group
+        [options]="corLaminaOpcoes"
+        [control]="form().get('corLamina')!"
+        [showLabel]="false"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[0.6rem] font-mono font-semibold tracking-widest uppercase text-gray-600">Padrão</span>
+      <div class="flex flex-wrap gap-1.5">
+        @for (opt of padraoOpcoes; track opt.valor) {
+          <button
+            type="button"
+            class="flex items-center gap-1 px-2 py-1 rounded-md border text-xs transition-all duration-150
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            [class]="form().get('padraoLamina')?.value == opt.valor
+              ? 'bg-gray-700 border-gray-500 text-white'
+              : 'bg-gray-900 border-gray-700 text-gray-500 hover:border-gray-600 hover:text-gray-300'"
+            [title]="opt.label"
+            (click)="form().get('padraoLamina')?.setValue(opt.valor)"
+          >
+            <i [class]="'fa-solid ' + opt.icon + ' text-xs'" aria-hidden="true"></i>
+            <span>{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <div class="flex flex-col gap-1.5">
+    <span class="text-[0.6rem] font-mono font-semibold tracking-widest uppercase text-gray-600">Posição</span>
+    <app-toggle-group [options]="posicaoOpcoes" [control]="form().get('posicaoLamina')!" [size]="'sm'" />
+  </div>
+
+</div>

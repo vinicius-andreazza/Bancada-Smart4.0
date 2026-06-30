@@ -1,0 +1,73 @@
+<div class="min-h-screen flex flex-col bg-gray-950 text-gray-100">
+
+  <app-navbar />
+
+  <div class="flex-1 px-4 py-6 md:px-8 md:py-10">
+    <main class="max-w-screen-xl mx-auto flex flex-col gap-6">
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <app-status-card-pedido [type]="'TOTAL'" [total]="contagens()?.total ?? 0" />
+        <app-status-card-pedido [type]="StatusPedido.PENDENTE" [total]="contagens()?.pendentes ?? 0" />
+        <app-status-card-pedido [type]="StatusPedido.PRODUCAO" [total]="contagens()?.producao ?? 0" />
+        <app-status-card-pedido [type]="StatusPedido.CONCLUIDO" [total]="contagens()?.concluidos ?? 0" />
+        <app-status-card-pedido [type]="StatusPedido.CANCELADO" [total]="contagens()?.cancelados ?? 0" />
+      </div>
+
+      <div class="rounded-xl border border-gray-800 bg-gray-900 shadow-sm">
+
+        <div class="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-gray-800">
+
+          <div class="flex items-center gap-2 text-sm font-semibold text-gray-100 tracking-wide">
+            <i class="fa-solid fa-table-list text-indigo-400 text-base" aria-hidden="true"></i>
+            Lista de Pedidos
+          </div>
+
+          <app-pedido-filtros
+            [filtroAtual]="filtroAtual()"
+            (filtroChange)="setFiltro($event)" />
+
+        </div>
+
+        <div class="p-4 md:p-0">
+          <app-pedido-table
+            [pedidos]="pedidos()"
+            (verDetalhe)="abrirDetalhe($event)"
+            (excluir)="abrirConfirmacaoExclusao($event)" />
+        </div>
+
+        <app-pagination
+          [pageIndex]="pageIndex()"
+          [totalPages]="totalPages()"
+          [totalElements]="totalElements()"
+          [first]="first()"
+          [last]="last()"
+          (pageChange)="irParaPagina($event)" />
+
+      </div>
+
+    </main>
+  </div>
+
+  <app-footer />
+
+</div>
+
+@if (pedidoSelecionado()) {
+  <app-pedido-detalhe-modal
+    [pedido]="pedidoSelecionado()!"
+    (fechar)="fecharDetalhe()"
+    (enviarProducao)="onEnviarProducao($event)"
+    (retirar)="onRetirar($event)"
+    (salvar)="onSalvarEdicao($event)"
+    (reiniciar)="onReiniciar($event)"
+  />
+}
+
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+  @if (saveSuccess()) {
+  <app-toast-notifications [text]="'Pedido atualizado com sucesso!'" [variant]="'success'" />
+  }
+  @if (saveError()) {
+  <app-toast-notifications [text]="'Houve um erro ao atualizar o pedido'" [variant]="'error'" />
+  }
+</div>

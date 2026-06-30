@@ -1,0 +1,130 @@
+<div class="relative flex flex-col w-full">
+
+  <!-- Barra principal -->
+  <div class="relative flex items-center w-full mx-auto px-3 sm:px-5 md:px-7 h-[60px] gap-3">
+
+    <div
+      class="absolute bottom-0 inset-x-0 h-px pointer-events-none
+             bg-linear-to-r from-transparent via-text-accent/25 to-transparent"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Logo (oculto no mobile quando o menu está aberto) -->
+    <a  class="group inline-flex items-center gap-3 px-2 py-1.5 rounded-md no-underline
+             transition-colors duration-200 hover:bg-panel mr-auto shrink-0
+             focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-2"
+      [class.max-md:hidden]="menuOpen()"
+      routerLink="/dashboard"
+      aria-label="Planta SMART 4.0 – Exxer, voltar ao Dashboard">
+      <span
+        class="flex items-center shrink-0"
+        style="filter: drop-shadow(0 0 8px rgba(91,192,248,0.5));"
+        aria-hidden="true"
+      >
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="17,2 30,9.5 30,24.5 17,32 4,24.5 4,9.5"
+            stroke="#5bc0f8" stroke-width="1.5" fill="none"/>
+          <polygon points="17,9 24,13 24,21 17,25 10,21 10,13"
+            stroke="#5bc0f8" stroke-width="1" fill="#06090f" opacity="0.7"/>
+          <circle cx="17" cy="17" r="3.5" fill="#5bc0f8"/>
+          <circle cx="17" cy="17" r="3.5" fill="#5bc0f8" opacity="0.4">
+            <animate attributeName="r"       values="3.5;5.5;3.5" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.4;0;0.4"   dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </span>
+
+      <span class="flex flex-col leading-none gap-px">
+        <span class="font-mono-tech text-[0.6rem] tracking-[0.2em] text-muted">PLANTA</span>
+        <span class="font-rajdhani text-lg font-bold tracking-wider text-bright">
+          SMART&nbsp;<span class="text-accent">4.0</span>
+        </span>
+      </span>
+
+      <span class="font-mono-tech text-sm text-rule mx-0.5 select-none hidden sm:inline" aria-hidden="true">//</span>
+    </a>
+
+    <!-- Nav desktop -->
+    @if (!minimal()) {
+      <nav class="hidden md:flex items-center h-full ml-6 lg:ml-10"
+           aria-label="Navegação principal">
+        <ul class="flex items-center h-full gap-1 list-none m-0 p-0" role="list">
+          @for (item of navItems; track item.route) {
+            <li class="flex items-center h-full">
+              <app-nav-link
+                [label]="item.label"
+                [route]="item.route"
+                [ariaLabel]="item.ariaLabel"
+              />
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+
+    <!-- Status badge (oculto no mobile quando o menu está aberto) -->
+    @if (showStatus()) {
+      <div class="shrink-0" [class.max-md:hidden]="menuOpen()">
+        <app-status-badge [status]="systemStatus()" />
+      </div>
+    }
+
+    <!-- Botão hambúrguer (vira X quando aberto; empurrado p/ direita quando o logo some) -->
+    @if (!minimal()) {
+      <button
+        class="md:hidden p-2 rounded-md text-muted hover:text-bright hover:bg-panel
+               transition-colors duration-200 shrink-0
+               focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-2"
+        [class.max-md:ml-auto]="menuOpen()"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="mobile-menu"
+        [attr.aria-label]="menuOpen() ? 'Fechar menu de navegação' : 'Abrir menu de navegação'"
+      >
+        <!-- Hambúrguer via CSS — sem @if dentro de SVG -->
+        <span class="flex flex-col gap-[5px] w-5">
+          <span
+            class="block h-px bg-current transition-all duration-200 origin-center"
+            [class.rotate-45]="menuOpen()"
+            [class.translate-y-[6px]]="menuOpen()"
+          ></span>
+          <span
+            class="block h-px bg-current transition-all duration-200"
+            [class.opacity-0]="menuOpen()"
+            [class.scale-x-0]="menuOpen()"
+          ></span>
+          <span
+            class="block h-px bg-current transition-all duration-200 origin-center"
+            [class.-rotate-45]="menuOpen()"
+            [class.-translate-y-[6px]]="menuOpen()"
+          ></span>
+        </span>
+      </button>
+    }
+
+  </div>
+
+  <!-- Menu mobile: em fluxo (empurra o conteúdo para baixo), fundo sólido -->
+  @if (!minimal() && menuOpen()) {
+    <div
+      id="mobile-menu"
+      class="md:hidden w-full bg-bg-card border-t border-border-subtle shadow-lg shadow-black/40"
+    >
+      <nav aria-label="Navegação mobile">
+        <ul class="flex flex-col list-none m-0 p-2" role="list">
+          @for (item of navItems; track item.route) {
+            <li>
+              <app-nav-link
+                [label]="item.label"
+                [route]="item.route"
+                [ariaLabel]="item.ariaLabel"
+                (click)="closeMenu()"
+              />
+            </li>
+          }
+        </ul>
+      </nav>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,79 @@
+<div class="flex flex-col min-h-screen">
+
+  <app-navbar></app-navbar>
+
+  <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
+
+    <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+      <h1 class="font-heading text-xl sm:text-2xl font-bold text-text-primary">Monitoramento</h1>
+
+      <div class="flex items-center gap-4">
+        <app-pedido-timer
+          [codPedido]="codPedidoAtual()"
+          [duracao]="duracao()"
+        ></app-pedido-timer>
+
+        <app-button (click)="abrirUltimoPedido()">Último Pedido</app-button>
+      </div>
+    </div>
+
+    @if (connectionStatus() === 'error') {
+      <app-toast-notifications
+        [text]="'Sem conexão com o sistema de monitoramento'"
+        [variant]="'error'"
+      ></app-toast-notifications>
+    }
+
+    @if (connectionStatus() === 'connecting') {
+      <app-toast-notifications
+        [text]="'Conectando ao sistema de monitoramento...'"
+        [variant]="'info'"
+      ></app-toast-notifications>
+    }
+
+    <div class="mt-4 bg-bg-card border border-border-subtle rounded-smart p-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+
+        <div class="flex flex-col gap-4">
+          <app-estoque-panel-clp [positions]="estoquePositions()"></app-estoque-panel-clp>
+          <app-expedicao-panel-clp [positions]="expedicaoPositions()"></app-expedicao-panel-clp>
+        </div>
+
+        <div class="w-full">
+          <app-bancada-overview [estacoes]="estacoes()"></app-bancada-overview>
+        </div>
+
+        <app-pedidos-producao-panel
+          [pedidos]="pedidosProducao()"
+          [carregando]="pedidosProducaoCarregando()"
+          [erro]="pedidosProducaoErro()"
+          [removendoId]="removendoId()"
+          (remover)="removerDaFila($event)"
+        ></app-pedidos-producao-panel>
+
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+      @for (estacaoStatus of estacoes(); track estacaoStatus.estacao) {
+        <app-estacao-card
+          [estacao]="estacaoStatus.estacao"
+          [status]="estacaoStatus.status"
+        ></app-estacao-card>
+      }
+    </div>
+
+  </main>
+
+  <app-footer></app-footer>
+
+</div>
+
+@if (ultimoPedidoModalOpen()) {
+  <app-ultimo-pedido-modal
+    [resumo]="ultimoPedido()"
+    [loading]="ultimoPedidoLoading()"
+    [error]="ultimoPedidoError()"
+    (fechar)="fecharUltimoPedido()"
+  ></app-ultimo-pedido-modal>
+}

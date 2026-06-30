@@ -1,0 +1,29 @@
+<div class="flex flex-col gap-6" [formGroup]="form()">
+
+  <div class="flex flex-col gap-4">
+    <app-section-header title="Bloco" [badge]="'Andar ' + form().get('andar')?.value" />
+
+    <div class="flex flex-col gap-2">
+      <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Cor do bloco</span>
+      <app-color-swatch-group [options]="corBlocoOpcoes" [control]="form().get('corBloco')!" />
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3" formArrayName="laminas">
+    @for (lamina of laminas.controls; track $index) {
+      <app-pedido-laminas [form]="$any(lamina)" />
+    }
+  </div>
+
+  <div class="flex items-center gap-3">
+    @if (laminas.length > 0) {
+      <app-button [variant]="'danger'" [size]="'sm'" [type]="'button'" (click)="removerLamina()">
+        Remover lâmina
+      </app-button>
+    }
+    <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="addLamina()">
+      Adicionar lâmina
+    </app-button>
+  </div>
+
+</div>

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AppsaApplication<appsa>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.smart.appsa.AppsaApplication",
+            "projectName": "appsa",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
