@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked } from '@angular/core';
 import { Navbar } from '../../../../layout/navbar/navbar.component';
 import { Footer } from '../../../../layout/footer/footer.component';
 import { ToastNotifications } from '../../../../shared/components/toast-notifications/toast-notifications.component';
@@ -9,6 +9,7 @@ import { PedidoTimerComponent } from '../../components/pedido-timer/pedido-timer
 import { UltimoPedidoModalComponent } from '../../components/ultimo-pedido-modal/ultimo-pedido-modal.component';
 import { EstoquePanelClpComponent } from '../../components/estoque-panel-clp/estoque-panel-clp.component';
 import { ExpedicaoPanelClpComponent } from '../../components/expedicao-panel-clp/expedicao-panel-clp.component';
+import { PedidosProducaoPanelComponent } from '../../components/pedidos-producao-panel/pedidos-producao-panel.component';
 import { MonitoramentoService } from '../../../../core/service/monitoramento.service';
 import { PedidoService } from '../../../../core/service/pedido.service';
 import { Estacao } from '../../../../core/models/enums/estacao.enum';
@@ -29,6 +30,7 @@ const ESTACOES_PADRAO: Estacao[] = [Estacao.ESTOQUE, Estacao.PROCESSO, Estacao.M
     UltimoPedidoModalComponent,
     EstoquePanelClpComponent,
     ExpedicaoPanelClpComponent,
+    PedidosProducaoPanelComponent,
   ],
   templateUrl: './monitoramento.component.html',
 })
@@ -55,6 +57,18 @@ export class Monitoramento implements OnInit, OnDestroy {
   readonly ultimoPedido          = signal<Pedido | null>(null);
   readonly ultimoPedidoLoading   = signal(false);
   readonly ultimoPedidoError     = signal(false);
+
+  readonly pedidosProducao           = signal<Pedido[]>([]);
+  readonly pedidosProducaoCarregando = signal(false);
+  readonly pedidosProducaoErro       = signal(false);
+  readonly removendoId               = signal<number | null>(null);
+
+  constructor() {
+    effect(() => {
+      this.codPedidoAtual();
+      untracked(() => this.carregarPedidosProducao());
+    });
+  }
 
   ngOnInit(): void {
     this.monitoramentoService.connect();
@@ -84,5 +98,31 @@ export class Monitoramento implements OnInit, OnDestroy {
 
   fecharUltimoPedido(): void {
     this.ultimoPedidoModalOpen.set(false);
+  }
+
+  removerDaFila(id: number): void {
+    this.removendoId.set(id);
+    this.pedidoService.removerDaFila(id).subscribe({
+      next: () => {
+        this.removendoId.set(null);
+        this.carregarPedidosProducao();
+      },
+      error: () => this.removendoId.set(null),
+    });
+  }
+
+  private carregarPedidosProducao(): void {
+    this.pedidosProducaoCarregando.set(true);
+    this.pedidosProducaoErro.set(false);
+    this.pedidoService.getPedidosEmProducao().subscribe({
+      next: (pedido) => {
+        this.pedidosProducao.set(pedido);
+        this.pedidosProducaoCarregando.set(false);
+      },
+      error: () => {
+        this.pedidosProducaoErro.set(true);
+        this.pedidosProducaoCarregando.set(false);
+      },
+    });
   }
 }
