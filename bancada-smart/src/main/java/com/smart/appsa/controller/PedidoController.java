@@ -20,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -96,6 +97,11 @@ public class PedidoController {
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponseDTO> updateToConcluido(@PathVariable Long id) {
         return ResponseEntity.ok(pedidoService.updateToConcluido(id));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<PedidoResponseDTO> patchPedido(@PathVariable Long id,@RequestBody PedidoRequestDTO pedidoRequestDTO) {
+        return ResponseEntity.ok(pedidoService.patch(id, pedidoRequestDTO));
     }
 
     @DeleteMapping("/{id}/fila")

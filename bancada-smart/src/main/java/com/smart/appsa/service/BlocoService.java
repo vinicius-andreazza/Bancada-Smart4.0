@@ -110,8 +110,8 @@ public class BlocoService {
         if (dto.andar() != null) {
             bloco.setAndar(dto.andar());
         }
-        if (!dto.laminas().isEmpty()) {
-            dto.laminas().forEach(l -> laminaService.patch(l));
+        if (dto.laminas()!=null && !dto.laminas().isEmpty()) {
+            dto.laminas().forEach(l -> {if(l.id()==null){laminaService.create(l, bloco);}else{laminaService.patch(l);}});
         }
 
         blocoRepository.save(bloco);

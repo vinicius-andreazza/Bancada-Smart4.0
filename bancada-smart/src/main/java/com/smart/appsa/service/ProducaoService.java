@@ -25,10 +25,12 @@ import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProducaoService {
 
     private final ExpedicaoPlc expedicaoPlc;
@@ -76,9 +78,6 @@ public class ProducaoService {
         pedido.getBlocos().forEach(b ->
                 eventPublisher.publishEvent(new EstoqueAtualizadoEvent(this, b.getPosEstoque(), 0)));
 
-        eventPublisher.publishEvent(
-                new ExpedicaoReservadaEvent(this, pedido.getPosExpedicao(), pedido.getCodPedido()));
-
         pedido.setStatus(StatusPedido.PRODUCAO);
         pedidoRepository.save(pedido);
 
@@ -95,8 +94,16 @@ public class ProducaoService {
         }
 
         pedidoService.updateToConcluido(pedido.getId());
+        eventPublisher.publishEvent(
+            new ExpedicaoReservadaEvent(this, pedido.getPosExpedicao(), pedido.getCodPedido()));
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.error("Erro no sleep ao concluir pedido ", e);
+        }
 
         resetStatusEstacao();
+
         eventPublisher.publishEvent(new IniciarPedidoEvent(this, null));
     }
 
@@ -116,13 +123,17 @@ public class ProducaoService {
         System.out.println("Cancelando/falhando produção do pedido " + codPedido + ". Motivo: " + motivo);
         pedido.setStatus(StatusPedido.CANCELADO);
         pedidoRepository.save(pedido);
-
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.error("Erro no sleep ao cancelar pedido ", e);
+        }
         eventPublisher.publishEvent(new IniciarPedidoEvent(this, null));
     }
 
     private boolean estacaoLivres() {
         return (!estoquePlc.isConcluidoOP() && !estoquePlc.isOcupado())
-                && (!processoPlc.isConcluidoOP())
+                && (!processoPlc.isConcluidoOP() && !processoPlc.isConcluidoOP())
                 && (!montagemPlc.isConcluidoOP() && !montagemPlc.isOcupado())
                 && (!expedicaoPlc.isConcluidoOP());
     }

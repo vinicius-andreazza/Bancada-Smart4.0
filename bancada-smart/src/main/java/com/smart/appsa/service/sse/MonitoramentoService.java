@@ -102,7 +102,7 @@ public class MonitoramentoService {
     }
 
     private String calculateDuracao(){
-        if(pedidoService.existsByCodigo(estoquePlc.getNumeroPedido())){
+        if(!pedidoService.existsByCodigo(estoquePlc.getNumeroPedido())){
             return "";
         }
         PedidoResponseDTO pedido = pedidoService.findByCodigo(estoquePlc.getNumeroPedido());
@@ -134,5 +134,7 @@ public class MonitoramentoService {
     private Pedido createPedido(int codPedido){
         return Pedido.builder().codPedido(codPedido).build();
     }
+
+    
 
 }

@@ -272,6 +272,7 @@ public class ExpedicaoComm {
             opAntiga = expedicaoPlc.getOpGuardado();
             producaoService.concluirProducao(expedicaoPlc.getOpGuardado());
         }
+
     }
 
     private void validarCancelamento() {
@@ -356,4 +357,5 @@ public class ExpedicaoComm {
     private PlcConnector getConnector() {
         return plcConnectionService.getConnection(expedicaoIp.getIp());
     }
+    
 }

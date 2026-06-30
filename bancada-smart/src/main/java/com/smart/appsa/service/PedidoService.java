@@ -145,8 +145,11 @@ public class PedidoService {
         }
         pedidoExistente.setStatus(StatusPedido.CONCLUIDO);
         pedidoExistente.setDataEntrada(LocalDateTime.now());
-        expedicaoService.assignPedido(pedidoExistente.getId());
+
         assignPosPedidoInExpedicao(pedidoExistente);
+
+        expedicaoService.assignPedido(pedidoExistente.getId());
+        
 
         pedidoRepository.save(pedidoExistente);
 
@@ -184,7 +187,7 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
 
         validateUpdate(dto);
-
+        System.out.println(dto);
         if (dto.codPedido() != null) {
             pedidoExistente.setCodPedido(dto.codPedido());
         }
@@ -200,8 +203,8 @@ public class PedidoService {
         if (dto.dataEntrada() != null) {
             pedidoExistente.setDataEntrada(dto.dataEntrada());
         }
-        if(!dto.blocos().isEmpty()){
-            dto.blocos().forEach(b -> blocoService.patch(b));
+        if(dto.blocos()!=null&&!dto.blocos().isEmpty()){
+            dto.blocos().forEach(b -> {if(b.id()==null){blocoService.create(b);}else{blocoService.patch(b);}});
         }
 
         return PedidoMapper.toResponse(pedidoRepository.save(pedidoExistente));
@@ -270,7 +273,7 @@ public class PedidoService {
     }
 
     private void validateUpdate(PedidoRequestDTO dto){
-        if(dto.blocos().isEmpty()){
+        if(dto.blocos() == null){
             return;
         }
         if (dto.tipoPedido().getValue() != dto.blocos().size()) {
