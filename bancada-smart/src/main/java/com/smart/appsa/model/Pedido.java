@@ -17,12 +17,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Data
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,7 +31,7 @@ import lombok.Setter;
 @Table(name = "pedido", check = {
     @CheckConstraint(
         name = "vl_status_pedido",
-        constraint = "vl_status IN (1, 2, 3)"
+        constraint = "vl_status IN (1, 2, 3, 4)"
     ),
     @CheckConstraint(
         name = "tp_pedido",
@@ -51,7 +50,7 @@ public class Pedido {
     private Long id;
 
     @Column(name = "cod_pedido", nullable = false)
-    private String codPedido;
+    private Integer codPedido;
 
     @Column(name = "dt_criacao", nullable = false)
     private LocalDateTime dataCriacao;
@@ -64,6 +63,9 @@ public class Pedido {
 
     @Column(name = "vl_tampa", nullable = false)
     private CorTampa corTampa;
+
+    @Column(name = "dt_inicio", nullable = true)
+    private LocalDateTime dataInicio;
 
     @Column(name = "dt_entrada", nullable = true)
     private LocalDateTime dataEntrada;

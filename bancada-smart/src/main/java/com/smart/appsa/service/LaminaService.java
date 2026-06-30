@@ -3,14 +3,17 @@ package com.smart.appsa.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.exception.DuplicatedLaminaPosition;
 import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.repository.BlocoRepository;
 import com.smart.appsa.repository.LaminaRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,72 +23,82 @@ public class LaminaService {
     private final LaminaRepository laminaRepository;
     private final BlocoRepository blocoRepository;
 
-
-    public Lamina buscarLaminaPorId(Long id) {
-        return laminaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lâmina não encontrada com id: " + id));
-    }
-
-    public List<Lamina> listarLaminasPorBloco(Long blocoId) {
-        Bloco bloco = buscarBloco(blocoId);
-        return laminaRepository.findByBloco(bloco);
-    }
-
-    public LaminaDTO criarLamina(LaminaDTO laminaDTO, Bloco bloco) {
-        System.out.println(laminaDTO);
+    @Transactional
+    public LaminaDTO create(LaminaDTO laminaDTO, Bloco bloco) {
         Lamina lamina = LaminaMapper.toEntity(laminaDTO);
 
-        validarLamina(lamina);
+        validateLamina(lamina);
 
-        boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
-                .anyMatch(l -> l.getPosicaoLamina() == lamina.getPosicaoLamina());
-        if (posicaoOcupada) {
-            throw new IllegalArgumentException(
-                    "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");
-        }
+        validatePositionLamina(lamina, bloco);
 
         lamina.setBloco(bloco);
+        
         return LaminaMapper.toDto(laminaRepository.save(lamina));
     }
 
-    public Lamina atualizarLamina(Long id, Lamina lamina) {
-        validarLamina(lamina);
-
-        Lamina laminaExistente = buscarLaminaPorId(id);
-        Bloco bloco = buscarBloco(lamina.getBloco().getId());
-
-        boolean posicaoAlterada = laminaExistente.getPosicaoLamina() != lamina.getPosicaoLamina();
-        if (posicaoAlterada) {
-            boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
-                    .anyMatch(l -> !l.getId().equals(id) && l.getPosicaoLamina() == lamina.getPosicaoLamina());
-            if (posicaoOcupada) {
-                throw new IllegalArgumentException(
-                        "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");
-            }
-        }
-
-        laminaExistente.setCorLamina(lamina.getCorLamina());
-        laminaExistente.setPadraoLamina(lamina.getPadraoLamina());
-        laminaExistente.setPosicaoLamina(lamina.getPosicaoLamina());
-        laminaExistente.setBloco(bloco);
-
-        return laminaRepository.save(laminaExistente);
+    public List<Lamina> findByBloco(Long blocoId) {
+        Bloco bloco = blocoRepository.findById(blocoId)
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não encontrado com id: " + blocoId));
+        return laminaRepository.findByBloco(bloco);
     }
 
-    public void deletarLamina(Long id) {
-        Lamina lamina = buscarLaminaPorId(id);
+    public LaminaDTO findById(Long id) {
+        return LaminaMapper.toDto(laminaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lâmina não encontrada com id: " + id)));
+    }
+
+    private Lamina findEntityById(Long id) {
+        return laminaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Lamina not found. id=" + id));
+    }
+
+    @Transactional
+    public LaminaDTO put(LaminaDTO dto) {
+        Lamina lamina = laminaRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Lamina não existe"));
+
+        validateLamina(lamina);
+
+        lamina.setCorLamina(dto.corLamina());
+        lamina.setPosicaoLamina(dto.posicaoLamina());
+        lamina.setPadraoLamina(dto.padraoLamina());
+
+        laminaRepository.save(lamina);
+        
+        return LaminaMapper.toDto(lamina);
+    }
+
+    @Transactional
+    public LaminaDTO patch(LaminaDTO dto) {
+        Lamina lamina = laminaRepository.findById(dto.id()).orElseThrow(() -> new EntityNotFoundException("Lamina não existe"));
+
+        
+
+        if (dto.corLamina() != null) {
+            lamina.setCorLamina(dto.corLamina());
+        }
+        if (dto.posicaoLamina() != null) {
+
+            validatePositionLamina(dto, lamina.getBloco());
+
+            lamina.setPosicaoLamina(dto.posicaoLamina());
+        }
+        if (dto.padraoLamina() != null) {
+            lamina.setPadraoLamina(dto.padraoLamina());
+        }
+
+        laminaRepository.save(lamina);
+
+        return LaminaMapper.toDto(lamina);
+    }
+
+
+    @Transactional
+    public void delete(Long id) {
+        Lamina lamina = findEntityById(id);
         laminaRepository.delete(lamina);
     }
 
-    // -------------------------------------------------------------------------
-    // Métodos auxiliares
-    // -------------------------------------------------------------------------
-    private Bloco buscarBloco(Long blocoId) {
-        return blocoRepository.findById(blocoId)
-                .orElseThrow(() -> new RuntimeException("Bloco não encontrado com id: " + blocoId));
-    }
-
-    private void validarLamina(Lamina lamina) {
+    private void validateLamina(Lamina lamina) {
         if (lamina.getCorLamina() == null) {
             throw new IllegalArgumentException("A cor da lâmina é obrigatória.");
         }
@@ -94,6 +107,24 @@ public class LaminaService {
         }
         if (lamina.getPosicaoLamina() == null) {
             throw new IllegalArgumentException("A posição da lâmina é obrigatória.");
+        }
+    }
+
+    private void validatePositionLamina(Lamina lamina, Bloco bloco){
+        boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
+                .anyMatch(l -> l.getPosicaoLamina().equals(lamina.getPosicaoLamina()));
+        if (posicaoOcupada) {
+            throw new DuplicatedLaminaPosition(
+                    "Já existe uma lâmina na posição " + lamina.getPosicaoLamina() + " para este bloco.");
+        }
+    }
+
+    private void validatePositionLamina(LaminaDTO lamina, Bloco bloco){
+        boolean posicaoOcupada = laminaRepository.findByBloco(bloco).stream()
+                .anyMatch(l -> l.getPosicaoLamina().equals(lamina.posicaoLamina()));
+        if (posicaoOcupada) {
+            throw new DuplicatedLaminaPosition(
+                    "Já existe uma lâmina na posição " + lamina.posicaoLamina() + " para este bloco.");
         }
     }
 }

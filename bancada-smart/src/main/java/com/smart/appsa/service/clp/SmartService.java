@@ -1,0 +1,128 @@
+package com.smart.appsa.service.clp;
+
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import com.smart.appsa.clpcomm.PlcConnectionService;
+import com.smart.appsa.clpcomm.PlcConnector;
+import com.smart.appsa.config.ipconfig.EstoqueIp;
+import com.smart.appsa.event.IniciarPedidoEvent;
+import com.smart.appsa.exception.SeletorTampaException;
+import com.smart.appsa.mapper.clp.ProducaoPlcMapper;
+import com.smart.appsa.model.Pedido;
+import com.smart.appsa.service.ProducaoService;
+import com.smart.appsa.service.esp.SeletorTampaService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class SmartService {
+
+    private final SeletorTampaService seletorTampaService;
+
+    private final PlcConnectionService plcConnectionService;
+
+    private final ProducaoService producaoService;
+
+    private final EstoqueIp estoqueIp;
+
+
+    @Async("plcIniciarPedido")
+    @EventListener
+    public void enviarParaProducao(IniciarPedidoEvent pedidoEvent) {
+        Pedido pedido = producaoService.iniciarProducao();
+
+        if(pedido==null){
+            return;
+        }
+
+        byte[] buffer = ProducaoPlcMapper.mapToBytes(pedido);
+
+        printHex(buffer);
+
+        try {
+            writeDataInPlc(pedido, buffer);
+        } catch (RuntimeException e) {
+            producaoService.cancelarOuFalharProducao(pedido.getCodPedido(),
+                    "falha no envio à bancada: " + e.getMessage());
+            
+            throw e;
+        }
+    }
+    
+    public void printHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        log.info("--- BLOCO DE BYTES (HEXADECIMAL) ---");
+
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(String.format("%02X ", bytes[i]));
+
+            if ((i + 1) % 10 == 0) {
+                sb.append("\n");
+            }
+        }
+
+        log.info(sb.toString());
+        log.info("------------------------------------");
+    }
+
+    private void writeDataInPlc(Pedido pedido, byte[] buffer) {
+        PlcConnector connector = plcConnectionService.getConnection(estoqueIp.getIp());
+
+        if (connector == null) {
+            throw new IllegalStateException("Sem conexão com o CLP de estoque: " + estoqueIp.getIp());
+        }
+
+        try {
+            connector.writeBlock(9, 2, 60, buffer);
+            log.info("Dados enviados para o CLP: {}", estoqueIp.getIp());
+
+            seletorTampaService.updateTampa(pedido.getCorTampa().getValue());
+
+            iniciarExecucaoPedido(estoqueIp.getIp());
+
+        } catch (SeletorTampaException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Erro ao enviar dados para o CLP: " + ex.getMessage(), ex);
+        }
+    }
+
+    
+
+    public void iniciarExecucaoPedido(String ipClp) {
+        PlcConnector plcConnector = plcConnectionService.getConnection(ipClp);
+        if (plcConnector == null) {
+            return;
+        }
+
+        try {
+
+            resetFlags(ipClp);
+
+            log.info("SETAR FLAG INICIAR PEDIDO");
+            plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("TRUE"));
+
+            Thread.sleep(800);
+
+            log.info("RESETAR FLAG INICIAR PEDIDO");
+            plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void resetFlags(String ipClp) throws Exception {
+        PlcConnector plcConnector = plcConnectionService.getConnection(ipClp);
+        plcConnector.writeBit(9, 0, 0, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 64, 0, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 64, 1, Boolean.parseBoolean("FALSE"));
+        plcConnector.writeBit(9, 62, 0, Boolean.parseBoolean("FALSE"));
+    }
+
+}

@@ -3,10 +3,12 @@ package com.smart.appsa.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.smart.appsa.dto.BlocoDTO;
 import com.smart.appsa.dto.LaminaDTO;
 import com.smart.appsa.mapper.BlocoMapper;
+import com.smart.appsa.mapper.EstoqueMapper;
 import com.smart.appsa.mapper.LaminaMapper;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Estoque;
@@ -16,7 +18,6 @@ import com.smart.appsa.repository.BlocoRepository;
 import com.smart.appsa.repository.PedidoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,29 +30,26 @@ public class BlocoService {
 
     private final EstoqueService estoqueService;
 
-
-
+    @Transactional
     public BlocoDTO create(BlocoDTO dto) {
-        validarDTO(dto);
+        validateDTO(dto);
 
         Bloco bloco = BlocoMapper.toEntity(dto);
-        
-        Pedido pedido = resolverPedido(dto.pedido().getId());
+
+        Pedido pedido = findPedidoById(dto.pedido().getId());
 
         bloco.setPedido(pedido);
 
-        verificarPosicao(bloco);
+        bloco.setPosEstoque(null);
 
         blocoRepository.save(bloco);
-        
-        atualizarBlocoDasLaminas(bloco);
 
-        criarLaminas(bloco.getLaminas(), bloco);
+        updateLaminasInBloco(bloco);
+
+        createLaminas(bloco);
 
         return BlocoMapper.toDto(bloco);
     }
-
-
 
     public List<BlocoDTO> findAll() {
         return blocoRepository.findAll()
@@ -66,96 +64,111 @@ public class BlocoService {
 
     public List<BlocoDTO> findByPedido(Long idPedido) {
         Pedido pedido = pedidoRepository.findById(idPedido)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + idPedido));
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não existe"));
+
         return blocoRepository.findByPedido(pedido)
                 .stream()
                 .map(BlocoMapper::toDto)
                 .toList();
     }
 
+     @Transactional
+    public BlocoDTO put(BlocoDTO dto) {
+        validateDTO(dto);
 
-    @Transactional
-    public BlocoDTO put(Long id, BlocoDTO dto) {
-        validarDTO(dto);
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
 
-        Bloco blocoExistente = findEntityById(id);
-        Pedido pedido = resolverPedido(dto.pedido().getId());
+        bloco.setCorBloco(dto.corBloco());
+        bloco.setPosEstoque(dto.posEstoque());
+        bloco.setPedido(dto.pedido());
+        bloco.setAndar(dto.andar());
+        dto.laminas().forEach(l -> laminaService.put(l));
 
-        blocoExistente.setVl_cor(dto.vl_cor());
-        blocoExistente.setPedido(pedido);
-        // posEstoque: TO DO — atribuir conforme cor do bloco
-
-        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
     }
 
-
-
     @Transactional
-    public BlocoDTO patch(Long id, BlocoDTO dto) {
-        Bloco blocoExistente = findEntityById(id);
-
-        if (dto.vl_cor() != null) {
-            blocoExistente.setVl_cor(dto.vl_cor());
+    public BlocoDTO patch(BlocoDTO dto) {
+        if (dto.laminas().size() > 3) {
+            throw new IllegalArgumentException("Número inválido de laminas");
         }
 
-        if (dto.pedido() != null && dto.pedido().getId() != null) {
-            blocoExistente.setPedido(resolverPedido(dto.pedido().getId()));
+        Bloco bloco = blocoRepository.findById(dto.id())
+                .orElseThrow(() -> new EntityNotFoundException("Bloco não existe"));
+
+        if (dto.corBloco() != null) {
+            bloco.setCorBloco(dto.corBloco());
+        }
+        if (dto.posEstoque() != null) {
+            bloco.setPosEstoque(dto.posEstoque());
+        }
+        if (dto.pedido() != null) {
+            bloco.setPedido(dto.pedido());
+        }
+        if (dto.andar() != null) {
+            bloco.setAndar(dto.andar());
+        }
+        if (dto.laminas()!=null && !dto.laminas().isEmpty()) {
+            dto.laminas().forEach(l -> {if(l.id()==null){laminaService.create(l, bloco);}else{laminaService.patch(l);}});
         }
 
-        // posEstoque: TO DO — atribuir conforme cor do bloco
-
-        return BlocoMapper.toDto(blocoRepository.save(blocoExistente));
+        blocoRepository.save(bloco);
+        return BlocoMapper.toDto(bloco);
     }
-
-
 
     @Transactional
     public void delete(Long id) {
         blocoRepository.delete(findEntityById(id));
     }
 
+    private void createLaminas(Bloco bloco) {
+        List<Lamina> laminas = bloco.getLaminas();
 
-    private List<Lamina> criarLaminas(List<Lamina> laminas, Bloco bloco){
-        if(laminas == null){
-            return null;
+        if (laminas == null || laminas.isEmpty()) {
+            return;
         }
-        List<LaminaDTO> blocoDTOs = laminas.stream().map(l -> LaminaMapper.toDto(l)).map(l -> laminaService.criarLamina(l, bloco)).toList();
-        return blocoDTOs.stream().map(b -> LaminaMapper.toEntity(b)).toList();
-    }
 
+        laminas.stream().map(LaminaMapper::toDto).map(l -> laminaService.create(l, bloco))
+                .toList();
+    }
 
     private Bloco findEntityById(Long id) {
         return blocoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Bloco não encontrado com id: " + id));
     }
 
-    private Pedido resolverPedido(Long idPedido) {
+    private Pedido findPedidoById(Long idPedido) {
         return pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + idPedido));
     }
 
-    private void validarDTO(BlocoDTO dto) {
-        if (dto.vl_cor() == null) {
+    private void validateDTO(BlocoDTO dto) {
+        if (dto.corBloco() == null) {
             throw new IllegalArgumentException("A cor do bloco é obrigatória.");
         }
         if (dto.pedido() == null || dto.pedido().getId() == null) {
             throw new IllegalArgumentException("O pedido do bloco é obrigatório.");
         }
-        if(dto.laminas().size()>3 && dto.laminas().size()<-1){
+        if (dto.laminas().size() > 3) {
             throw new IllegalArgumentException("Número inválido de laminas");
         }
     }
 
-    private void atualizarBlocoDasLaminas(Bloco bloco){
-        if(bloco.getLaminas() != null){
+    private void updateLaminasInBloco(Bloco bloco) {
+        if (bloco.getLaminas() != null) {
             bloco.getLaminas().forEach(l -> l.setBloco(bloco));
         }
     }
+    @Transactional
+    public void assignEstoquePosition(Bloco bloco) {
+        Estoque pos = estoqueService.findFirstByCor(bloco.getCorBloco().getValue());
 
-    private void verificarPosicao(Bloco bloco){
-        Estoque pos = estoqueService.findFirstByCor(bloco.getVl_cor().getValue());
         bloco.setPosEstoque(pos.getPosicao());
         pos.setCor(0);
-        estoqueService.put(pos.getId(), pos);
+        
+        estoqueService.put(pos.getPosicao(), EstoqueMapper.toDto(pos));
+
     }
 }

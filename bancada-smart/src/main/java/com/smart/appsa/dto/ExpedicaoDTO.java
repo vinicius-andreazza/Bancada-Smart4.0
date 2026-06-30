@@ -1,6 +1,6 @@
 package com.smart.appsa.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.smart.appsa.dto.response.PedidoResponseDTO;
 
 import lombok.Builder;
 
@@ -8,6 +8,5 @@ import lombok.Builder;
 public record ExpedicaoDTO (
     Long id,
     Integer posicao,
-    @JsonIgnore
-    PedidoRequestDTO pedido
+    PedidoResponseDTO pedido
 ){}

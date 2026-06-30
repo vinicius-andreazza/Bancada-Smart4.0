@@ -9,17 +9,19 @@ import com.smart.appsa.model.enums.CorBloco;
 import com.smart.appsa.repository.EstoqueRepository;
 import com.smart.appsa.repository.ExpedicaoRepository;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private EstoqueRepository repository;
-    @Autowired
-    private ExpedicaoRepository expedicaoRepository;
+    private final EstoqueRepository repository;
+
+    private final ExpedicaoRepository expedicaoRepository;
+
 
     @Override
     public void run(String... args) throws Exception {
