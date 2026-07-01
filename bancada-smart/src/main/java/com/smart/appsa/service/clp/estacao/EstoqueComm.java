@@ -97,7 +97,7 @@ public class EstoqueComm {
         if (estoquePlc.isPedirPosicao() && !estoquePlc.isOcupado()) {
 
             int posEstoqueLivre = estoqueService.findFirstByCor(0).getPosicao();
-
+            log.info("Estoque livre: "+posEstoqueLivre);
             if (posEstoqueLivre > 0) {
 
                 try {

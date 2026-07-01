@@ -2,9 +2,12 @@ package com.smart.appsa.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.smart.appsa.dto.ExpedicaoDTO;
+import com.smart.appsa.event.ExpedicaoLiberadaEvent;
+import com.smart.appsa.event.IniciarPedidoEvent;
 import com.smart.appsa.mapper.ExpedicaoMapper;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
@@ -20,6 +23,7 @@ public class ExpedicaoService {
 
     private final ExpedicaoRepository expedicaoRepository;
     private final PedidoRepository pedidoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Expedicao findById(Long id) {
         return expedicaoRepository.findById(id)
@@ -74,6 +78,7 @@ public class ExpedicaoService {
         releasePedido(expedicao);
 
         expedicao.setPedido(null);
+        eventPublisher.publishEvent(new ExpedicaoLiberadaEvent(this, expedicao.getPosicao()));
         return expedicaoRepository.save(expedicao);
     }
 

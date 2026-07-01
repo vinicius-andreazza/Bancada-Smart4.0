@@ -60,6 +60,7 @@ public class ProcessoComm {
         validarOperacaoPelasFlags();
         validarInicioDaOperacao();
         validarFinalizacaoDaOperacao();
+        validarEmOperacao();
     }
 
     private void validarOperacaoPelasFlags() {
@@ -105,8 +106,20 @@ public class ProcessoComm {
         }
     }
 
+    private void validarEmOperacao(){
+        if (processoPlc.isOcupado()) {
+            updateStatusProducao();
+        }
+    }
+
     private void updateStatusConcluido() {
         processoPlc.setConcluidoOP(true);
+        processoPlc.setEmProducao(false);
+    }
+
+    private void updateStatusProducao(){
+        processoPlc.setConcluidoOP(false);
+        processoPlc.setEmProducao(true);
     }
 
     private PlcConnector getConnector() {
