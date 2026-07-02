@@ -5,12 +5,6 @@
  
   <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
  
-    <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
-      <div class="flex items-center gap-3">
-        <app-refresh-timer [seconds]="refreshCountdown()"></app-refresh-timer>
-      </div>
-    </div>
- 
     @if (saveSuccess()) {
       <app-toast-notifications [text]="'Estoque atualizado com sucesso!'" [variant]="'success'"></app-toast-notifications>
     }
@@ -40,8 +34,7 @@
       ></app-estoque-panel>
  
       <app-expedicao-panel
-        [positions]="expedicaoPositions()"
-        (refresh)="refreshExpedicao()">
+        [positions]="expedicaoPositions()">
       </app-expedicao-panel>
  
     </div>
