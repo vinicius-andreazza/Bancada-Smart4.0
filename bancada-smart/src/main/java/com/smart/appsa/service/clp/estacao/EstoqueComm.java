@@ -3,6 +3,7 @@ package com.smart.appsa.service.clp.estacao;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -158,7 +159,6 @@ public class EstoqueComm {
             try {
                 getConnector().writeByte(DB_ESTOQUE, offset, (byte) estoquePlc.getCorGuardarEstoque());
                 estoqueService.addPosition(estoquePlc.getPosicaoEstoque(), estoquePlc.getCorGuardarEstoque());
-
             } catch (Exception e) {
                 log.error("Tentativa de adição na posição {}", estoquePlc.getPosicaoEstoque(), e);
             }
@@ -237,6 +237,7 @@ public class EstoqueComm {
 
     @Async("plcEstoqueWriteExecutor")
     @EventListener
+    @Order(1)
     public void onEstoqueAtualizado(EstoqueAtualizadoEvent event) {
         PlcConnector connector = getConnector();
         if (connector == null || !connector.isConnected())

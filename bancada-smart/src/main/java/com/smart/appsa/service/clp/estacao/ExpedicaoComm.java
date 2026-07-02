@@ -3,6 +3,7 @@ package com.smart.appsa.service.clp.estacao;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -286,6 +287,7 @@ public class ExpedicaoComm {
 
     @Async("plcExpedicaoWriteExecutor")
     @EventListener
+    @Order(1)
     public void onExpedicaoReservada(ExpedicaoReservadaEvent event) {
         PlcConnector connector = getConnector();
         if (connector == null || !connector.isConnected()) {
@@ -309,6 +311,7 @@ public class ExpedicaoComm {
 
     @Async("plcExpedicaoWriteExecutor")
     @EventListener
+    @Order(1)
     public void onExpedicaoLiberada(ExpedicaoLiberadaEvent event) {
         PlcConnector connector = getConnector();
         if (connector == null || !connector.isConnected())
