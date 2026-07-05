@@ -10,6 +10,7 @@ export interface Pedido {
     status: StatusPedido,
     tipoPedido: TipoPedido,
     corTampa: CorTampa,
+    dataInicio: string | null,
     dataEntrada: string | null,
     idExpedicao: number,
     blocos: Bloco[]

@@ -13,6 +13,7 @@ import { ColorSwatchGroupComponent, ColorSwatchOption } from '../../../../shared
 })
 export class PedidoCard {
   form = input.required<FormGroup>();
+  mostrarCodigo = input<boolean>(false);
 
   get blocos(): FormGroup[] {
     return (this.form().get('blocos') as FormArray).controls as FormGroup[];

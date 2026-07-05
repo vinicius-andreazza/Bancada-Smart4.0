@@ -8,7 +8,15 @@ import { StatusPedido } from "../../../../core/models/enums/statuspedido.enum";
 import { PedidoDetalheBlocoComponent } from "./pedido-detalhe-bloco/pedido-detalhe-bloco.component";
 import { PedidoCard } from "../pedido-card/pedido-card.component";
 import { Pedido } from "../../../../core/models/pedido.model";
-import { STATUS_LABEL, TIPO_LABEL, TAMPA_LABEL } from "../../shared/utils/pedido-labels";
+import {
+  STATUS_LABEL,
+  STATUS_BADGE_CLASS,
+  STATUS_ICON,
+  TIPO_LABEL,
+  TIPO_BADGE_CLASS,
+  TAMPA_LABEL,
+} from "../../shared/utils/pedido-labels";
+import { formatarDataHora, formatarDuracao } from "../../shared/utils/pedido-datas";
 import { criarBlocoForm, criarBlocoVazio } from "../../shared/pedido-form.factory";
 import { Pedido3dPreviewComponent } from "../pedido-3d-preview/pedido-3d-preview.component";
 import {
@@ -21,13 +29,6 @@ import {
   PosicaoLamina as PosicaoLaminaViewer,
   CorTampa as CorTampaViewer,
 } from "../pedido-3d-preview/bloco-3d-viewer.component";
-
-const STATUS_BADGE_CLASS: Record<StatusPedido, string> = {
-  [StatusPedido.PENDENTE]:  'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-  [StatusPedido.PRODUCAO]:  'bg-blue-500/10  text-blue-400  border border-blue-500/20',
-  [StatusPedido.CONCLUIDO]: 'bg-green-500/10 text-green-400 border border-green-500/20',
-  [StatusPedido.CANCELADO]: 'bg-red-500/10   text-red-400   border border-red-500/20',
-};
 
 interface LaminaFormValue {
   id?: number | null;
@@ -65,7 +66,7 @@ export class PedidoDetalheModalComponent {
   readonly pedido         = input.required<Pedido>();
   readonly fechar         = output<void>();
   readonly enviarProducao = output<Pedido>();
-  readonly retirar        = output<Pedido>();
+  readonly refazer        = output<Pedido>();
   readonly salvar         = output<Pedido>();
   readonly reiniciar      = output<Pedido>();
 
@@ -78,12 +79,23 @@ export class PedidoDetalheModalComponent {
 
   protected readonly statusLabel      = computed(() => STATUS_LABEL[this.pedido().status]);
   protected readonly statusBadgeClass = computed(() => STATUS_BADGE_CLASS[this.pedido().status]);
+  protected readonly statusIcon       = computed(() => STATUS_ICON[this.pedido().status]);
 
-  protected readonly metaInfo = computed(() => [
-    { label: 'Tipo',  value: TIPO_LABEL[this.pedido().tipoPedido]  },
-    { label: 'Tampa', value: TAMPA_LABEL[this.pedido().corTampa]   },
-    { label: 'Data',  value: this.pedido().dataCriacao             },
-  ]);
+  protected readonly metaInfo = computed<
+    { label: string; icon: string; value: string; badgeClass?: string }[]
+  >(() => {
+    const p = this.pedido();
+    const duracao = formatarDuracao(p.dataInicio, p.dataEntrada);
+    const producao = duracao ?? (p.status === StatusPedido.PRODUCAO ? 'Em andamento' : '—');
+
+    return [
+      { label: 'Tipo',      icon: 'fa-solid fa-layer-group',   value: TIPO_LABEL[p.tipoPedido], badgeClass: TIPO_BADGE_CLASS[p.tipoPedido] },
+      { label: 'Tampa',     icon: 'fa-solid fa-fill-drip',     value: TAMPA_LABEL[p.corTampa]      },
+      { label: 'Criação',   icon: 'fa-solid fa-calendar-plus', value: formatarDataHora(p.dataCriacao) },
+      { label: 'Produção',  icon: 'fa-solid fa-stopwatch',     value: producao                     },
+      { label: 'Conclusão', icon: 'fa-solid fa-flag-checkered', value: formatarDataHora(p.dataEntrada) },
+    ];
+  });
 
   protected readonly pedidoPreviewConfig = computed<PedidoPreviewConfig>(() => {
     const p = this.pedido();

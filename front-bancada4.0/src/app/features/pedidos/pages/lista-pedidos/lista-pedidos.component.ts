@@ -104,8 +104,18 @@ export class ListaPedidos implements OnInit {
       .subscribe((contagens) => this.contagens.set(contagens));
   }
 
-  onRetirar(_pedido: Pedido): void {
-    
+  onRefazer(pedido: Pedido): void {
+    this.pedidoService.remakePedido(pedido.codPedido)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.carregarPagina();
+          this.carregarContagens();
+          this.fecharDetalhe();
+          flashSignal(this.saveSuccess, 2000);
+        },
+        error: () => flashSignal(this.saveError, 3000),
+      });
   }
 
   onReiniciar(pedido: Pedido): void {
