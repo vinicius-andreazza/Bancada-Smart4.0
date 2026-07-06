@@ -4,8 +4,10 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 
 import {
-  provideHttpClient
+  provideHttpClient,
+  withInterceptors,
 } from '@angular/common/http';
+import { conexaoInterceptor } from './core/interceptors/conexao.interceptor';
 
 import { ConfigService } from './core/service/config.service';
 import { ConexaoService } from './core/service/conexao.service';
@@ -14,7 +16,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([conexaoInterceptor])),
     provideAppInitializer(async () => {
       // inject() precisa ser chamado de forma síncrona, antes de qualquer await.
       const config = inject(ConfigService);
