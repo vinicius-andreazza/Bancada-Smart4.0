@@ -70,6 +70,7 @@ export class ConexaoService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bancada));
     } catch {
+      // storage indisponível (ex.: modo privado): segue sem persistir
     }
   }
 }

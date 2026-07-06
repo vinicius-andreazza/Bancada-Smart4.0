@@ -23,11 +23,6 @@ import {
   PedidoPreviewConfig,
   BlocoConfig,
   LaminaConfig,
-  CorBloco as CorBlocoViewer,
-  CorLamina as CorLaminaViewer,
-  PadraoLamina as PadraoLaminaViewer,
-  PosicaoLamina as PosicaoLaminaViewer,
-  CorTampa as CorTampaViewer,
 } from "../pedido-3d-preview/bloco-3d-viewer.component";
 
 interface LaminaFormValue {
@@ -101,16 +96,16 @@ export class PedidoDetalheModalComponent {
     const p = this.pedido();
     const blocos: BlocoConfig[] = p.blocos.map(b => ({
       andar:    b.andar,
-      corBloco: b.corBloco as unknown as CorBlocoViewer,
+      corBloco: b.corBloco,
       laminas:  b.laminas.map((l): LaminaConfig => ({
-        corLamina:     l.corLamina     as unknown as CorLaminaViewer,
-        padraoLamina:  l.padraoLamina  as unknown as PadraoLaminaViewer,
-        posicaoLamina: l.posicaoLamina as unknown as PosicaoLaminaViewer,
+        corLamina:     l.corLamina,
+        padraoLamina:  l.padraoLamina,
+        posicaoLamina: l.posicaoLamina,
       })),
     }));
     return {
       blocos,
-      corTampa: p.corTampa as unknown as CorTampaViewer,
+      corTampa: p.corTampa,
     };
   });
 

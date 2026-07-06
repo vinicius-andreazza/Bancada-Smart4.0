@@ -13,6 +13,7 @@ describe('CellDetailModel', () => {
 
     fixture = TestBed.createComponent(CellDetailModel);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('opened', false);
     await fixture.whenStable();
   });
 

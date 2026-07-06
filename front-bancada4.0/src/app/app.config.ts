@@ -24,6 +24,10 @@ export const appConfig: ApplicationConfig = {
       // Carrega o apiUrl primeiro (connect depende dele), depois tenta reconectar
       // com a config salva no localStorage (best-effort: não bloqueia o boot se falhar).
       await config.loadConfig();
+      // Sem apiUrl não há o que reconectar; o App exibe a tela de erro de configuração.
+      if (config.loadFailed()) {
+        return;
+      }
       await conexao.tryReconnect();
     })
   ]

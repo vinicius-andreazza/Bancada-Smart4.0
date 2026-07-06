@@ -13,6 +13,8 @@ describe('StatusCardPedido', () => {
 
     fixture = TestBed.createComponent(StatusCardPedido);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('type', 'TOTAL');
+    fixture.componentRef.setInput('total', 0);
     await fixture.whenStable();
   });
 

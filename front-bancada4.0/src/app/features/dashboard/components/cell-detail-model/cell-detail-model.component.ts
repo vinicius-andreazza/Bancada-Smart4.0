@@ -11,5 +11,5 @@ export class CellDetailModel {
 
   position = input<Estoque | null>(null);
 
-  close = output<void>();
+  fechar = output<void>();
 }

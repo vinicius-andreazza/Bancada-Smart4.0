@@ -11,6 +11,11 @@ import { ColorSwatchGroupComponent, ColorSwatchOption } from '../../../../shared
 export class PedidoLaminas {
   form = input.required<FormGroup>();
 
+  // O control pode guardar number ou string; normaliza antes de comparar.
+  protected padraoSelecionado(valor: string): boolean {
+    return String(this.form().get('padraoLamina')?.value) === String(valor);
+  }
+
   protected readonly corLaminaOpcoes: ColorSwatchOption[] = [
     { valor: '1', label: 'Vermelho', hex: '#e53e3e' },
     { valor: '2', label: 'Azul',     hex: '#2b6cb0' },

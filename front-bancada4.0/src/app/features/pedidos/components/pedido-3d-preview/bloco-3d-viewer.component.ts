@@ -19,12 +19,11 @@ import {
 } from '@angular/core';
 import * as THREE from 'three';
 
-// ── Enums (mirrored from project) ──────────────────────────────────────────
-export enum CorBloco     { VAZIO = 0, PRETO = 1, VERMELHO = 2, AZUL = 3 }
-export enum CorLamina    { VERMELHO = 1, AZUL = 2, AMARELO = 3, VERDE = 4, PRETO = 5, BRANCO = 6 }
-export enum PadraoLamina { NENHUM = 0, CASA = 1, NAVIO = 2, ESTRELA = 3 }
-export enum PosicaoLamina{ ESQUERDA = 1, FRENTE = 2, DIREITA = 3 }
-export enum CorTampa     { PRETO = 1, VERMELHO = 2, AZUL = 3 }
+import { CorBloco } from '../../../../core/models/enums/corbloco.enum';
+import { CorLamina } from '../../../../core/models/enums/corlamina.enum';
+import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
+import { PadraoLamina } from '../../../../core/models/enums/padraolamina.enum';
+import { PosicaoLamina } from '../../../../core/models/enums/posicaolamina.enum';
 
 export interface LaminaConfig {
   corLamina:     CorLamina;
@@ -282,7 +281,13 @@ export class Bloco3dViewerComponent implements OnInit, OnChanges, OnDestroy {
   private ro?: ResizeObserver;
 
   ngOnInit(): void {
-    this.initScene();
+    // Sem WebGL (navegador antigo, jsdom nos testes) o preview fica vazio em
+    // vez de derrubar a página inteira.
+    try {
+      this.initScene();
+    } catch {
+      return;
+    }
     this.buildStack();
     this.loop();
 

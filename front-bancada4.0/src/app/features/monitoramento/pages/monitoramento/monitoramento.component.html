@@ -24,7 +24,7 @@
       ></app-toast-notifications>
     }
 
-    @if (connectionStatus() === 'connecting') {
+    @if (connectionStatus() === 'connecting' || connectionStatus() === 'reconnecting') {
       <app-toast-notifications
         [text]="'Conectando ao sistema de monitoramento...'"
         [variant]="'info'"

@@ -101,7 +101,10 @@ export class ListaPedidos implements OnInit {
   carregarContagens(): void {
     this.pedidoService.getContagens()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((contagens) => this.contagens.set(contagens));
+      .subscribe({
+        next: (contagens) => this.contagens.set(contagens),
+        error: () => flashSignal(this.saveError, 3000),
+      });
   }
 
   onRefazer(pedido: Pedido): void {
@@ -133,7 +136,6 @@ export class ListaPedidos implements OnInit {
   }
 
   onSalvarEdicao(pedido: Pedido): void {
-    console.log(pedido)
     this.pedidoService.patchPedido(pedido.id, pedido)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -173,7 +175,9 @@ export class ListaPedidos implements OnInit {
         next: () => {
           this.carregarPagina();
           this.carregarContagens();
+          flashSignal(this.saveSuccess, 2000);
         },
+        error: () => flashSignal(this.saveError, 3000),
       });
 
     this.cancelarEnvioProducao();

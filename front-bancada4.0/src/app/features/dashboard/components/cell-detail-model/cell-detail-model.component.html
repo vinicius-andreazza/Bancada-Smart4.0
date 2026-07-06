@@ -1,10 +1,13 @@
 @if (opened()) {
 
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <div
     class="fixed inset-0 bg-black/70 backdrop-blur-sm z-1050
            flex items-center justify-center p-4 animate-overlay-in"
-    (click)="close.emit()">
+    (click)="fechar.emit()"
+    (keydown.escape)="fechar.emit()">
 
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div
         class=" bg-bg-card border border-border-mid rounded-2xl w-full max-w-120
            max-h-[90vh] overflow-y-auto shadow-modal animate-modal-in"
@@ -23,7 +26,7 @@
            border border-border-subtle bg-transparent text-text-secondary text-[0.8rem]
            transition-all duration-150
            hover:text-text-primary hover:border-border-active hover:bg-bg-hoverbtn-icon"
-                (click)="close.emit()">
+                (click)="fechar.emit()">
 
                 X
 

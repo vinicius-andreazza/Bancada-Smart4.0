@@ -21,8 +21,8 @@ import { formatarData, formatarDuracao } from '../../shared/utils/pedido-datas';
 export class PedidoRow {
   readonly pedido = input.required<Pedido>();
 
-  readonly onVerDetalhe = output<Pedido>();
-  readonly onExcluir    = output<number>();
+  readonly detalheClick = output<Pedido>();
+  readonly excluirClick = output<number>();
 
   readonly statusLabel      = STATUS_LABEL;
   readonly statusBadgeClass = STATUS_BADGE_CLASS;
@@ -40,10 +40,10 @@ export class PedidoRow {
   readonly emProducao = computed(() => this.pedido().status === StatusPedido.PRODUCAO);
 
   verDetalhe(): void {
-    this.onVerDetalhe.emit(this.pedido());
+    this.detalheClick.emit(this.pedido());
   }
 
   excluir(): void {
-    this.onExcluir.emit(this.pedido().id);
+    this.excluirClick.emit(this.pedido().id);
   }
 }

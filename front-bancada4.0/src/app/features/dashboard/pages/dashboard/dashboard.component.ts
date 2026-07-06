@@ -36,6 +36,12 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly hasChanges = computed(() => this.pendingChanges().size > 0);
   readonly changeCount = computed(() => this.pendingChanges().size);
 
+  readonly sseErro = computed(
+    () =>
+      this.estoqueService.connectionStatus() === 'error' ||
+      this.expedicaoService.connectionStatus() === 'error',
+  );
+
   readonly cellColorMap = computed(() => {
     const map = new Map<number, CorBloco>();
     for (const estoque of this.estoquePositions()) {

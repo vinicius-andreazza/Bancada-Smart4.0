@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, isDevMode, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -33,6 +33,11 @@ export class Configuracao {
 
   readonly isConnecting = signal(false);
   readonly conexaoErro = signal(false);
+
+  /** Modo teste só existe em build de desenvolvimento; nunca em produção. */
+  protected readonly modoTesteDisponivel = isDevMode();
+
+  protected readonly erroIp = { pattern: 'IP inválido (ex.: 192.168.0.10).' };
 
   readonly form = this.fb.group({
     estoqueIp: ['', [Validators.required, Validators.pattern(IPV4)]],

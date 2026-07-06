@@ -36,10 +36,10 @@
           Estações
         </legend>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <app-input-field id="estoqueIp" label="IP — Estoque" [control]="form.controls.estoqueIp" />
-          <app-input-field id="processoIp" label="IP — Processo" [control]="form.controls.processoIp" />
-          <app-input-field id="montagemIp" label="IP — Montagem" [control]="form.controls.montagemIp" />
-          <app-input-field id="expedicaoIp" label="IP — Expedição" [control]="form.controls.expedicaoIp" />
+          <app-input-field id="estoqueIp" label="IP — Estoque" [control]="form.controls.estoqueIp" [erroCustom]="erroIp" />
+          <app-input-field id="processoIp" label="IP — Processo" [control]="form.controls.processoIp" [erroCustom]="erroIp" />
+          <app-input-field id="montagemIp" label="IP — Montagem" [control]="form.controls.montagemIp" [erroCustom]="erroIp" />
+          <app-input-field id="expedicaoIp" label="IP — Expedição" [control]="form.controls.expedicaoIp" [erroCustom]="erroIp" />
         </div>
       </fieldset>
 
@@ -56,16 +56,18 @@
         </div>
       </fieldset>
 
-      <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <app-button
-          type="button"
-          variant="ghost"
-          size="lg"
-          (click)="entrarModoTeste()"
-        >
-          <i class="fa-solid fa-flask" aria-hidden="true"></i>
-          Modo de testes (ignorar validação)
-        </app-button>
+      <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
+        @if (modoTesteDisponivel) {
+          <app-button
+            type="button"
+            variant="ghost"
+            size="lg"
+            (click)="entrarModoTeste()"
+          >
+            <i class="fa-solid fa-flask" aria-hidden="true"></i>
+            Modo de testes (ignorar validação)
+          </app-button>
+        }
 
         <app-button
           type="submit"

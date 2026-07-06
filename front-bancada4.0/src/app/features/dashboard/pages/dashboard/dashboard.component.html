@@ -16,6 +16,10 @@
     @if (isSaving()) {
       <app-toast-notifications [text]="'Salvando alterações...'" [variant]="'info'"></app-toast-notifications>
     }
+
+    @if (sseErro()) {
+      <app-toast-notifications [text]="'Sem conexão com estoque/expedição'" [variant]="'error'"></app-toast-notifications>
+    }
  
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] gap-6 lg:gap-10 items-start">
  

@@ -13,6 +13,8 @@ describe('ToastNotifications', () => {
 
     fixture = TestBed.createComponent(ToastNotifications);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('text', 'mensagem de teste');
+    fixture.componentRef.setInput('variant', 'info');
     await fixture.whenStable();
   });
 

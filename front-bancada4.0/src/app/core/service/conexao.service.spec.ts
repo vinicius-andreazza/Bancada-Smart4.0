@@ -46,9 +46,15 @@ describe('ConexaoService', () => {
   it('should mark connected and persist config on successful POST', () => {
     service.connect(CONFIG).subscribe();
 
-    const req = httpMock.expectOne(`${API}/api/configuracao`);
+    const req = httpMock.expectOne(`${API}/api/smart/start`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(CONFIG);
+    expect(req.request.body).toEqual({
+      estoqueIp: CONFIG.estoqueIp,
+      processoIp: CONFIG.processoIp,
+      montagemIp: CONFIG.montagemIp,
+      expedicaoIp: CONFIG.expedicaoIp,
+      endpointSeletorTampa: null,
+    });
     req.flush({});
 
     expect(service.isConnected()).toBe(true);
@@ -57,10 +63,14 @@ describe('ConexaoService', () => {
   });
 
   it('should stay disconnected when POST fails', () => {
-    service.connect(CONFIG).subscribe({ error: () => {} });
+    service.connect(CONFIG).subscribe({
+      error: () => {
+        // erro esperado neste cenário
+      },
+    });
 
     httpMock
-      .expectOne(`${API}/api/configuracao`)
+      .expectOne(`${API}/api/smart/start`)
       .flush('falha', { status: 500, statusText: 'Server Error' });
 
     expect(service.isConnected()).toBe(false);
@@ -74,7 +84,7 @@ describe('ConexaoService', () => {
 
   it('desconectar() should set isConnected to false', () => {
     service.connect(CONFIG).subscribe();
-    httpMock.expectOne(`${API}/api/configuracao`).flush({});
+    httpMock.expectOne(`${API}/api/smart/start`).flush({});
     expect(service.isConnected()).toBe(true);
 
     service.desconectar();

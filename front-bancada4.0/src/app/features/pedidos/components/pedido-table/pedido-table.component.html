@@ -18,8 +18,8 @@
         <tr
           app-pedido-row
           [pedido]="pedido"
-          (onVerDetalhe)="verDetalhe.emit($event)"
-          (onExcluir)="excluir.emit($event)"
+          (detalheClick)="verDetalhe.emit($event)"
+          (excluirClick)="excluir.emit($event)"
           class="transition-colors duration-150 hover:bg-gray-800/40"
         ></tr>
       } @empty {

@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Estoque } from '../models/estoque.model';
 import { ConfigService } from './config.service';
 import { CorBloco } from '../models/enums/corbloco.enum';
+import { SseClient } from './sse-client';
 
 export interface EstoqueEditChange {
   posicao: number;
@@ -14,12 +15,12 @@ export interface EstoqueEditChange {
   providedIn: 'root',
 })
 export class EstoqueService {
-  private readonly http = inject(HttpClient); 
+  private readonly http = inject(HttpClient);
   private readonly config = inject(ConfigService);
-  
-    private eventSource?: EventSource;
-  
-    readonly snapshot = signal<Estoque[] | null>(null);
+  private readonly sse = new SseClient();
+
+  readonly snapshot = signal<Estoque[] | null>(null);
+  readonly connectionStatus = this.sse.status;
   
   getEstoque() {
     return this.http.get<Estoque[]>( `${this.config.apiUrl}/api/estoque`); 
@@ -38,26 +39,15 @@ export class EstoqueService {
   }
 
   connect(): void {
-      this.eventSource = new EventSource(`${this.config.apiUrl}/api/estoque/read`);
-  
-      this.eventSource.onopen = () => {
-        //
-      };
-  
-     this.eventSource.addEventListener('estoque', (event: MessageEvent<string>) => {
-      console.log(event.data)
-        const raw = JSON.parse(event.data);
+    this.sse.connect(`${this.config.apiUrl}/api/estoque/read`, 'estoque', (raw) => {
+      if (Array.isArray(raw)) {
         this.snapshot.set(raw as Estoque[]);
-      });
-  
-      this.eventSource.onerror = () => {
-        //
-      };
-    }
-  
-    disconnect(): void {
-      this.eventSource?.close();
-      this.eventSource = undefined;
-    }
+      }
+    });
+  }
+
+  disconnect(): void {
+    this.sse.disconnect();
+  }
 
 }
