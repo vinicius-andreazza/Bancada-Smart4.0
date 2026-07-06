@@ -21,11 +21,11 @@ public class CorsConfig implements WebMvcConfigurer {
             .allowedHeaders("*")
             .allowCredentials(true);
     }
-/* 
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(comunicacaoClpInterceptor)
             .addPathPatterns("/api/**")
             .excludePathPatterns("/api/smart/start");
-    }*/
+    }
 }
