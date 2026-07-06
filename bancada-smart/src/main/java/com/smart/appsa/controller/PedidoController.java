@@ -109,4 +109,9 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.removeDaFila(id));
     }
 
+    @PostMapping("/{codPedido}/remake")
+    public ResponseEntity<PedidoResponseDTO> remake(@PathVariable Integer codPedido) {
+        return ResponseEntity.status(201).body(pedidoService.remake(codPedido));
+    }
+
 }
