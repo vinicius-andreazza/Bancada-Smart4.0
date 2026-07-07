@@ -7,9 +7,9 @@ import jakarta.persistence.EnumeratedValue;
 
 public enum CorBloco {
     NENHUM(0),
-    AZUL(1),
-    PRETO(2),
-    VERMELHO(3);
+    PRETO(1),
+    VERMELHO(2),
+    AZUL(3);
 
     @EnumeratedValue
     int value;

@@ -36,3 +36,5 @@ build/
 *.md
 
 *.properties
+
+logs/
