@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,9 @@ class EstoqueServiceTest {
 
     @Mock
     private EstoqueRepository estoqueRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private EstoqueService estoqueService;
@@ -159,6 +163,54 @@ class EstoqueServiceTest {
 
         assertThatThrownBy(() -> estoqueService.putAll(entrada))
                 .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void shouldSetCorToZeroWhenReleasePosition() {
+        Estoque estoque = estoqueComPosicao(5, 2);
+        when(estoqueRepository.findByPosicao(5)).thenReturn(Optional.of(estoque));
+
+        estoqueService.releasePosition(5);
+
+        assertThat(estoque.getCor()).isZero();
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenReleasePositionGivenUnknownPosicao() {
+        when(estoqueRepository.findByPosicao(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> estoqueService.releasePosition(99))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("99");
+    }
+
+    @Test
+    void shouldSetCorWhenAddPosition() {
+        Estoque estoque = estoqueComPosicao(3, 0);
+        when(estoqueRepository.findByPosicao(3)).thenReturn(Optional.of(estoque));
+
+        estoqueService.addPosition(3, 2);
+
+        assertThat(estoque.getCor()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenAddPositionGivenUnknownPosicao() {
+        when(estoqueRepository.findByPosicao(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> estoqueService.addPosition(99, 1))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void shouldPublishEventWhenPut() {
+        Estoque estoqueExistente = estoqueComPosicao(1, 1);
+        when(estoqueRepository.findByPosicao(1)).thenReturn(Optional.of(estoqueExistente));
+        when(estoqueRepository.save(any(Estoque.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        estoqueService.put(1, new EstoqueDTO(null, 1, 3));
+
+        verify(eventPublisher).publishEvent(any());
     }
 
     private Estoque estoqueComPosicao(int posicao, int cor) {
