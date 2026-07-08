@@ -33,7 +33,10 @@ export class Configuracao {
 
   readonly isConnecting = signal(false);
   readonly conexaoErro = signal(false);
+  readonly ativandoLeitura = signal(false);
+  readonly erroLeitura = signal(false);
   protected readonly isConnected = this.conexao.isConnected;
+  protected readonly modoLeitura = this.conexao.modoLeitura;
 
   /** Modo teste só existe em build de desenvolvimento; nunca em produção. */
   protected readonly modoTesteDisponivel = isDevMode();
@@ -45,7 +48,7 @@ export class Configuracao {
     processoIp: ['', [Validators.required, Validators.pattern(IPV4)]],
     montagemIp: ['', [Validators.required, Validators.pattern(IPV4)]],
     expedicaoIp: ['', [Validators.required, Validators.pattern(IPV4)]],
-    seletorTampasIp: [''],
+    seletorTampaIp: [''],
   });
 
   constructor() {
@@ -68,7 +71,7 @@ export class Configuracao {
       processoIp: v.processoIp!,
       montagemIp: v.montagemIp!,
       expedicaoIp: v.expedicaoIp!,
-      seletorTampasIp: v.seletorTampasIp?.trim() ? v.seletorTampasIp : null,
+      endpointSeletorTampa: v.seletorTampaIp?.trim() ? v.seletorTampaIp : null,
     };
 
     this.isConnecting.set(true);
@@ -76,10 +79,12 @@ export class Configuracao {
 
     this.conexao.connect(config).subscribe({
       next: () => {
+        console.log(config);
         this.isConnecting.set(false);
         this.router.navigate(['/dashboard']);
       },
       error: () => {
+        console.log(config);
         this.isConnecting.set(false);
         this.conexaoErro.set(true);
         setTimeout(() => this.conexaoErro.set(false), 4000);
@@ -96,5 +101,26 @@ export class Configuracao {
   entrarModoTeste(): void {
     this.conexao.ativarModoTeste();
     this.router.navigate(['/dashboard']);
+  }
+
+  ativarModoLeitura(): void {
+    this.ativandoLeitura.set(true);
+    this.erroLeitura.set(false);
+    this.conexao.ativarModoLeitura().subscribe({
+      next: () => this.ativandoLeitura.set(false),
+      error: () => {
+        this.ativandoLeitura.set(false);
+        this.erroLeitura.set(true);
+        setTimeout(() => this.erroLeitura.set(false), 4000);
+      },
+    });
+  }
+
+  desativarModoLeitura(): void {
+    this.ativandoLeitura.set(true);
+    this.conexao.desativarModoLeitura().subscribe({
+      next: () => this.ativandoLeitura.set(false),
+      error: () => this.ativandoLeitura.set(false),
+    });
   }
 }

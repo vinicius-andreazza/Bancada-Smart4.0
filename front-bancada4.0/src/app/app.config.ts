@@ -1,4 +1,5 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -29,6 +30,12 @@ export const appConfig: ApplicationConfig = {
         return;
       }
       await conexao.tryReconnect();
+      try {
+        const ativo = await firstValueFrom(conexao.getModoLeitura());
+        conexao.modoLeitura.set(ativo);
+      } catch {
+        // modo leitura indisponível: ignora
+      }
     })
   ]
 };

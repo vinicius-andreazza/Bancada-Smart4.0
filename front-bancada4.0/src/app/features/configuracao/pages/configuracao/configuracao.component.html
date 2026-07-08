@@ -23,18 +23,16 @@
         </div>
       </header>
 
-    @if (isConnected()) {
-      <div class="flex justify-end">
-        <app-button type="button" variant="danger" size="md" (click)="desconectar()">
-          <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
-          Desconectar
-        </app-button>
-      </div>
-    }
-
     @if (conexaoErro()) {
       <app-toast-notifications
         text="Não foi possível conectar. Verifique os IPs e se o sistema está disponível."
+        variant="error"
+      />
+    }
+
+    @if (erroLeitura()) {
+      <app-toast-notifications
+        text="Não foi possível ativar o modo leitura. Verifique a conexão com o backend."
         variant="error"
       />
     }
@@ -60,7 +58,7 @@
           <app-input-field
             id="seletorTampasIp"
             label="IP — Seletor de tampas"
-            [control]="form.controls.seletorTampasIp"
+            [control]="form.controls.seletorTampaIp"
           />
         </div>
       </fieldset>
@@ -78,6 +76,39 @@
           </app-button>
         }
 
+        @if (isConnected()) {
+          <div class="flex justify-end">
+            <app-button type="button" variant="danger" size="md" (click)="desconectar()">
+              <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
+              Desconectar
+            </app-button>
+          </div>
+        }
+
+        @if (!modoLeitura()) {
+          <app-button
+            type="button"
+            variant="ghost"
+            size="md"
+            [loading]="ativandoLeitura()"
+            (click)="ativarModoLeitura()"
+          >
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            Ativar Modo Leitura
+          </app-button>
+        } @else {
+          <app-button
+            type="button"
+            variant="danger"
+            size="md"
+            [loading]="ativandoLeitura()"
+            (click)="desativarModoLeitura()"
+          >
+            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+            Desativar Modo Leitura
+          </app-button>
+        }
+
         <app-button
           type="submit"
           variant="primary"
@@ -87,6 +118,8 @@
         >
           Conectar
         </app-button>
+
+        
       </div>
     </form>
     </div>
