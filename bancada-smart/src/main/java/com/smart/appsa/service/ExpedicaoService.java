@@ -129,7 +129,7 @@ public class ExpedicaoService {
             throw new IllegalStateException("A posição " + expedicao.getPosicao() + " já está livre.");
 
         releasePedido(expedicao);
-
+        
         expedicao.setPedido(null);
         eventPublisher.publishEvent(new ExpedicaoLiberadaEvent(this, expedicao.getPosicao()));
         enviarSnapshot();

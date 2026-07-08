@@ -85,4 +85,20 @@ public class SmartController {
         return monitoramentoService.conectar();
     }
 
+    @Operation(summary = "Encerrar comunicação com os CLPs", description = "Desconecta os pollers e fecha as comunicações existentes.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Comunicação encerrada com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao deconectar a algum CLP")
+    })
+    @PostMapping("/close")
+    public ResponseEntity<Void> closeComm() {
+        log.info("Desconectado");
+        estoqueComm.disconnect();
+        processoComm.disconnect();
+        montagemComm.disconnect();
+        expedicaoComm.disconnect();
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
