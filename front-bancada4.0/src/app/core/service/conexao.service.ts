@@ -53,7 +53,15 @@ export class ConexaoService {
     this.isConnected.set(true);
   }
 
-  desconectar(): void {
+  desconectar(): Observable<unknown> {
+    return this.http.post(`${this.config.apiUrl}/api/smart/close`, null).pipe(
+      tap(() => this.desconectarLocal()),
+    );
+  }
+
+  desconectarLocal(): void {
+    this.bancadaConfig.set(null);
+    this.limparStorage();
     this.isConnected.set(false);
   }
 
@@ -71,6 +79,14 @@ export class ConexaoService {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bancada));
     } catch {
       // storage indisponível (ex.: modo privado): segue sem persistir
+    }
+  }
+
+  private limparStorage(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // storage indisponível
     }
   }
 }

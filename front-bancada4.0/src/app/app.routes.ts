@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { conexaoGuard } from './core/guard/conexao.guard';
 
 export const routes: Routes = [
   {
@@ -16,9 +15,8 @@ export const routes: Routes = [
         .then(m => m.CONFIGURACAO_ROUTES)
   },
 
-    {
+  {
     path: 'dashboard',
-    canActivate: [conexaoGuard],
     loadChildren: () =>
       import('./features/dashboard/dashboard.routes')
         .then(m => m.DASHBOARD_ROUTES)
@@ -26,7 +24,6 @@ export const routes: Routes = [
 
   {
     path: 'monitoramento',
-    canActivate: [conexaoGuard],
     loadChildren: () =>
       import('./features/monitoramento/monitoramento.routes')
         .then(m => m.MONITORAMENTO_ROUTES)
@@ -34,7 +31,6 @@ export const routes: Routes = [
 
   {
     path: 'pedido/novo',
-    canActivate: [conexaoGuard],
     loadChildren: () =>
       import('./features/pedidos/novo-pedido.routes')
         .then(m => m.NOVO_PEDIDO_ROUTES)
@@ -42,7 +38,6 @@ export const routes: Routes = [
 
   {
     path: 'pedidos',
-    canActivate: [conexaoGuard],
     loadChildren: () =>
       import('./features/pedidos/lista-pedido.routes')
         .then(m => m.LISTA_PEDIDO_ROUTES)

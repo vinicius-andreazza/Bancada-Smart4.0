@@ -33,6 +33,7 @@ export class Configuracao {
 
   readonly isConnecting = signal(false);
   readonly conexaoErro = signal(false);
+  protected readonly isConnected = this.conexao.isConnected;
 
   /** Modo teste só existe em build de desenvolvimento; nunca em produção. */
   protected readonly modoTesteDisponivel = isDevMode();
@@ -84,6 +85,11 @@ export class Configuracao {
         setTimeout(() => this.conexaoErro.set(false), 4000);
       },
     });
+  }
+
+  desconectar(): void {
+    this.conexao.desconectarLocal();
+    this.conexao.desconectar().subscribe({ error: () => {} });
   }
 
   /** Entra no sistema em modo de testes, ignorando a validação dos IPs e o backend. */

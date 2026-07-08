@@ -1,5 +1,5 @@
 <div class="flex min-h-screen flex-col bg-bg-base">
-  <app-navbar [minimal]="true" />
+  <app-navbar />
 
   <main class="flex flex-1 items-center justify-center px-4 py-10">
     <div
@@ -22,6 +22,15 @@
           </p>
         </div>
       </header>
+
+    @if (isConnected()) {
+      <div class="flex justify-end">
+        <app-button type="button" variant="danger" size="md" (click)="desconectar()">
+          <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
+          Desconectar
+        </app-button>
+      </div>
+    }
 
     @if (conexaoErro()) {
       <app-toast-notifications

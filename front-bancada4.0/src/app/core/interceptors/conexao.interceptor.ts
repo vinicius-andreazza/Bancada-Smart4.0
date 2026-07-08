@@ -8,9 +8,9 @@ export const conexaoInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((erro: unknown) => {
-      if (erro instanceof HttpErrorResponse) {
+      if (erro instanceof HttpErrorResponse && !req.url.includes('/api/smart/close')) {
         if (erro.status === 409 || erro.status === 0) {
-          conexao.desconectar();
+          conexao.desconectarLocal();
         }
       }
       return throwError(() => erro);
