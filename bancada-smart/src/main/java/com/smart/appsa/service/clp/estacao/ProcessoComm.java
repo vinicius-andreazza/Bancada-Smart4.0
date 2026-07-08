@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp.estacao;
 
+import com.smart.appsa.config.ReadMode;
 import com.smart.appsa.config.ipconfig.ProcessoIp;
 
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProcessoComm {
 
+    private final ReadMode readMode;
+
     private final ProcessoIp processoIp;
 
     private final PlcPoller poller;
@@ -28,11 +31,12 @@ public class ProcessoComm {
     private static final int DB_PROCESSO = 2;
     private static final int OFFSET_RECEBIDO_OP = 0;
 
-    public ProcessoComm(PlcConnectionService plcConnectionService, ProcessoPlc processoPlc, ProcessoIp processoIp) {
+    public ProcessoComm(PlcConnectionService plcConnectionService, ProcessoPlc processoPlc, ProcessoIp processoIp, ReadMode readMode) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.processoPlc = processoPlc;
         this.processoIp = processoIp;
+        this.readMode = readMode;
     }
 
     public void startComm() {
@@ -56,11 +60,12 @@ public class ProcessoComm {
     private void handleData(byte[] data) {
 
         ProcessoPlcMapper.updateData(data, processoPlc);
-
-        validarOperacaoPelasFlags();
-        validarInicioDaOperacao();
-        validarFinalizacaoDaOperacao();
-        validarEmOperacao();
+        if (!readMode.isReadMode()) {
+            validarOperacaoPelasFlags();
+            validarInicioDaOperacao();
+            validarFinalizacaoDaOperacao();
+            validarEmOperacao();
+        }
     }
 
     private void validarOperacaoPelasFlags() {
@@ -106,7 +111,7 @@ public class ProcessoComm {
         }
     }
 
-    private void validarEmOperacao(){
+    private void validarEmOperacao() {
         if (processoPlc.isOcupado()) {
             updateStatusProducao();
         }
@@ -117,7 +122,7 @@ public class ProcessoComm {
         processoPlc.setEmProducao(false);
     }
 
-    private void updateStatusProducao(){
+    private void updateStatusProducao() {
         processoPlc.setConcluidoOP(false);
         processoPlc.setEmProducao(true);
     }

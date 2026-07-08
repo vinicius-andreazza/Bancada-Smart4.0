@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp.estacao;
 
+import com.smart.appsa.config.ReadMode;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ExpedicaoComm {
+    private final ReadMode readMode;
     private final ExpedicaoIp expedicaoIp;
     private final ExpedicaoService expedicaoService;
     private final PedidoService pedidoService;
@@ -48,7 +50,7 @@ public class ExpedicaoComm {
 
     public ExpedicaoComm(PlcConnectionService plcConnectionService,
             ExpedicaoPlc expedicaoPlc, ExpedicaoService expedicaoService, PedidoService pedidoService,
-            ProducaoService producaoService, ExpedicaoIp expedicaoIp) {
+            ProducaoService producaoService, ExpedicaoIp expedicaoIp, ReadMode readMode) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.expedicaoPlc = expedicaoPlc;
@@ -56,6 +58,7 @@ public class ExpedicaoComm {
         this.pedidoService = pedidoService;
         this.producaoService = producaoService;
         this.expedicaoIp = expedicaoIp;
+        this.readMode = readMode;
     }
 
     public void startComm() {
@@ -80,16 +83,16 @@ public class ExpedicaoComm {
     private void handleData(byte[] data) {
 
         ExpedicaoPlcMapper.updateData(data, expedicaoPlc);
-
-        validarOperacao();
-        validarPosicaoGuardar();
-        validarRecepcao();
-        validarAdicao();
-        validarRetirada();
-        validarFinalizacaoOP();
-        validarCancelamento();
-        concluirPedido();
-
+        if (!readMode.isReadMode()) {
+            validarOperacao();
+            validarPosicaoGuardar();
+            validarRecepcao();
+            validarAdicao();
+            validarRetirada();
+            validarFinalizacaoOP();
+            validarCancelamento();
+            concluirPedido();
+        }
     }
 
     private void validarOperacao() {
@@ -290,7 +293,7 @@ public class ExpedicaoComm {
     @Order(1)
     public void onExpedicaoReservada(ExpedicaoReservadaEvent event) {
         PlcConnector connector = getConnector();
-        if (connector == null || !connector.isConnected()) {
+        if (connector == null || !connector.isConnected() || readMode.isReadMode()) {
             log.warn(
                     "CLP de expedição desconectado. Reserva da posição {} para o pedido {} descartada.",
                     event.getPosicao(),
@@ -314,7 +317,7 @@ public class ExpedicaoComm {
     @Order(1)
     public void onExpedicaoLiberada(ExpedicaoLiberadaEvent event) {
         PlcConnector connector = getConnector();
-        if (connector == null || !connector.isConnected())
+        if (connector == null || !connector.isConnected()|| readMode.isReadMode())
             return;
         synchronized (connector) {
             try {
@@ -329,11 +332,14 @@ public class ExpedicaoComm {
     }
 
     private void atualizarExpedicao() {
+        if(readMode.isReadMode()){
+            return;
+        }
         PlcConnector connector = getConnector();
         List<ExpedicaoDTO> listaExpedicao = expedicaoService.findAll();
         listaExpedicao.forEach(e -> {
             try {
-                if(e.pedido()!=null){
+                if (e.pedido() != null) {
                     connector.writeInt(DB_EXPEDICAO, 6 + (e.posicao() - 1) * 2, e.pedido().codPedido().intValue());
                 }
             } catch (Exception e1) {
@@ -360,5 +366,5 @@ public class ExpedicaoComm {
     private PlcConnector getConnector() {
         return plcConnectionService.getConnection(expedicaoIp.getIp());
     }
-    
+
 }

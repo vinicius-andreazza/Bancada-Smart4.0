@@ -1,5 +1,6 @@
 package com.smart.appsa.controller;
 
+import com.smart.appsa.config.ReadMode;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.config.ipconfig.MontagemIp;
@@ -42,6 +43,7 @@ public class SmartController {
     private final ProcessoIp processoIp;
     private final MontagemIp montagemIp;
     private final SeletorTampaIp seletorTampaIp;
+    private final ReadMode readMode;
 
     private final ExpedicaoComm expedicaoComm;
     private final MontagemComm montagemComm;
@@ -57,7 +59,6 @@ public class SmartController {
     })
     @PostMapping("/start")
     public ResponseEntity<Void> startComm(@RequestBody CommDto commDto) {
-
         estoqueIp.setIp(commDto.estoqueIp());
         processoIp.setIp(commDto.processoIp());
         montagemIp.setIp(commDto.montagemIp());
@@ -99,6 +100,29 @@ public class SmartController {
         expedicaoComm.disconnect();
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Ativar modo leitura", description = "Ativa o modo apenas leitura com os CLPS, desabilitando qualquer edição a bancada.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Modo leitura ativado com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao ativar o modo leitura")
+    })
+    @PostMapping("/readMode")
+    public ResponseEntity<Boolean> readMode() {
+        
+        readMode.setReadMode(readMode.isReadMode() ? false : true);
+        log.info("Modo leitura: {}", readMode.isReadMode());
+        return ResponseEntity.ok(readMode.isReadMode());
+    }
+
+    @Operation(summary = "Retorna o modo leitura", description = "Retorna se o modo apenas leitura está ativo.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Retorna o modo leitura"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao ler")
+    })
+    @GetMapping("/readMode")
+    public ResponseEntity<Boolean> isReadMode() {
+        return ResponseEntity.ok(readMode.isReadMode());
     }
 
 }
