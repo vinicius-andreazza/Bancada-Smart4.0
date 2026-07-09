@@ -47,6 +47,10 @@ export const TAMPA_LABEL: Record<CorTampa, string> = {
   [CorTampa.AZUL]:     'Azul',
 };
 
+export function tampaLabelNullable(cor: CorTampa | null): string {
+  return cor !== null ? TAMPA_LABEL[cor] : 'Sem tampa';
+}
+
 export const TAMPA_CSS_CLASS: Record<CorTampa, string> = {
   [CorTampa.PRETO]:    'color-swatch sw-preto',
   [CorTampa.VERMELHO]: 'color-swatch sw-vermelho',

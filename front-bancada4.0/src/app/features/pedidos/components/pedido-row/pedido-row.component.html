@@ -15,12 +15,10 @@
 
 <td class="px-4 py-3 align-middle">
   <div class="flex items-center gap-2">
-    <span
-      [class]="tampaCssClass[pedido().corTampa] + ' w-3.5 h-3.5 rounded-sm flex-shrink-0'"
-    ></span>
-    <span class="text-sm text-gray-400">
-      {{ tampaLabel[pedido().corTampa] }}
-    </span>
+    @if (corTampa(); as cor) {
+      <span [class]="tampaCssClass[cor] + ' w-3.5 h-3.5 rounded-sm flex-shrink-0'"></span>
+    }
+    <span class="text-sm text-gray-400">{{ corTampaLabel() }}</span>
   </div>
 </td>
 

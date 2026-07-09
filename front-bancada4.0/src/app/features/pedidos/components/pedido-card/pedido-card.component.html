@@ -16,9 +16,19 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Cor da tampa</span>
-      <app-color-swatch-group [options]="corTampaOpcoes" [control]="form().get('corTampa')!" />
+      <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Seletor de tampa</span>
+      <app-toggle-group
+        [options]="possuiTampaOpcoes"
+        [control]="form().get('possuiTampa')!"
+      />
     </div>
+
+    @if (form().get('possuiTampa')?.value === 'true') {
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-mono font-semibold tracking-widest uppercase text-gray-500">Cor da tampa</span>
+        <app-color-swatch-group [options]="corTampaOpcoes" [control]="form().get('corTampa')!" />
+      </div>
+    }
 
     <div class="flex flex-col gap-4">
       @for (bloco of blocos; track $index) {

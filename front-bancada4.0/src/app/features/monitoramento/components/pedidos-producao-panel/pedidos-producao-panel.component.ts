@@ -6,6 +6,7 @@ import {
   TIPO_LABEL,
   TAMPA_LABEL,
   getTotalBlocos,
+  tampaLabelNullable,
 } from '../../../pedidos/shared/utils/pedido-labels';
 
 const TAMPA_HEX: Record<CorTampa, string> = {
@@ -47,12 +48,14 @@ const TAMPA_HEX: Record<CorTampa, string> = {
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-[0.6rem] text-muted">{{ tipoLabel[pedido.tipoPedido] }}</span>
                     <span class="flex items-center gap-1">
-                      <span
-                        class="w-2.5 h-2.5 rounded-sm border border-white/10 shrink-0"
-                        [style.background]="tampaHex[pedido.corTampa]"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="text-[0.6rem] text-muted">{{ tampaLabel[pedido.corTampa] }}</span>
+                      @if (pedido.corTampa; as cor) {
+                        <span
+                          class="w-2.5 h-2.5 rounded-sm border border-white/10 shrink-0"
+                          [style.background]="tampaHex[cor]"
+                          aria-hidden="true"
+                        ></span>
+                      }
+                      <span class="text-[0.6rem] text-muted">{{ tampaLabelNullable(pedido.corTampa) }}</span>
                     </span>
                   </div>
                 </div>
@@ -93,8 +96,8 @@ export class PedidosProducaoPanelComponent {
 
   readonly remover = output<number>();
 
-  protected readonly tipoLabel   = TIPO_LABEL;
-  protected readonly tampaLabel  = TAMPA_LABEL;
-  protected readonly tampaHex    = TAMPA_HEX;
-  protected readonly totalBlocos = getTotalBlocos;
+  protected readonly tipoLabel         = TIPO_LABEL;
+  protected readonly tampaHex          = TAMPA_HEX;
+  protected readonly totalBlocos       = getTotalBlocos;
+  protected readonly tampaLabelNullable = tampaLabelNullable;
 }

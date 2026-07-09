@@ -9,7 +9,7 @@ export interface Pedido {
     dataCriacao: string,
     status: StatusPedido,
     tipoPedido: TipoPedido,
-    corTampa: CorTampa,
+    corTampa: CorTampa | null,
     dataInicio: string | null,
     dataEntrada: string | null,
     idExpedicao: number,

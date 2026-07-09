@@ -31,10 +31,11 @@ export class Configuracao {
   private readonly conexao = inject(ConexaoService);
   private readonly router = inject(Router);
 
-  readonly isConnecting = signal(false);
-  readonly conexaoErro = signal(false);
+  readonly isConnecting   = signal(false);
+  readonly conexaoErro    = signal(false);
   readonly ativandoLeitura = signal(false);
-  readonly erroLeitura = signal(false);
+  readonly erroLeitura    = signal(false);
+  readonly possuiSeletor  = signal(false);
   protected readonly isConnected = this.conexao.isConnected;
   protected readonly modoLeitura = this.conexao.modoLeitura;
 
@@ -52,11 +53,17 @@ export class Configuracao {
   });
 
   constructor() {
-    // Pré-preenche com a config salva (localStorage) para o usuário apenas revisar e conectar.
     const salva = this.conexao.bancadaConfig();
     if (salva) {
       this.form.patchValue(salva);
+      if (salva.endpointSeletorTampa) this.possuiSeletor.set(true);
     }
+  }
+
+  toggleSeletor(): void {
+    const ativo = !this.possuiSeletor();
+    this.possuiSeletor.set(ativo);
+    if (!ativo) this.form.controls.seletorTampaIp.reset();
   }
 
   conectar(): void {

@@ -10,6 +10,7 @@ import {
   TIPO_BADGE_CLASS,
   TAMPA_LABEL,
   TAMPA_CSS_CLASS,
+  tampaLabelNullable,
 } from '../../shared/utils/pedido-labels';
 import { formatarData, formatarDuracao } from '../../shared/utils/pedido-datas';
 
@@ -37,5 +38,7 @@ export class PedidoCardItem {
   readonly duracao      = computed(() =>
     formatarDuracao(this.pedido().dataInicio, this.pedido().dataEntrada),
   );
-  readonly emProducao = computed(() => this.pedido().status === StatusPedido.PRODUCAO);
+  readonly emProducao    = computed(() => this.pedido().status === StatusPedido.PRODUCAO);
+  readonly corTampa      = computed(() => this.pedido().corTampa);
+  readonly corTampaLabel = computed(() => tampaLabelNullable(this.pedido().corTampa));
 }

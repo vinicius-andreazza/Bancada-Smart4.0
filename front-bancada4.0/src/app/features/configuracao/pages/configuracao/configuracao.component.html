@@ -51,16 +51,39 @@
       </fieldset>
 
       <fieldset class="flex flex-col gap-4">
-        <legend class="mb-1 font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
-          Seletor de tampas <span class="normal-case text-text-muted">(opcional)</span>
-        </legend>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <app-input-field
-            id="seletorTampasIp"
-            label="IP — Seletor de tampas"
-            [control]="form.controls.seletorTampaIp"
-          />
+        <div class="flex items-center justify-between gap-4">
+          <legend class="font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
+            Seletor de tampas
+          </legend>
+          <button
+            type="button"
+            role="switch"
+            [attr.aria-checked]="possuiSeletor()"
+            (click)="toggleSeletor()"
+            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent
+                   transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
+                   focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-card"
+            [class.bg-indigo-600]="possuiSeletor()"
+            [class.bg-gray-700]="!possuiSeletor()"
+          >
+            <span
+              class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0
+                     transition-transform duration-200 ease-in-out"
+              [class.translate-x-5]="possuiSeletor()"
+              [class.translate-x-0]="!possuiSeletor()"
+            ></span>
+          </button>
         </div>
+
+        @if (possuiSeletor()) {
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <app-input-field
+              id="seletorTampaIp"
+              label="IP — Seletor de tampas"
+              [control]="form.controls.seletorTampaIp"
+            />
+          </div>
+        }
       </fieldset>
 
       <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">

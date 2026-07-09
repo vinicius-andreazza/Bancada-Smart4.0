@@ -3,7 +3,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { Pedido } from '../../../../core/models/pedido.model';
 import { PedidoDetalheBlocoComponent } from '../../../pedidos/components/pedido-detalhe-modal/pedido-detalhe-bloco/pedido-detalhe-bloco.component';
 import { Pedido3dPreviewComponent } from '../../../pedidos/components/pedido-3d-preview/pedido-3d-preview.component';
-import { STATUS_LABEL, STATUS_BADGE_CLASS, TIPO_LABEL, TAMPA_LABEL } from '../../../pedidos/shared/utils/pedido-labels';
+import { STATUS_LABEL, STATUS_BADGE_CLASS, TIPO_LABEL, tampaLabelNullable } from '../../../pedidos/shared/utils/pedido-labels';
 import {
   PedidoPreviewConfig,
   BlocoConfig,
@@ -91,7 +91,7 @@ export class UltimoPedidoModalComponent {
     if (!pedido) return [];
     return [
       { label: 'Tipo',  value: TIPO_LABEL[pedido.tipoPedido] },
-      { label: 'Tampa', value: TAMPA_LABEL[pedido.corTampa]  },
+      { label: 'Tampa', value: tampaLabelNullable(pedido.corTampa) },
       { label: 'Data',  value: pedido.dataCriacao            },
     ];
   });

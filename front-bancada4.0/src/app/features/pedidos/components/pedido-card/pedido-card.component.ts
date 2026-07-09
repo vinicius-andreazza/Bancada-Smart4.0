@@ -45,6 +45,11 @@ export class PedidoCard {
     { valor: '3', label: 'Triplo'  },
   ];
 
+  protected readonly possuiTampaOpcoes: ToggleOption[] = [
+    { valor: 'true',  label: 'Sim' },
+    { valor: 'false', label: 'Não' },
+  ];
+
   protected readonly corTampaOpcoes: ColorSwatchOption[] = [
     { valor: '1', label: 'Preto',    hex: '#1c1c1c', glow: 'rgba(160,160,160,0.4)' },
     { valor: '2', label: 'Vermelho', hex: '#c41e1e', glow: 'rgba(229,62,62,0.4)'   },

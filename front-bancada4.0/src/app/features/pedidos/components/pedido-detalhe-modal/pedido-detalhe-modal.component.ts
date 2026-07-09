@@ -5,6 +5,7 @@ import { Subscription } from "rxjs";
 import { ButtonComponent } from "../../../../shared/components/button/button.component";
 import { ModalComponent } from "../../../../shared/components/modal/modal.component";
 import { StatusPedido } from "../../../../core/models/enums/statuspedido.enum";
+import { CorTampa } from "../../../../core/models/enums/cortampa.enum";
 import { PedidoDetalheBlocoComponent } from "./pedido-detalhe-bloco/pedido-detalhe-bloco.component";
 import { PedidoCard } from "../pedido-card/pedido-card.component";
 import { Pedido } from "../../../../core/models/pedido.model";
@@ -14,7 +15,7 @@ import {
   STATUS_ICON,
   TIPO_LABEL,
   TIPO_BADGE_CLASS,
-  TAMPA_LABEL,
+  tampaLabelNullable,
 } from "../../shared/utils/pedido-labels";
 import { formatarDataHora, formatarDuracao } from "../../shared/utils/pedido-datas";
 import { criarBlocoForm, criarBlocoVazio } from "../../shared/pedido-form.factory";
@@ -43,6 +44,7 @@ interface EditFormValue {
   codPedido: string;
   status: string;
   tipoPedido: string;
+  possuiTampa: string;
   corTampa: string;
   blocos: BlocoFormValue[];
 }
@@ -85,7 +87,7 @@ export class PedidoDetalheModalComponent {
 
     return [
       { label: 'Tipo',      icon: 'fa-solid fa-layer-group',   value: TIPO_LABEL[p.tipoPedido], badgeClass: TIPO_BADGE_CLASS[p.tipoPedido] },
-      { label: 'Tampa',     icon: 'fa-solid fa-fill-drip',     value: TAMPA_LABEL[p.corTampa]      },
+      { label: 'Tampa',     icon: 'fa-solid fa-fill-drip',     value: tampaLabelNullable(p.corTampa) },
       { label: 'Criação',   icon: 'fa-solid fa-calendar-plus', value: formatarDataHora(p.dataCriacao) },
       { label: 'Produção',  icon: 'fa-solid fa-stopwatch',     value: producao                     },
       { label: 'Conclusão', icon: 'fa-solid fa-flag-checkered', value: formatarDataHora(p.dataEntrada) },
@@ -113,11 +115,12 @@ export class PedidoDetalheModalComponent {
     const pedido = this.pedido();
 
     this.editForm = this.formBuilder.group({
-      codPedido:  this.formBuilder.control(String(pedido.codPedido)),
-      status:     this.formBuilder.control(String(pedido.status)),
-      tipoPedido: this.formBuilder.control(String(pedido.tipoPedido)),
-      corTampa:   this.formBuilder.control(String(pedido.corTampa)),
-      blocos:     this.formBuilder.array(pedido.blocos.map(bloco => criarBlocoForm(this.formBuilder, bloco))),
+      codPedido:   this.formBuilder.control(String(pedido.codPedido)),
+      status:      this.formBuilder.control(String(pedido.status)),
+      tipoPedido:  this.formBuilder.control(String(pedido.tipoPedido)),
+      possuiTampa: this.formBuilder.control(pedido.corTampa !== null ? 'true' : 'false'),
+      corTampa:    this.formBuilder.control(pedido.corTampa !== null ? String(pedido.corTampa) : '1'),
+      blocos:      this.formBuilder.array(pedido.blocos.map(bloco => criarBlocoForm(this.formBuilder, bloco))),
     });
 
     this.sincronizarBlocosComTipo(this.editForm);
@@ -168,7 +171,7 @@ export class PedidoDetalheModalComponent {
       codPedido:  Number(v.codPedido),
       status:     Number(v.status),
       tipoPedido: Number(v.tipoPedido),
-      corTampa:   Number(v.corTampa),
+      corTampa:   v.possuiTampa === 'true' ? Number(v.corTampa) as CorTampa : null,
       blocos,
     };
 
