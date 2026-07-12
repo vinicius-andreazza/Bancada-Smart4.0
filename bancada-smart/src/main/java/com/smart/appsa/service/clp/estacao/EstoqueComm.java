@@ -1,8 +1,10 @@
 package com.smart.appsa.service.clp.estacao;
 
+import com.smart.appsa.config.ReadMode;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EstoqueComm {
 
+    private final ReadMode readMode;
+
     private final EstoqueIp estoqueIp;
 
     private final PlcPoller poller;
@@ -33,19 +37,20 @@ public class EstoqueComm {
 
     private final EstoquePlc estoquePlc;
 
-    private static final int DELAY = 600;
+    private static final int DELAY = 400;
     private static final int DB_ESTOQUE = 9;
     private static final int OFFSET_INICIAR_PEDIDO = 62;
     private static final int OFFSET_GERENCIAMENTO_ESTOQUE = 64;
     private static final int OFFSET_POSICAO_GUARDAR = 66;
 
     public EstoqueComm(PlcConnectionService plcConnectionService, EstoqueService estoqueService, EstoquePlc estoquePlc,
-            EstoqueIp estoqueIp) {
+            EstoqueIp estoqueIp, ReadMode readMode) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.estoqueService = estoqueService;
         this.estoquePlc = estoquePlc;
         this.estoqueIp = estoqueIp;
+        this.readMode = readMode;
     }
 
     public void startComm() {
@@ -69,13 +74,14 @@ public class EstoqueComm {
 
     private void handleData(byte[] data) {
         EstoquePlcMapper.updateData(data, estoquePlc);
-
-        validarPedido();
-        validarOperacao();
-        validarRetirada();
-        validarAdicao();
-        validarIniciarGuardar();
-        retornarPosicao();
+        if(!readMode.isReadMode()){
+            validarPedido();
+            validarOperacao();
+            validarRetirada();
+            validarAdicao();
+            validarIniciarGuardar();
+            retornarPosicao();
+        }
     }
 
     private void validarIniciarGuardar() {
@@ -97,7 +103,7 @@ public class EstoqueComm {
         if (estoquePlc.isPedirPosicao() && !estoquePlc.isOcupado()) {
 
             int posEstoqueLivre = estoqueService.findFirstByCor(0).getPosicao();
-
+            log.info("Estoque livre: "+posEstoqueLivre);
             if (posEstoqueLivre > 0) {
 
                 try {
@@ -158,7 +164,6 @@ public class EstoqueComm {
             try {
                 getConnector().writeByte(DB_ESTOQUE, offset, (byte) estoquePlc.getCorGuardarEstoque());
                 estoqueService.addPosition(estoquePlc.getPosicaoEstoque(), estoquePlc.getCorGuardarEstoque());
-
             } catch (Exception e) {
                 log.error("Tentativa de adição na posição {}", estoquePlc.getPosicaoEstoque(), e);
             }
@@ -237,9 +242,10 @@ public class EstoqueComm {
 
     @Async("plcEstoqueWriteExecutor")
     @EventListener
+    @Order(1)
     public void onEstoqueAtualizado(EstoqueAtualizadoEvent event) {
         PlcConnector connector = getConnector();
-        if (connector == null || !connector.isConnected())
+        if (connector == null || !connector.isConnected() || readMode.isReadMode())
             return;
         synchronized (connector) {
             try {
@@ -251,6 +257,9 @@ public class EstoqueComm {
     }
 
     private void atualizarEstoque() {
+        if(readMode.isReadMode()){
+            return;
+        }
         PlcConnector connector = getConnector();
         List<EstoqueDTO> listaEstoque = estoqueService.findAll();
         listaEstoque.forEach(e -> {

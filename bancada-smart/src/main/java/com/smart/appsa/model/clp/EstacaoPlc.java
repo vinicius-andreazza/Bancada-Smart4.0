@@ -8,20 +8,20 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class EstacaoPlc {
-    private boolean recebidoOP;
+    protected boolean recebidoOP;
 
-    private int numeroOP;
+    protected int numeroOP;
 
-    private boolean cancelOP;
-    private boolean finishOP;
-    private boolean startOP;
-    private boolean ocupado;
+    protected boolean cancelOP;
+    protected boolean finishOP;
+    protected boolean startOP;
+    protected boolean ocupado;
     
-    private boolean aguardando;
-    private boolean manual;
-    private boolean emergencia;
+    protected boolean aguardando;
+    protected boolean manual;
+    protected boolean emergencia;
 
-    private boolean concluidoOP;
+    protected boolean concluidoOP;
 
     public StatusEstacao getStatus() {
         if (cancelOP)  return StatusEstacao.CANCELADO;

@@ -86,6 +86,7 @@ public class ProducaoService {
 
     @Transactional
     public void concluirProducao(int codPedido) {
+        resetStatusEstacao();
         Pedido pedido = pedidoRepository.findByCodPedido(codPedido)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não existe: " + codPedido));
 
@@ -101,8 +102,6 @@ public class ProducaoService {
         } catch (InterruptedException e) {
             log.error("Erro no sleep ao concluir pedido ", e);
         }
-
-        resetStatusEstacao();
 
         eventPublisher.publishEvent(new IniciarPedidoEvent(this, null));
     }

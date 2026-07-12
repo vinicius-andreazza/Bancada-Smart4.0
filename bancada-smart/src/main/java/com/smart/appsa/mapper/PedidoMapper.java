@@ -3,11 +3,12 @@ package com.smart.appsa.mapper;
 import com.smart.appsa.dto.request.PedidoRequestDTO;
 import com.smart.appsa.dto.response.PedidoResponseDTO;
 import com.smart.appsa.model.Pedido;
- 
+
 public class PedidoMapper {
- 
-    private PedidoMapper() {}
- 
+
+    private PedidoMapper() {
+    }
+
     public static Pedido toEntity(PedidoRequestDTO dto) {
         return Pedido.builder()
                 .id(dto.id())
@@ -35,7 +36,7 @@ public class PedidoMapper {
                 .blocos(dto.blocos().stream().map(b -> BlocoMapper.toEntity(b)).toList())
                 .build();
     }
- 
+
     public static PedidoResponseDTO toResponse(Pedido pedido) {
         return PedidoResponseDTO.builder()
                 .id(pedido.getId())
@@ -47,9 +48,35 @@ public class PedidoMapper {
                 .dataEntrada(pedido.getDataEntrada())
                 .dataInicio(pedido.getDataInicio())
                 .idExpedicao(pedido.getPosExpedicao())
-                .blocos(pedido.getBlocos() == null ? null : pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
+                .blocos(pedido.getBlocos() == null ? null
+                        : pedido.getBlocos().stream().map(b -> BlocoMapper.toDto(b)).toList())
                 .build();
     }
- 
+
+    public static Pedido copy(Pedido pedido) {
+        Pedido novo = Pedido.builder()
+                .codPedido(null)
+                .status(pedido.getStatus())
+                .tipoPedido(pedido.getTipoPedido())
+                .corTampa(pedido.getCorTampa())
+                .dataCriacao(pedido.getDataCriacao())
+                .dataEntrada(pedido.getDataEntrada())
+                .dataInicio(pedido.getDataInicio())
+                .posExpedicao(pedido.getPosExpedicao())
+                .blocos(
+                        pedido.getBlocos() == null
+                                ? null
+                                : pedido.getBlocos()
+                                        .stream()
+                                        .map(BlocoMapper::copy)
+                                        .toList())
+                .build();
+
+        if (novo.getBlocos() != null) {
+            novo.getBlocos().forEach(b -> b.setPedido(novo));
+        }
+
+        return novo;
+    }
 
 }

@@ -71,7 +71,6 @@ public class MonitoramentoService {
                             .data(constructData())
                 );
             } catch (Exception e) {
-                log.error("Erro no envio do sse: {}",e.getMessage(), e);
                 removidos.add(emitter);
             }
         }

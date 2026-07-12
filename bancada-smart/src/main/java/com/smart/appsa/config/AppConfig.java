@@ -36,4 +36,9 @@ public class AppConfig {
         return new ExpedicaoIp();
     }
 
+    @Bean
+    public ReadMode readMode(){
+        return new ReadMode();
+    }
+
 }

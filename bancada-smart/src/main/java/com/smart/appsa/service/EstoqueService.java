@@ -1,12 +1,17 @@
 package com.smart.appsa.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.smart.appsa.dto.EstoqueDTO;
 import com.smart.appsa.event.EstoqueAtualizadoEvent;
@@ -24,6 +29,43 @@ public class EstoqueService {
     private final EstoqueRepository estoqueRepository;
 
     private final ApplicationEventPublisher eventPublisher;
+
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+    public SseEmitter conectar() {
+        SseEmitter emitter = new SseEmitter(0L);
+
+        emitters.add(emitter);
+
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        emitter.onError(e -> emitters.remove(emitter));
+        enviarSnapshot(null);
+        return emitter;
+    }
+
+    @EventListener
+    @Order(2)
+    public void enviarSnapshot(EstoqueAtualizadoEvent event) {
+        if(emitters.size() == 0){
+            return;
+        }
+
+        List<SseEmitter> removidos = new ArrayList<>();
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(
+                    SseEmitter.event()
+                            .name("estoque")
+                            .data(findAll())
+                );
+            } catch (Exception e) {
+                removidos.add(emitter);
+            }
+        }
+        
+        emitters.removeAll(removidos);
+    }
 
     public List<EstoqueDTO> findAll() {
         return estoqueRepository.findAll().stream().map(EstoqueMapper::toDto).toList();
@@ -51,7 +93,7 @@ public class EstoqueService {
         Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Posição não existe: " + position));
-
+                        enviarSnapshot(null);
         estoqueExistente.setCor(0);
     }
 
@@ -60,7 +102,7 @@ public class EstoqueService {
         Estoque estoqueExistente = estoqueRepository.findByPosicao(position)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Posição não existe: " + position));
-
+                        enviarSnapshot(null);
         estoqueExistente.setCor(cor);
     }
 
