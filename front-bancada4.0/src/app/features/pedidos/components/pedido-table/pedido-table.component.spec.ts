@@ -13,6 +13,7 @@ describe('PedidoTable', () => {
 
     fixture = TestBed.createComponent(PedidoTable);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('pedidos', []);
     await fixture.whenStable();
   });
 

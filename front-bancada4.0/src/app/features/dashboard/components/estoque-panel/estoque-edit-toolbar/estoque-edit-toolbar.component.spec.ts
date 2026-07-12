@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EstoqueEditToolbarComponent } from './estoque-edit-toolbar.component';
+import { CorBloco } from '../../../../../core/models/enums/corbloco.enum';
 
 describe('EstoqueEditToolbarComponent', () => {
   let component: EstoqueEditToolbarComponent;
@@ -13,6 +14,7 @@ describe('EstoqueEditToolbarComponent', () => {
 
     fixture = TestBed.createComponent(EstoqueEditToolbarComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('selectedColor', CorBloco.AZUL);
     await fixture.whenStable();
   });
 

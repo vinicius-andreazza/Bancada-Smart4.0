@@ -24,9 +24,11 @@ export class Navbar {
   readonly minimal = input(false);
   readonly showStatus = input(true);
 
-  readonly systemStatus = computed<'online' | 'offline'>(() =>
-    this.conexao.isConnected() ? 'online' : 'offline',
-  );
+  readonly systemStatus = computed<'online' | 'offline' | 'leitura'>(() => {
+    if (this.conexao.modoLeitura()) return 'leitura';
+    if (this.conexao.isConnected()) return 'online';
+    return 'offline';
+  });
 
   readonly navItems: NavItem[] = [
     {

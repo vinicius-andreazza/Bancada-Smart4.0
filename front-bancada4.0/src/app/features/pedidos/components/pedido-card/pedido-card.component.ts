@@ -13,6 +13,7 @@ import { ColorSwatchGroupComponent, ColorSwatchOption } from '../../../../shared
 })
 export class PedidoCard {
   form = input.required<FormGroup>();
+  mostrarCodigo = input<boolean>(false);
 
   get blocos(): FormGroup[] {
     return (this.form().get('blocos') as FormArray).controls as FormGroup[];
@@ -42,6 +43,11 @@ export class PedidoCard {
     { valor: '1', label: 'Simples' },
     { valor: '2', label: 'Duplo'   },
     { valor: '3', label: 'Triplo'  },
+  ];
+
+  protected readonly possuiTampaOpcoes: ToggleOption[] = [
+    { valor: 'true',  label: 'Sim' },
+    { valor: 'false', label: 'Não' },
   ];
 
   protected readonly corTampaOpcoes: ColorSwatchOption[] = [

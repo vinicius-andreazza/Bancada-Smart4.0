@@ -6,14 +6,14 @@ import { switchMap, startWith, of } from 'rxjs';
 import {
   Bloco3dViewerComponent,
   BlocoConfig,
-  CorBloco,
-  CorLamina,
-  CorTampa,
   LaminaConfig,
-  PadraoLamina,
   PedidoPreviewConfig,
-  PosicaoLamina,
 } from './bloco-3d-viewer.component';
+import { CorBloco } from '../../../../core/models/enums/corbloco.enum';
+import { CorLamina } from '../../../../core/models/enums/corlamina.enum';
+import { CorTampa } from '../../../../core/models/enums/cortampa.enum';
+import { PadraoLamina } from '../../../../core/models/enums/padraolamina.enum';
+import { PosicaoLamina } from '../../../../core/models/enums/posicaolamina.enum';
 
 const COR_BLOCO_LABEL: Record<number, string> = {
   0: 'Vazio', 1: 'Preto', 2: 'Vermelho', 3: 'Azul',
@@ -120,15 +120,15 @@ export class Pedido3dPreviewComponent {
     if (staticCfg) return staticCfg;
 
     const value = this.formValue();
-    const blocosRaw = (value?.blocos ?? []) as Array<{
+    const blocosRaw = (value?.blocos ?? []) as {
       andar?: number | string;
       corBloco?: number | string;
-      laminas?: Array<{
+      laminas?: {
         corLamina?: number | string;
         padraoLamina?: number | string;
         posicaoLamina?: number | string;
-      }>;
-    }>;
+      }[];
+    }[];
 
     const blocos: BlocoConfig[] = [...blocosRaw]
       .map((b, i) => ({

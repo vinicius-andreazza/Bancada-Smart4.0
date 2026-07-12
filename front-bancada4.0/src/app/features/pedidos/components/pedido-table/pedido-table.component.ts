@@ -19,9 +19,10 @@ export class PedidoTable {
     { key: 'ordemProducao',  label: 'Ordem de Produção',  align: 'left'  },
     { key: 'tipo',           label: 'Tipo',               align: 'left'  },
     { key: 'tampa',          label: 'Tampa',              align: 'left'  },
-    { key: 'blocos',         label: 'Blocos',             align: 'left'  },
     { key: 'status',         label: 'Status',             align: 'left'  },
-    { key: 'data',           label: 'Data',               align: 'left'  },
+    { key: 'criacao',        label: 'Criação',            align: 'left'  },
+    { key: 'producao',       label: 'Produção',           align: 'left'  },
+    { key: 'conclusao',      label: 'Conclusão',          align: 'left'  },
     { key: 'acoes',          label: 'Ações',              align: 'right' },
   ] as const;
 }

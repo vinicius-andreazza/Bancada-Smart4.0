@@ -57,7 +57,7 @@
     [pedido]="pedidoSelecionado()!"
     (fechar)="fecharDetalhe()"
     (enviarProducao)="onEnviarProducao($event)"
-    (retirar)="onRetirar($event)"
+    (refazer)="onRefazer($event)"
     (salvar)="onSalvarEdicao($event)"
     (reiniciar)="onReiniciar($event)"
   />
@@ -68,6 +68,6 @@
   <app-toast-notifications [text]="'Pedido atualizado com sucesso!'" [variant]="'success'" />
   }
   @if (saveError()) {
-  <app-toast-notifications [text]="'Houve um erro ao atualizar o pedido'" [variant]="'error'" />
+  <app-toast-notifications [text]="'Houve um erro na operação. Tente novamente.'" [variant]="'error'" />
   }
 </div>

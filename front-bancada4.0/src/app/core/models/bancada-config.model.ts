@@ -3,5 +3,5 @@ export interface BancadaConfig {
   processoIp: string;
   montagemIp: string;
   expedicaoIp: string;
-  seletorTampasIp?: string | null;
+  endpointSeletorTampa?: string | null;
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, isDevMode, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -31,23 +31,39 @@ export class Configuracao {
   private readonly conexao = inject(ConexaoService);
   private readonly router = inject(Router);
 
-  readonly isConnecting = signal(false);
-  readonly conexaoErro = signal(false);
+  readonly isConnecting   = signal(false);
+  readonly conexaoErro    = signal(false);
+  readonly ativandoLeitura = signal(false);
+  readonly erroLeitura    = signal(false);
+  readonly possuiSeletor  = signal(false);
+  protected readonly isConnected = this.conexao.isConnected;
+  protected readonly modoLeitura = this.conexao.modoLeitura;
+
+  /** Modo teste só existe em build de desenvolvimento; nunca em produção. */
+  protected readonly modoTesteDisponivel = isDevMode();
+
+  protected readonly erroIp = { pattern: 'IP inválido (ex.: 192.168.0.10).' };
 
   readonly form = this.fb.group({
     estoqueIp: ['', [Validators.required, Validators.pattern(IPV4)]],
     processoIp: ['', [Validators.required, Validators.pattern(IPV4)]],
     montagemIp: ['', [Validators.required, Validators.pattern(IPV4)]],
     expedicaoIp: ['', [Validators.required, Validators.pattern(IPV4)]],
-    seletorTampasIp: [''],
+    seletorTampaIp: [''],
   });
 
   constructor() {
-    // Pré-preenche com a config salva (localStorage) para o usuário apenas revisar e conectar.
     const salva = this.conexao.bancadaConfig();
     if (salva) {
       this.form.patchValue(salva);
+      if (salva.endpointSeletorTampa) this.possuiSeletor.set(true);
     }
+  }
+
+  toggleSeletor(): void {
+    const ativo = !this.possuiSeletor();
+    this.possuiSeletor.set(ativo);
+    if (!ativo) this.form.controls.seletorTampaIp.reset();
   }
 
   conectar(): void {
@@ -62,7 +78,7 @@ export class Configuracao {
       processoIp: v.processoIp!,
       montagemIp: v.montagemIp!,
       expedicaoIp: v.expedicaoIp!,
-      seletorTampasIp: v.seletorTampasIp?.trim() ? v.seletorTampasIp : null,
+      endpointSeletorTampa: v.seletorTampaIp?.trim() ? v.seletorTampaIp : null,
     };
 
     this.isConnecting.set(true);
@@ -70,10 +86,12 @@ export class Configuracao {
 
     this.conexao.connect(config).subscribe({
       next: () => {
+        console.log(config);
         this.isConnecting.set(false);
         this.router.navigate(['/dashboard']);
       },
       error: () => {
+        console.log(config);
         this.isConnecting.set(false);
         this.conexaoErro.set(true);
         setTimeout(() => this.conexaoErro.set(false), 4000);
@@ -81,9 +99,35 @@ export class Configuracao {
     });
   }
 
+  desconectar(): void {
+    this.conexao.desconectarLocal();
+    this.conexao.desconectar().subscribe({ error: () => {} });
+  }
+
   /** Entra no sistema em modo de testes, ignorando a validação dos IPs e o backend. */
   entrarModoTeste(): void {
     this.conexao.ativarModoTeste();
     this.router.navigate(['/dashboard']);
+  }
+
+  ativarModoLeitura(): void {
+    this.ativandoLeitura.set(true);
+    this.erroLeitura.set(false);
+    this.conexao.ativarModoLeitura().subscribe({
+      next: () => this.ativandoLeitura.set(false),
+      error: () => {
+        this.ativandoLeitura.set(false);
+        this.erroLeitura.set(true);
+        setTimeout(() => this.erroLeitura.set(false), 4000);
+      },
+    });
+  }
+
+  desativarModoLeitura(): void {
+    this.ativandoLeitura.set(true);
+    this.conexao.desativarModoLeitura().subscribe({
+      next: () => this.ativandoLeitura.set(false),
+      error: () => this.ativandoLeitura.set(false),
+    });
   }
 }

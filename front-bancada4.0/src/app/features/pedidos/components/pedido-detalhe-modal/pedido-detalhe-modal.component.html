@@ -5,7 +5,8 @@
             <h2 [id]="'modal-title-' + pedido().id" class="text-base font-semibold text-gray-100">
                 Pedido #{{ pedido().id }}
             </h2>
-            <span [class]="statusBadgeClass() + ' text-xs font-medium px-2 py-0.5 rounded-full'">
+            <span [class]="statusBadgeClass()">
+                <i [class]="statusIcon()" aria-hidden="true"></i>
                 {{ statusLabel() }}
             </span>
         </div>
@@ -19,7 +20,7 @@
         <form [formGroup]="editForm"
               class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] gap-0 items-start">
             <div class="px-6 py-4 min-w-0 border-r border-gray-800">
-                <app-pedido-card [form]="editForm" />
+                <app-pedido-card [form]="editForm" [mostrarCodigo]="true" />
             </div>
             <div class="px-4 py-4 sticky top-4">
                 <app-pedido-3d-preview [form]="editForm" />
@@ -34,8 +35,18 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-800 border-b border-gray-800">
                     @for (meta of metaInfo(); track meta.label) {
                     <div class="flex flex-col gap-0.5 px-5 py-3 bg-gray-950">
-                        <span class="text-xs text-gray-600 uppercase tracking-widest font-mono">{{ meta.label }}</span>
+                        <span class="flex items-center gap-1.5 text-xs text-gray-600 uppercase tracking-widest font-mono">
+                            <i [class]="meta.icon" aria-hidden="true"></i>
+                            {{ meta.label }}
+                        </span>
+                        @if (meta.badgeClass) {
+                        <span [class]="meta.badgeClass">
+                            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                            {{ meta.value }}
+                        </span>
+                        } @else {
                         <span class="text-sm text-gray-200">{{ meta.value }}</span>
+                        }
                     </div>
                     }
                 </div>
@@ -101,9 +112,9 @@
         <app-button [variant]="'ghost'" [size]="'md'" [type]="'button'" (click)="fechar.emit()">
             Cancelar
         </app-button>
-        <app-button [variant]="'danger'" [size]="'md'" [type]="'button'" (click)="retirar.emit(pedido())">
-            <i class="fa-solid fa-box-open mr-1.5" aria-hidden="true"></i>
-            Retirar pedido
+        <app-button [variant]="'primary'" [size]="'md'" [type]="'button'" (click)="refazer.emit(pedido())">
+            <i class="fa-solid fa-rotate-right mr-1.5" aria-hidden="true"></i>
+            Refazer pedido
         </app-button>
         }
 

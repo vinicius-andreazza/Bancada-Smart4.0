@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 
 // ── Public types ──────────────────────────────────────────────────────────────
-export type SystemStatus = 'online' | 'offline' | 'maintenance';
+export type SystemStatus = 'online' | 'offline' | 'maintenance' | 'leitura';
 
 interface StatusConfig {
   readonly defaultLabel: string;
@@ -28,6 +28,13 @@ const STATUS_CONFIG: Record<SystemStatus, StatusConfig> = {
   },
   maintenance: {
     defaultLabel: 'MANUTENÇÃO',
+    dot:  'bg-amber-400',
+    ring: 'bg-amber-400/25',
+    text: 'text-amber-400',
+    glow: '0 0 6px rgba(251,191,36,0.7)',
+  },
+  leitura: {
+    defaultLabel: 'LEITURA',
     dot:  'bg-amber-400',
     ring: 'bg-amber-400/25',
     text: 'text-amber-400',

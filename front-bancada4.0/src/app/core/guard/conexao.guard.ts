@@ -6,5 +6,5 @@ export const conexaoGuard: CanActivateFn = () => {
   const conexao = inject(ConexaoService);
   const router = inject(Router);
 
-  return conexao.isConnected() ? true : router.createUrlTree(['/configuracao']);
+  return conexao.isConnected() ? true : false;
 };
