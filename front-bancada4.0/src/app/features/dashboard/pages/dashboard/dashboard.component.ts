@@ -1,11 +1,7 @@
-import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RefreshTimer } from "../../components/refresh-timer/refresh-timer.component";
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { EstoquePanel } from "../../components/estoque-panel/estoque-panel.component";
 import { ExpedicaoPanel } from "../../components/expedicao-panel/expedicao-panel.component";
-import { CellDetailModel } from "../../components/cell-detail-model/cell-detail-model.component";
 import { Estoque } from '../../../../core/models/estoque.model';
-import { Expedicao } from '../../../../core/models/expedicao.model';
 import { EstoqueEditChange, EstoqueService } from '../../../../core/service/estoque.service';
 import { ExpedicaoService } from '../../../../core/service/expedicao.service';
 import { Navbar } from '../../../../layout/navbar/navbar.component'
@@ -17,17 +13,16 @@ import { flashSignal } from '../../../../shared/utils/flash-signal';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RefreshTimer, EstoquePanel, ExpedicaoPanel, Navbar, Footer, ToastNotifications],
+  imports: [EstoquePanel, ExpedicaoPanel, Navbar, Footer, ToastNotifications],
   templateUrl: './dashboard.component.html',
 })
 export class Dashboard implements OnInit, OnDestroy {
   private readonly estoqueService = inject(EstoqueService);
   private readonly expedicaoService = inject(ExpedicaoService);
-  private readonly destroyRef = inject(DestroyRef);
 
-  readonly estoquePositions = signal<Estoque[]>([]);
-  readonly expedicaoPositions = signal<Expedicao[]>([]);
-  readonly refreshCountdown = signal(15);
+  readonly estoquePositions = computed(() => this.estoqueService.snapshot() ?? []);
+  readonly expedicaoPositions = computed(() => this.expedicaoService.snapshot() ?? []);
+
   readonly modalOpen = signal(false);
   readonly selectedPosition = signal<Estoque | null>(null);
   readonly saveSuccess = signal(false);
@@ -41,6 +36,12 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly hasChanges = computed(() => this.pendingChanges().size > 0);
   readonly changeCount = computed(() => this.pendingChanges().size);
 
+  readonly sseErro = computed(
+    () =>
+      this.estoqueService.connectionStatus() === 'error' ||
+      this.expedicaoService.connectionStatus() === 'error',
+  );
+
   readonly cellColorMap = computed(() => {
     const map = new Map<number, CorBloco>();
     for (const estoque of this.estoquePositions()) {
@@ -49,44 +50,14 @@ export class Dashboard implements OnInit, OnDestroy {
     return map;
   });
 
-  private refreshInterval?: ReturnType<typeof setInterval>;
-
   ngOnInit(): void {
-    this.refreshAll();
-
-    this.refreshInterval = setInterval(() => {
-      if (this.refreshCountdown() <= 1) {
-        this.refreshCountdown.set(15);
-        this.refreshAll();
-        return;
-      }
-      this.refreshCountdown.update((value) => value - 1);
-    }, 1000);
+    this.estoqueService.connect();
+    this.expedicaoService.connect();
   }
 
   ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
-  refreshAll(): void {
-    this.refreshEstoque();
-    this.refreshExpedicao();
-  }
-
-  refreshEstoque(): void {
-    this.estoqueService
-      .getEstoque()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((estoque) => this.estoquePositions.set(estoque));
-  }
-
-  refreshExpedicao(): void {
-    this.expedicaoService
-      .getExpedicao()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((expedicao) => this.expedicaoPositions.set(expedicao));
+    this.estoqueService.disconnect();
+    this.expedicaoService.disconnect();
   }
 
   openCellDetail(position: Estoque): void {
@@ -151,7 +122,6 @@ export class Dashboard implements OnInit, OnDestroy {
       next: () => {
         this.isSaving.set(false);
         this.exitEditMode();
-        this.refreshEstoque();
         flashSignal(this.saveSuccess, 3000);
       },
       error: () => {
@@ -163,7 +133,6 @@ export class Dashboard implements OnInit, OnDestroy {
 
   onDiscardEstoque(): void {
     this.discardChanges();
-    this.refreshEstoque();
   }
 
   discardChanges(): void {

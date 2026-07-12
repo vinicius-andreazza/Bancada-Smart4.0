@@ -51,6 +51,10 @@ export class PedidoService {
     return this.http.post<Pedido>(`${this.config.apiUrl}/api/pedidos/${id}/reiniciar`, {});
   }
 
+  remakePedido(codPedido: number | string): Observable<Pedido> {
+    return this.http.post<Pedido>(`${this.config.apiUrl}/api/pedidos/${codPedido}/remake`, {});
+  }
+
   getPedidosEmProducao(){
     return this.http.get<Pedido[]>(`${this.config.apiUrl}/api/pedidos/emProducao`);
   }

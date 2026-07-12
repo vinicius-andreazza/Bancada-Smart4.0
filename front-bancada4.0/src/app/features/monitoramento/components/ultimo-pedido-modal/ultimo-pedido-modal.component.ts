@@ -3,16 +3,11 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { Pedido } from '../../../../core/models/pedido.model';
 import { PedidoDetalheBlocoComponent } from '../../../pedidos/components/pedido-detalhe-modal/pedido-detalhe-bloco/pedido-detalhe-bloco.component';
 import { Pedido3dPreviewComponent } from '../../../pedidos/components/pedido-3d-preview/pedido-3d-preview.component';
-import { STATUS_LABEL, STATUS_BADGE_CLASS, TIPO_LABEL, TAMPA_LABEL } from '../../../pedidos/shared/utils/pedido-labels';
+import { STATUS_LABEL, STATUS_BADGE_CLASS, TIPO_LABEL, tampaLabelNullable } from '../../../pedidos/shared/utils/pedido-labels';
 import {
   PedidoPreviewConfig,
   BlocoConfig,
   LaminaConfig,
-  CorBloco as CorBlocoViewer,
-  CorLamina as CorLaminaViewer,
-  PadraoLamina as PadraoLaminaViewer,
-  PosicaoLamina as PosicaoLaminaViewer,
-  CorTampa as CorTampaViewer,
 } from '../../../pedidos/components/pedido-3d-preview/bloco-3d-viewer.component';
 
 @Component({
@@ -96,7 +91,7 @@ export class UltimoPedidoModalComponent {
     if (!pedido) return [];
     return [
       { label: 'Tipo',  value: TIPO_LABEL[pedido.tipoPedido] },
-      { label: 'Tampa', value: TAMPA_LABEL[pedido.corTampa]  },
+      { label: 'Tampa', value: tampaLabelNullable(pedido.corTampa) },
       { label: 'Data',  value: pedido.dataCriacao            },
     ];
   });
@@ -107,17 +102,17 @@ export class UltimoPedidoModalComponent {
 
     const blocos: BlocoConfig[] = pedido.blocos.map(b => ({
       andar:    b.andar,
-      corBloco: b.corBloco as unknown as CorBlocoViewer,
+      corBloco: b.corBloco,
       laminas:  b.laminas.map((l): LaminaConfig => ({
-        corLamina:     l.corLamina     as unknown as CorLaminaViewer,
-        padraoLamina:  l.padraoLamina  as unknown as PadraoLaminaViewer,
-        posicaoLamina: l.posicaoLamina as unknown as PosicaoLaminaViewer,
+        corLamina:     l.corLamina,
+        padraoLamina:  l.padraoLamina,
+        posicaoLamina: l.posicaoLamina,
       })),
     }));
 
     return {
       blocos,
-      corTampa: pedido.corTampa as unknown as CorTampaViewer,
+      corTampa: pedido.corTampa,
     };
   });
 }

@@ -1,18 +1,39 @@
-import { Component, computed, input, output } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  OnDestroy,
+  output,
+  viewChild,
+} from '@angular/core';
+
+const FOCAVEIS_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 @Component({
   selector: 'app-modal',
   imports: [],
+  host: {
+    '(document:keydown.escape)': 'fechar.emit()',
+  },
   template: `
+    <!-- Fechar por teclado é coberto pelo Esc no host; o clique aqui é só o backdrop. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <div
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       [attr.aria-labelledby]="labelledBy()"
       (click)="fecharSeBackdrop($event)"
+      (keydown.tab)="prenderFoco($any($event))"
+      (keydown.shift.tab)="prenderFoco($any($event))"
     >
       <div
-        class="relative w-full flex flex-col rounded-xl border border-gray-800 bg-gray-950 shadow-2xl"
+        #painel
+        tabindex="-1"
+        class="relative w-full flex flex-col rounded-xl border border-gray-800 bg-gray-950 shadow-2xl focus:outline-none"
         [class]="maxWidthClass()"
         [style.max-height]="maxHeight()"
         (click)="$event.stopPropagation()"
@@ -48,12 +69,30 @@ import { Component, computed, input, output } from '@angular/core';
     </div>
   `,
 })
-export class ModalComponent {
+export class ModalComponent implements OnDestroy {
   readonly labelledBy = input<string>('');
   readonly maxHeight  = input<string>('90vh');
   readonly maxWidth   = input<'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'>('2xl');
   readonly hasFooter  = input<boolean>(true);
   readonly fechar     = output<void>();
+
+  private readonly painel = viewChild.required<ElementRef<HTMLElement>>('painel');
+
+  // O modal é criado/destruído via @if nos consumidores, então o ciclo de vida
+  // do componente coincide com abrir/fechar: captura o foco na criação e o
+  // devolve na destruição.
+  private readonly elementoAnterior =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  constructor() {
+    afterNextRender(() => {
+      this.painel().nativeElement.focus({ preventScroll: true });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.elementoAnterior?.focus();
+  }
 
   protected readonly maxWidthClass = computed(() => ({
     sm:  'max-w-sm',
@@ -68,6 +107,28 @@ export class ModalComponent {
   protected fecharSeBackdrop(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
       this.fechar.emit();
+    }
+  }
+
+  /** Mantém o Tab circulando entre os elementos focáveis do modal. */
+  protected prenderFoco(event: KeyboardEvent): void {
+    const painel = this.painel().nativeElement;
+    const focaveis = painel.querySelectorAll<HTMLElement>(FOCAVEIS_SELECTOR);
+    if (focaveis.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    const primeiro = focaveis[0];
+    const ultimo = focaveis[focaveis.length - 1];
+    const ativo = document.activeElement;
+
+    if (event.shiftKey && (ativo === primeiro || ativo === painel)) {
+      event.preventDefault();
+      ultimo.focus();
+    } else if (!event.shiftKey && ativo === ultimo) {
+      event.preventDefault();
+      primeiro.focus();
     }
   }
 }

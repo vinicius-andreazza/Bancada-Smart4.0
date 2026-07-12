@@ -19,7 +19,7 @@ export interface ColorSwatchOption {
             type="button"
             class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-150
                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-            [class]="control().value == opt.valor
+            [class]="selecionado(opt.valor)
               ? 'border-gray-400 bg-gray-800 text-gray-100 shadow-[0_0_10px_var(--glow)]'
               : 'border-gray-700 bg-gray-900 text-gray-400 hover:border-gray-600 hover:text-gray-300'"
             [style.--glow]="opt.glow ?? 'transparent'"
@@ -34,7 +34,7 @@ export interface ColorSwatchOption {
             type="button"
             class="w-8 h-8 rounded-full border-2 transition-all duration-150
                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-            [class]="control().value == opt.valor
+            [class]="selecionado(opt.valor)
               ? 'border-white scale-110'
               : 'border-transparent opacity-50 hover:opacity-90 hover:scale-105'"
             [style.background]="opt.hex"
@@ -51,4 +51,9 @@ export class ColorSwatchGroupComponent {
   options   = input.required<ColorSwatchOption[]>();
   control   = input.required<AbstractControl>();
   showLabel = input<boolean>(true);
+
+  // O control pode guardar number ou string; normaliza antes de comparar.
+  protected selecionado(valor: string): boolean {
+    return String(this.control().value) === String(valor);
+  }
 }

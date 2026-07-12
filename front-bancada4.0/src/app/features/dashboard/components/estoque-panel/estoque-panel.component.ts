@@ -38,6 +38,10 @@ export class EstoquePanel {
   }
 
   protected onCellClick(pos: Estoque): void {
-    this.editMode() ? this.applyColor.emit(pos) : this.cellClick.emit(pos);
+    if (this.editMode()) {
+      this.applyColor.emit(pos);
+    } else {
+      this.cellClick.emit(pos);
+    }
   }
 }

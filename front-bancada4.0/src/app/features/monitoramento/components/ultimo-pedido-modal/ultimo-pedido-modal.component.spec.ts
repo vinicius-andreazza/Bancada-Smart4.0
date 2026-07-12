@@ -55,6 +55,7 @@ describe('UltimoPedidoModalComponent', () => {
       status: StatusPedido.CONCLUIDO,
       tipoPedido: TipoPedido.SIMPLES,
       corTampa: CorTampa.PRETO,
+      dataInicio: null,
       dataEntrada: null,
       idExpedicao: 0,
       blocos: [],

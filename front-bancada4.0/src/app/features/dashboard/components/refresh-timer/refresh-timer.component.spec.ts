@@ -13,6 +13,7 @@ describe('RefreshTimer', () => {
 
     fixture = TestBed.createComponent(RefreshTimer);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('seconds', 10);
     await fixture.whenStable();
   });
 

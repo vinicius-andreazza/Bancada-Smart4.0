@@ -13,6 +13,7 @@ describe('ExpedicaoPanel', () => {
 
     fixture = TestBed.createComponent(ExpedicaoPanel);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('positions', []);
     await fixture.whenStable();
   });
 

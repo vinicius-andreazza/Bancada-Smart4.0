@@ -33,11 +33,10 @@ describe('PedidoTimerComponent', () => {
     expect(el.textContent).toContain('#42');
   });
 
-  it('formats elapsed time as HH:MM:SS', () => {
-    const inicio = new Date(Date.now() - 65_000).toISOString();
-    fixture.componentRef.setInput('inicioPedido', inicio);
+  it('formats the ISO-8601 duração as HH:MM:SS', () => {
+    fixture.componentRef.setInput('duracao', 'PT1H2M3S');
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toMatch(/00:0?1:0[0-9]/);
+    expect(el.textContent).toContain('01:02:03');
   });
 });

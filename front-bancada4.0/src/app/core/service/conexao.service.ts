@@ -14,7 +14,8 @@ export class ConexaoService {
   private readonly config = inject(ConfigService);
 
   readonly isConnected = signal(false);
-  
+  readonly modoLeitura = signal(false);
+
   readonly bancadaConfig = signal<BancadaConfig | null>(this.lerStorage());
 
   connect(bancada: BancadaConfig): Observable<unknown> {
@@ -23,8 +24,8 @@ export class ConexaoService {
       processoIp: bancada.processoIp,
       montagemIp: bancada.montagemIp,
       expedicaoIp: bancada.expedicaoIp,
-      endpointSeletorTampa: bancada.seletorTampasIp
-        ? bancada.seletorTampasIp
+      endpointSeletorTampa: bancada.endpointSeletorTampa
+        ? bancada.endpointSeletorTampa
         : null,
     };
 
@@ -53,8 +54,33 @@ export class ConexaoService {
     this.isConnected.set(true);
   }
 
-  desconectar(): void {
+  desconectar(): Observable<unknown> {
+    return this.http.post(`${this.config.apiUrl}/api/smart/close`, null).pipe(
+      tap(() => this.desconectarLocal()),
+    );
+  }
+
+  desconectarLocal(): void {
+    this.bancadaConfig.set(null);
+    this.limparStorage();
     this.isConnected.set(false);
+    this.modoLeitura.set(false);
+  }
+
+  ativarModoLeitura(): Observable<boolean> {
+    return this.http.post<boolean>(`${this.config.apiUrl}/api/smart/readMode`, { ativo: true }).pipe(
+      tap((ativo) => this.modoLeitura.set(ativo)),
+    );
+  }
+
+  desativarModoLeitura(): Observable<boolean> {
+    return this.http.post<boolean>(`${this.config.apiUrl}/api/smart/readMode`, { ativo: false }).pipe(
+      tap((ativo) => this.modoLeitura.set(ativo)),
+    );
+  }
+
+  getModoLeitura(): Observable<boolean> {
+    return this.http.get<boolean>(`${this.config.apiUrl}/api/smart/readMode`);
   }
 
   private lerStorage(): BancadaConfig | null {
@@ -70,6 +96,15 @@ export class ConexaoService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bancada));
     } catch {
+      // storage indisponível (ex.: modo privado): segue sem persistir
+    }
+  }
+
+  private limparStorage(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // storage indisponível
     }
   }
 }

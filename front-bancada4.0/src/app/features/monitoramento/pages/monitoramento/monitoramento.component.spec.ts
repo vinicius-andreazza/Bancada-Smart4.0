@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { signal } from '@angular/core';
 
@@ -17,17 +18,19 @@ describe('Monitoramento', () => {
     monitoramentoServiceMock = {
       snapshot: signal(null),
       connectionStatus: signal('error'),
-      connect: () => {},
-      disconnect: () => {},
+      connect: vi.fn(),
+      disconnect: vi.fn(),
     };
 
     pedidoServiceMock = {
       getUltimoPedido: () => of({ blocos: [] } as unknown as Pedido),
+      getPedidosEmProducao: () => of([]),
     };
 
     await TestBed.configureTestingModule({
       imports: [Monitoramento],
       providers: [
+        provideRouter([]),
         { provide: MonitoramentoService, useValue: monitoramentoServiceMock },
         { provide: PedidoService, useValue: pedidoServiceMock },
       ],

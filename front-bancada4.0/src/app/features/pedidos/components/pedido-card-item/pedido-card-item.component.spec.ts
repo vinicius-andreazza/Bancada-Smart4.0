@@ -13,6 +13,7 @@ const mockPedido: Pedido = {
   status: StatusPedido.PENDENTE,
   tipoPedido: TipoPedido.SIMPLES,
   corTampa: CorTampa.AZUL,
+  dataInicio: null,
   dataEntrada: null,
   idExpedicao: 0,
   blocos: [],

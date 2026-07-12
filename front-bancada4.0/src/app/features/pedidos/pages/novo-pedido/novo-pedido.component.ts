@@ -41,11 +41,12 @@ export class NovoPedido {
   readonly savedPedido          = signal<Pedido | null>(null);
 
   readonly pedidoForm: FormGroup = this.formBuilder.group({
-    codPedido:  new FormControl('000'),
-    status:     new FormControl('1'),
-    tipoPedido: new FormControl('1'),
-    corTampa:   new FormControl('1'),
-    blocos:     this.formBuilder.array([criarBlocoVazio(this.formBuilder, 1)]),
+    codPedido:   new FormControl('000'),
+    status:      new FormControl('1'),
+    tipoPedido:  new FormControl('1'),
+    possuiTampa: new FormControl('true'),
+    corTampa:    new FormControl('1'),
+    blocos:      this.formBuilder.array([criarBlocoVazio(this.formBuilder, 1)]),
   });
 
   constructor() {
@@ -71,7 +72,10 @@ export class NovoPedido {
     this.isSaving.set(true);
     this.saveError.set(false);
 
-    this.pedidoService.postPedido(this.pedidoForm.value).subscribe({
+    const { possuiTampa, corTampa, ...resto } = this.pedidoForm.value;
+    const payload = { ...resto, corTampa: possuiTampa === 'true' ? corTampa : null };
+
+    this.pedidoService.postPedido(payload).subscribe({
       next: (pedido) => {
         this.isSaving.set(false);
         this.savedPedido.set(pedido);
@@ -116,7 +120,7 @@ export class NovoPedido {
     const blocos = this.pedidoForm.get('blocos') as FormArray;
     while (blocos.length > 0) blocos.removeAt(0);
     blocos.push(criarBlocoVazio(this.formBuilder, 1));
-    this.pedidoForm.patchValue({ codPedido: '000', status: '1', tipoPedido: '1', corTampa: '1' });
+    this.pedidoForm.patchValue({ codPedido: '000', status: '1', tipoPedido: '1', possuiTampa: 'true', corTampa: '1' });
     this.savedPedido.set(null);
   }
 }

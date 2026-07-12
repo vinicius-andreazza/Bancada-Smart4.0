@@ -1,5 +1,5 @@
 <div class="flex min-h-screen flex-col bg-bg-base">
-  <app-navbar [minimal]="true" />
+  <app-navbar />
 
   <main class="flex flex-1 items-center justify-center px-4 py-10">
     <div
@@ -30,42 +30,107 @@
       />
     }
 
+    @if (erroLeitura()) {
+      <app-toast-notifications
+        text="Não foi possível ativar o modo leitura. Verifique a conexão com o backend."
+        variant="error"
+      />
+    }
+
     <form [formGroup]="form" (ngSubmit)="conectar()" class="flex flex-col gap-6" novalidate>
       <fieldset class="flex flex-col gap-4">
         <legend class="mb-1 font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
           Estações
         </legend>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <app-input-field id="estoqueIp" label="IP — Estoque" [control]="form.controls.estoqueIp" />
-          <app-input-field id="processoIp" label="IP — Processo" [control]="form.controls.processoIp" />
-          <app-input-field id="montagemIp" label="IP — Montagem" [control]="form.controls.montagemIp" />
-          <app-input-field id="expedicaoIp" label="IP — Expedição" [control]="form.controls.expedicaoIp" />
+          <app-input-field id="estoqueIp" label="IP — Estoque" [control]="form.controls.estoqueIp" [erroCustom]="erroIp" />
+          <app-input-field id="processoIp" label="IP — Processo" [control]="form.controls.processoIp" [erroCustom]="erroIp" />
+          <app-input-field id="montagemIp" label="IP — Montagem" [control]="form.controls.montagemIp" [erroCustom]="erroIp" />
+          <app-input-field id="expedicaoIp" label="IP — Expedição" [control]="form.controls.expedicaoIp" [erroCustom]="erroIp" />
         </div>
       </fieldset>
 
       <fieldset class="flex flex-col gap-4">
-        <legend class="mb-1 font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
-          Seletor de tampas <span class="normal-case text-text-muted">(opcional)</span>
-        </legend>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <app-input-field
-            id="seletorTampasIp"
-            label="IP — Seletor de tampas"
-            [control]="form.controls.seletorTampasIp"
-          />
+        <div class="flex items-center justify-between gap-4">
+          <legend class="font-heading text-sm font-semibold uppercase tracking-wider text-text-accent">
+            Seletor de tampas
+          </legend>
+          <button
+            type="button"
+            role="switch"
+            [attr.aria-checked]="possuiSeletor()"
+            (click)="toggleSeletor()"
+            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent
+                   transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
+                   focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-card"
+            [class.bg-indigo-600]="possuiSeletor()"
+            [class.bg-gray-700]="!possuiSeletor()"
+          >
+            <span
+              class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0
+                     transition-transform duration-200 ease-in-out"
+              [class.translate-x-5]="possuiSeletor()"
+              [class.translate-x-0]="!possuiSeletor()"
+            ></span>
+          </button>
         </div>
+
+        @if (possuiSeletor()) {
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <app-input-field
+              id="seletorTampaIp"
+              label="IP — Seletor de tampas"
+              [control]="form.controls.seletorTampaIp"
+            />
+          </div>
+        }
       </fieldset>
 
-      <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <app-button
-          type="button"
-          variant="ghost"
-          size="lg"
-          (click)="entrarModoTeste()"
-        >
-          <i class="fa-solid fa-flask" aria-hidden="true"></i>
-          Modo de testes (ignorar validação)
-        </app-button>
+      <div class="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
+        @if (modoTesteDisponivel) {
+          <app-button
+            type="button"
+            variant="ghost"
+            size="lg"
+            (click)="entrarModoTeste()"
+          >
+            <i class="fa-solid fa-flask" aria-hidden="true"></i>
+            Modo de testes (ignorar validação)
+          </app-button>
+        }
+
+        @if (isConnected()) {
+          <div class="flex justify-end">
+            <app-button type="button" variant="danger" size="md" (click)="desconectar()">
+              <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
+              Desconectar
+            </app-button>
+          </div>
+        }
+
+        @if (!modoLeitura()) {
+          <app-button
+            type="button"
+            variant="ghost"
+            size="md"
+            [loading]="ativandoLeitura()"
+            (click)="ativarModoLeitura()"
+          >
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            Ativar Modo Leitura
+          </app-button>
+        } @else {
+          <app-button
+            type="button"
+            variant="danger"
+            size="md"
+            [loading]="ativandoLeitura()"
+            (click)="desativarModoLeitura()"
+          >
+            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+            Desativar Modo Leitura
+          </app-button>
+        }
 
         <app-button
           type="submit"
@@ -76,6 +141,8 @@
         >
           Conectar
         </app-button>
+
+        
       </div>
     </form>
     </div>
