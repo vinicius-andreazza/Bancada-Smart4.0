@@ -26,6 +26,10 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(comunicacaoClpInterceptor)
             .addPathPatterns("/api/**")
-            .excludePathPatterns("/api/smart/start");
+            .excludePathPatterns("/api/smart/start")
+            .excludePathPatterns("/api/smart/start")
+            .excludePathPatterns("/api/estoque/**")
+            .excludePathPatterns("/api/expedicao/**")
+            .excludePathPatterns("/api/pedidos");;
     }
 }

@@ -40,7 +40,7 @@ export class PedidoService {
   }
 
   postEnviarPedido(pedido: Pedido){
-    return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido);
+    return this.http.post( `${this.config.apiUrl}/api/pedidos/enviar`, pedido, { responseType: 'text' });
   }
 
   patchPedido(id: number, pedido: Pedido){
