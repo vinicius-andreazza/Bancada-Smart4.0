@@ -7,6 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.smart.appsa.clpcomm.PlcConnectionService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PlcPoller {
     private final PlcConnectionService plcConnectionService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();

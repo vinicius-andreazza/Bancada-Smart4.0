@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ class ExpedicaoServiceTest {
 
     @Mock private ExpedicaoRepository expedicaoRepository;
     @Mock private PedidoRepository pedidoRepository;
+    @Mock private ApplicationEventPublisher eventPublisher;
     @InjectMocks private ExpedicaoService expedicaoService;
 
     @Test
@@ -124,6 +126,50 @@ class ExpedicaoServiceTest {
 
         assertThat(resultado.getPedido()).isNull();
         verify(expedicaoRepository).save(any(Expedicao.class));
+        verify(eventPublisher).publishEvent(any());
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenFindFirstAvailableGivenNoFreePosition() {
+        when(expedicaoRepository.findFirstByPedidoIsNull()).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> expedicaoService.findFirstAvailable())
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Expedição cheio");
+    }
+
+    @Test
+    void shouldReturnExpedicaoWhenFindFirstAvailableGivenFreePosition() {
+        Expedicao livre = expedicaoLivre(1L, 4);
+        when(expedicaoRepository.findFirstByPedidoIsNull()).thenReturn(Optional.of(livre));
+
+        Expedicao resultado = expedicaoService.findFirstAvailable();
+
+        assertThat(resultado.getPosicao()).isEqualTo(4);
+    }
+
+    @Test
+    void shouldAssignPedidoToSpecificPositionWhenAssignPedidoByPosition() {
+        Expedicao pos = expedicaoLivre(1L, 7);
+        Pedido pedido = new Pedido();
+        pedido.setId(2L);
+
+        when(expedicaoRepository.findByPosicao(7)).thenReturn(Optional.of(pos));
+        when(pedidoRepository.findById(2L)).thenReturn(Optional.of(pedido));
+
+        Expedicao resultado = expedicaoService.assignPedidoByPosition(2L, 7);
+
+        assertThat(resultado.getPedido()).isEqualTo(pedido);
+        assertThat(resultado.getPosicao()).isEqualTo(7);
+    }
+
+    @Test
+    void shouldThrowWhenAssignPedidoByPositionGivenUnknownPosition() {
+        when(expedicaoRepository.findByPosicao(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> expedicaoService.assignPedidoByPosition(1L, 99))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Posição não existe");
     }
 
     private Expedicao expedicaoLivre(Long id, int posicao) {

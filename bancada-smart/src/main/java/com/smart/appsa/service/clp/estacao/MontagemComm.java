@@ -1,5 +1,6 @@
 package com.smart.appsa.service.clp.estacao;
 
+import com.smart.appsa.config.ReadMode;
 import com.smart.appsa.config.ipconfig.MontagemIp;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MontagemComm {
 
+    private final ReadMode readMode;
+
     private final MontagemIp montagemIp;
 
     private final PlcPoller poller;
@@ -27,11 +30,12 @@ public class MontagemComm {
     private static final int DB_MONTAGEM = 57;
     private static final int OFFSET_RECEBIDO_OP = 0;
 
-    public MontagemComm(PlcConnectionService plcConnectionService, MontagemPlc montagemPlc, MontagemIp montagemIp) {
+    public MontagemComm(PlcConnectionService plcConnectionService, MontagemPlc montagemPlc, MontagemIp montagemIp, ReadMode readMode) {
         this.poller = new PlcPoller(plcConnectionService);
         this.plcConnectionService = plcConnectionService;
         this.montagemPlc = montagemPlc;
         this.montagemIp = montagemIp;
+        this.readMode = readMode;
     }
 
     public void startComm() {
@@ -55,11 +59,11 @@ public class MontagemComm {
     private void handleData(byte[] data) {
 
         MontagemPlcMapper.updateData(data, montagemPlc);
-
-        validarOperacaoPelasFlags();
-        validarInicioDaOperacao();
-        validarFinalizacaoDaOperacao();
-
+        if (!readMode.isReadMode()) {
+            validarOperacaoPelasFlags();
+            validarInicioDaOperacao();
+            validarFinalizacaoDaOperacao();
+        }
     }
 
     private void validarOperacaoPelasFlags() {

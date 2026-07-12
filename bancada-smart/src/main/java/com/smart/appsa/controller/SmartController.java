@@ -1,5 +1,6 @@
 package com.smart.appsa.controller;
 
+import com.smart.appsa.config.ReadMode;
 import com.smart.appsa.config.ipconfig.EstoqueIp;
 import com.smart.appsa.config.ipconfig.ExpedicaoIp;
 import com.smart.appsa.config.ipconfig.MontagemIp;
@@ -11,6 +12,11 @@ import com.smart.appsa.service.clp.estacao.ExpedicaoComm;
 import com.smart.appsa.service.clp.estacao.MontagemComm;
 import com.smart.appsa.service.clp.estacao.ProcessoComm;
 import com.smart.appsa.service.sse.MonitoramentoService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +35,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 @RequestMapping("/api/smart")
 @Slf4j
+@Tag(name = "Comunicação CLP", description = "Gerencia a conexão com os CLPs/PLCs das estações da bancada")
 public class SmartController {
 
     private final ExpedicaoIp expedicaoIp;
@@ -36,6 +43,7 @@ public class SmartController {
     private final ProcessoIp processoIp;
     private final MontagemIp montagemIp;
     private final SeletorTampaIp seletorTampaIp;
+    private final ReadMode readMode;
 
     private final ExpedicaoComm expedicaoComm;
     private final MontagemComm montagemComm;
@@ -44,9 +52,13 @@ public class SmartController {
 
     private final MonitoramentoService monitoramentoService;
 
+    @Operation(summary = "Iniciar comunicação com os CLPs", description = "Recebe os IPs das 4 estações e do seletor de tampa, inicia os pollers e libera os endpoints de escrita.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Comunicação iniciada com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao conectar a algum CLP")
+    })
     @PostMapping("/start")
     public ResponseEntity<Void> startComm(@RequestBody CommDto commDto) {
-
         estoqueIp.setIp(commDto.estoqueIp());
         processoIp.setIp(commDto.processoIp());
         montagemIp.setIp(commDto.montagemIp());
@@ -66,10 +78,51 @@ public class SmartController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Stream SSE de monitoramento geral", description = "Abre um stream Server-Sent Events com snapshots a cada 500 ms contendo status das 4 estações, posições do estoque e da expedição. Não testável diretamente pelo Swagger UI.")
+    @ApiResponse(responseCode = "200", description = "Stream SSE aberto (text/event-stream)")
     @GetMapping(value = "/readAll", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter readAll() {
         log.info("SSE aberto");
         return monitoramentoService.conectar();
+    }
+
+    @Operation(summary = "Encerrar comunicação com os CLPs", description = "Desconecta os pollers e fecha as comunicações existentes.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Comunicação encerrada com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao deconectar a algum CLP")
+    })
+    @PostMapping("/close")
+    public ResponseEntity<Void> closeComm() {
+        log.info("Desconectado");
+        estoqueComm.disconnect();
+        processoComm.disconnect();
+        montagemComm.disconnect();
+        expedicaoComm.disconnect();
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Ativar modo leitura", description = "Ativa o modo apenas leitura com os CLPS, desabilitando qualquer edição a bancada.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Modo leitura ativado com sucesso"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao ativar o modo leitura")
+    })
+    @PostMapping("/readMode")
+    public ResponseEntity<Boolean> readMode() {
+        
+        readMode.setReadMode(readMode.isReadMode() ? false : true);
+        log.info("Modo leitura: {}", readMode.isReadMode());
+        return ResponseEntity.ok(readMode.isReadMode());
+    }
+
+    @Operation(summary = "Retorna o modo leitura", description = "Retorna se o modo apenas leitura está ativo.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Retorna o modo leitura"),
+        @ApiResponse(responseCode = "500", description = "Erro interno ao ler")
+    })
+    @GetMapping("/readMode")
+    public ResponseEntity<Boolean> isReadMode() {
+        return ResponseEntity.ok(readMode.isReadMode());
     }
 
 }

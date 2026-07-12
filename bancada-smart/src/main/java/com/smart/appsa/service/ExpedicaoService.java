@@ -1,10 +1,19 @@
 package com.smart.appsa.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.smart.appsa.dto.ExpedicaoDTO;
+import com.smart.appsa.event.ExpedicaoLiberadaEvent;
+import com.smart.appsa.event.ExpedicaoReservadaEvent;
+import com.smart.appsa.event.IniciarPedidoEvent;
 import com.smart.appsa.mapper.ExpedicaoMapper;
 import com.smart.appsa.model.Expedicao;
 import com.smart.appsa.model.Pedido;
@@ -20,6 +29,54 @@ public class ExpedicaoService {
 
     private final ExpedicaoRepository expedicaoRepository;
     private final PedidoRepository pedidoRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+    public SseEmitter conectar() {
+        SseEmitter emitter = new SseEmitter(0L);
+        
+        emitters.add(emitter);
+        enviarSnapshot();
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        emitter.onError(e -> emitters.remove(emitter));
+        
+        return emitter;
+    }
+
+    @EventListener
+    @Order(2)
+    public void posicaoReservadaEventListener(ExpedicaoReservadaEvent event) {
+        enviarSnapshot();
+    }
+
+    @EventListener
+    @Order(2)
+    public void posicaoLiberadaEventListener(ExpedicaoLiberadaEvent event) {
+        enviarSnapshot();
+    }
+
+    public void enviarSnapshot() {
+        if(emitters.size() == 0){
+            return;
+        }
+
+        List<SseEmitter> removidos = new ArrayList<>();
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(
+                    SseEmitter.event()
+                            .name("expedicao")
+                            .data(findAll())
+                );
+            } catch (Exception e) {
+                removidos.add(emitter);
+            }
+        }
+        
+        emitters.removeAll(removidos);
+    }
 
     public Expedicao findById(Long id) {
         return expedicaoRepository.findById(id)
@@ -50,7 +107,7 @@ public class ExpedicaoService {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido não encontrado "));
         
         expedicao.setPedido(pedido);
-
+        enviarSnapshot();
         return expedicao;
     }
 
@@ -60,7 +117,7 @@ public class ExpedicaoService {
         Pedido pedido = pedidoRepository.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido não encontrado "));
         
         expedicao.setPedido(pedido);
-
+        enviarSnapshot();
         return expedicao;
     }
 
@@ -72,8 +129,10 @@ public class ExpedicaoService {
             throw new IllegalStateException("A posição " + expedicao.getPosicao() + " já está livre.");
 
         releasePedido(expedicao);
-
+        
         expedicao.setPedido(null);
+        eventPublisher.publishEvent(new ExpedicaoLiberadaEvent(this, expedicao.getPosicao()));
+        enviarSnapshot();
         return expedicaoRepository.save(expedicao);
     }
 

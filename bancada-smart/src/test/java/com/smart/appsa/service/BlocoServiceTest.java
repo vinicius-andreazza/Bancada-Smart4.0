@@ -59,8 +59,6 @@ class BlocoServiceTest {
         BlocoDTO dto = new BlocoDTO(null, CorBloco.PRETO, null, AndarBloco.PRIMEIRO, p, List.of());
 
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
-        when(estoqueService.findFirstByCor(CorBloco.PRETO.getValue()))
-                .thenReturn(estoqueComCor(7, CorBloco.PRETO.getValue()));
         when(blocoRepository.save(any(Bloco.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BlocoDTO resultado = blocoService.create(dto);
@@ -92,22 +90,33 @@ class BlocoServiceTest {
     }
 
     @Test
-    void shouldConsumeEstoquePositionWhenCreateGivenValidBloco() {
+    void shouldCreateLaminasWhenCreateGivenValidBlocoWithLaminas() {
         Pedido p = pedidoComId(1L);
         BlocoDTO dto = dtoBlocoComLaminas(p, 1);
-        Estoque posEstoque = estoqueComCor(7, CorBloco.PRETO.getValue());
 
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(p));
-        when(estoqueService.findFirstByCor(CorBloco.PRETO.getValue())).thenReturn(posEstoque);
         when(blocoRepository.save(any(Bloco.class))).thenAnswer(inv -> inv.getArgument(0));
         when(laminaService.create(any(), any())).thenReturn(laminaValida());
 
         BlocoDTO resultado = blocoService.create(dto);
 
-        assertThat(resultado.posEstoque()).isEqualTo(7);
+        assertThat(resultado).isNotNull();
+        verify(laminaService).create(any(), any());
+    }
+
+    @Test
+    void shouldAssignEstoquePositionAndConsumeColorWhenAssignEstoquePosition() {
+        Bloco bloco = new Bloco();
+        bloco.setCorBloco(CorBloco.PRETO);
+        Estoque posEstoque = estoqueComCor(7, CorBloco.PRETO.getValue());
+
+        when(estoqueService.findFirstByCor(CorBloco.PRETO.getValue())).thenReturn(posEstoque);
+
+        blocoService.assignEstoquePosition(bloco);
+
+        assertThat(bloco.getPosEstoque()).isEqualTo(7);
         assertThat(posEstoque.getCor()).isZero();
         verify(estoqueService).put(eq(7), any(EstoqueDTO.class));
-        verify(laminaService).create(any(), any());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.smart.appsa.service;
 
 import com.smart.appsa.dto.LaminaDTO;
+import com.smart.appsa.exception.DuplicatedLaminaPosition;
 import com.smart.appsa.model.Bloco;
 import com.smart.appsa.model.Lamina;
 import com.smart.appsa.model.enums.*;
@@ -53,7 +54,7 @@ class LaminaServiceTest {
         when(laminaRepository.findByBloco(any())).thenReturn(List.of(existente));
 
         assertThatThrownBy(() -> laminaService.create(dto, blocoVazio()))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DuplicatedLaminaPosition.class)
                 .hasMessageContaining("posição");
     }
 
@@ -121,6 +122,53 @@ class LaminaServiceTest {
 
         assertThatNoException().isThrownBy(() -> laminaService.delete(1L));
         verify(laminaRepository).delete(l);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenPutGivenUnknownId() {
+        LaminaDTO dto = new LaminaDTO(99L, CorLamina.AZUL, PadraoLamina.CASA, PosicaoLamina.FRENTE);
+        when(laminaRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> laminaService.put(dto))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void shouldUpdateAllFieldsWhenPutGivenExistingId() {
+        Lamina existente = laminaEntity(PosicaoLamina.ESQUERDA);
+        existente.setId(1L);
+        when(laminaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(laminaRepository.save(any(Lamina.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        LaminaDTO dto = new LaminaDTO(1L, CorLamina.AZUL, PadraoLamina.NAVIO, PosicaoLamina.DIREITA);
+        LaminaDTO resultado = laminaService.put(dto);
+
+        assertThat(resultado.corLamina()).isEqualTo(CorLamina.AZUL);
+        assertThat(resultado.posicaoLamina()).isEqualTo(PosicaoLamina.DIREITA);
+        assertThat(resultado.padraoLamina()).isEqualTo(PadraoLamina.NAVIO);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenPatchGivenUnknownId() {
+        LaminaDTO dto = new LaminaDTO(99L, CorLamina.AZUL, null, null);
+        when(laminaRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> laminaService.patch(dto))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void shouldUpdateOnlyNonNullFieldsWhenPatch() {
+        Lamina existente = laminaEntity(PosicaoLamina.ESQUERDA);
+        existente.setId(1L);
+        when(laminaRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(laminaRepository.save(any(Lamina.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        LaminaDTO dto = new LaminaDTO(1L, CorLamina.VERDE, null, null);
+        LaminaDTO resultado = laminaService.patch(dto);
+
+        assertThat(resultado.corLamina()).isEqualTo(CorLamina.VERDE);
+        assertThat(resultado.posicaoLamina()).isEqualTo(PosicaoLamina.ESQUERDA);
     }
 
     private Bloco blocoVazio() {
